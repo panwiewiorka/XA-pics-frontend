@@ -1,20 +1,30 @@
 package xapics.app
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import xapics.app.PicType.*
+import xapics.app.auth.AuthRepository
+import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
+import xapics.app.ui.auth.AuthState
+import xapics.app.ui.auth.AuthUiEvent
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -23,23 +33,100 @@ const val TAG = "mytag"
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
-    private val api: PicsApi
+    private val api: PicsApi,
+    private val repository: AuthRepository
 ): ViewModel() {
 
-    private val _state = MutableStateFlow(AppState())
-    val state: StateFlow<AppState> = _state.asStateFlow()
+    private val _appState = MutableStateFlow(AppState())
+    val appState: StateFlow<AppState> = _appState.asStateFlow()
+
+    var authState by mutableStateOf(AuthState())
+
+    private val resultChannel = Channel<AuthResult<Unit>>()
+    val authResults = resultChannel.receiveAsFlow()
+
+    fun onAuthEvent(event: AuthUiEvent) {
+        when(event) {
+            is AuthUiEvent.SignInUsernameChanged -> {
+                authState = authState.copy(signInUsername = event.value)
+            }
+            is AuthUiEvent.SignInPasswordChanged -> {
+                authState = authState.copy(signInPassword = event.value)
+            }
+            is AuthUiEvent.SignIn -> {
+                signIn()
+            }
+            is AuthUiEvent.SignUpUsernameChanged -> {
+                authState = authState.copy(signUpUsername = event.value)
+            }
+            is AuthUiEvent.SignUpPasswordChanged -> {
+                authState = authState.copy(signUpPassword = event.value)
+            }
+            is AuthUiEvent.SignUp -> {
+                signUp()
+            }
+        }
+    }
+
+    private fun signUp() {
+        viewModelScope.launch {
+            authState = authState.copy(isLoading = true)
+            val result = repository.signUp(
+                username = authState.signUpUsername,
+                password = authState.signUpPassword
+            )
+            resultChannel.send(result)
+            authState = authState.copy(isLoading = false)
+        }
+    }
+
+    private fun signIn() {
+        viewModelScope.launch {
+            authState = authState.copy(isLoading = true)
+            val result = repository.signIn(
+                username = authState.signInUsername,
+                password = authState.signInPassword
+            )
+            resultChannel.send(result)
+            authState = authState.copy(isLoading = false)
+        }
+    }
+
+    private fun authenticate() {
+        viewModelScope.launch {
+            authState = authState.copy(isLoading = true)
+            val result = repository.authenticate()
+            resultChannel.send(result)
+            authState = authState.copy(isLoading = false)
+        }
+    }
+
+//    private fun authenticate0() {
+//        viewModelScope.launch {
+//            authState = authState.copy(isLoading = true)
+//            val result = repository.getUserInfo(::gg)
+//            resultChannel.send(result)
+//            authState = authState.copy(isLoading = false)
+//        }
+//    }
+//
+//    private fun gg(userId: Int?) {
+//        authState = authState.copy(userId = userId)
+//    }
 
 
     init {
+        authenticate()
 //        getPicsList(2020)
         getRollsList()
     }
 
+
     fun getFilmsList() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                _state.value = state.value.copy(isLoading = true)
-                _state.value = state.value.copy(
+                _appState.value = appState.value.copy(isLoading = true)
+                _appState.value = appState.value.copy(
                     filmsList = api.getFilmsList(),
                     isLoading = false
                 )
@@ -47,7 +134,7 @@ class MainViewModel @Inject constructor (
 
             } catch (e: Exception) {
                 Log.e(TAG, "getFilmsList: ", e)
-                _state.value = state.value.copy(isLoading = false)
+                _appState.value = appState.value.copy(isLoading = false)
             }
         }
     }
@@ -68,8 +155,8 @@ class MainViewModel @Inject constructor (
     fun getRollsList() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                _state.value = state.value.copy(isLoading = true)
-                _state.value = state.value.copy(
+                _appState.value = appState.value.copy(isLoading = true)
+                _appState.value = appState.value.copy(
                     filmsList = api.getFilmsList(),
                     rollsList = api.getRollsList(),
                     rollThumbnails = api.getRollThumbnails(),
@@ -79,7 +166,7 @@ class MainViewModel @Inject constructor (
 
             } catch (e: Exception) {
                 Log.e(TAG, "getRollsList: ", e)
-                _state.value = state.value.copy(isLoading = false)
+                _appState.value = appState.value.copy(isLoading = false)
             }
         }
     }
@@ -95,27 +182,27 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPicsList(year: Int? = null, roll: String? = null, film: String? = null) {
+    fun getPicsList(year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                _state.value = state.value.copy(isLoading = true)
-                _state.value = state.value.copy(
-                    picsList = api.getPicsList(year?.toString(), roll, film),
+                _appState.value = appState.value.copy(isLoading = true)
+                _appState.value = appState.value.copy(
+                    picsList = api.getPicsList(year?.toString(), roll, film, tag),
                     picIndex = 1,
                     isLoading = false
                 )
 
             } catch (e: Exception) {
                 Log.e("MainViewModel", "getPicsList: ", e)
-                _state.value = state.value.copy(isLoading = false)
+                _appState.value = appState.value.copy(isLoading = false)
             }
         }
     }
 
     fun updatePicState(picIndex: Int) {
-        _state.update {
+        _appState.update {
             it.copy(
-                pic = state.value.picsList?.get(picIndex),
+                pic = appState.value.picsList?.get(picIndex),
                 picIndex = picIndex
             )
         }
@@ -123,27 +210,27 @@ class MainViewModel @Inject constructor (
 
     fun getPic(picType: PicType) {
         when(picType) {
-            FIRST -> _state.value = state.value.copy(
-                pic = state.value.picsList?.first(),
+            FIRST -> _appState.value = appState.value.copy(
+                pic = appState.value.picsList?.first(),
                 picIndex = 0
             )
             PREV -> {
-                _state.value = state.value.copy(
-                    pic = state.value.picsList?.get(state.value.picIndex!! - 1),
-                    picIndex = state.value.picIndex!! - 1
+                _appState.value = appState.value.copy(
+                    pic = appState.value.picsList?.get(appState.value.picIndex!! - 1),
+                    picIndex = appState.value.picIndex!! - 1
                 )
             }
             NEXT -> {
-                _state.value = state.value.copy(
-                    pic = state.value.picsList?.get(state.value.picIndex!! + 1),
-                    picIndex = state.value.picIndex!! + 1
+                _appState.value = appState.value.copy(
+                    pic = appState.value.picsList?.get(appState.value.picIndex!! + 1),
+                    picIndex = appState.value.picIndex!! + 1
                 )
             }
         }
     }
 
     fun selectFilmToEdit(film: Film?) {
-        _state.update { it.copy( filmToEdit = film) }
+        _appState.update { it.copy( filmToEdit = film) }
     }
 
     fun editFilmField(
@@ -154,21 +241,21 @@ class MainViewModel @Inject constructor (
         expired: Boolean? = null,
     ) {
         val film = Film(
-            filmName ?: state.value.filmToEdit!!.filmName,
-            iso ?: state.value.filmToEdit!!.iso,
-            type ?: state.value.filmToEdit!!.type,
-            xpro ?: state.value.filmToEdit!!.xpro,
-            expired ?: state.value.filmToEdit!!.expired,
+            filmName ?: appState.value.filmToEdit!!.filmName,
+            iso ?: appState.value.filmToEdit!!.iso,
+            type ?: appState.value.filmToEdit!!.type,
+            xpro ?: appState.value.filmToEdit!!.xpro,
+            expired ?: appState.value.filmToEdit!!.expired,
         )
-        _state.update { it.copy(filmToEdit = film) }
+        _appState.update { it.copy(filmToEdit = film) }
     }
 
     fun updateFilmsListState(list: List<Film>) {
-        _state.update { it.copy( filmsList = list) }
+        _appState.update { it.copy( filmsList = list) }
     }
 
     fun selectRollToEdit(roll: Roll?) {
-        _state.update { it.copy( rollToEdit = roll) }
+        _appState.update { it.copy( rollToEdit = roll) }
     }
 
     fun editRollField(
@@ -178,15 +265,15 @@ class MainViewModel @Inject constructor (
     ) {
         Log.d(TAG, "editRollField: film = $film")
         val roll = Roll(
-            title ?: state.value.rollToEdit!!.title,
-            film ?: state.value.rollToEdit!!.film,
-            nonXa ?: state.value.rollToEdit!!.nonXa,
+            title ?: appState.value.rollToEdit!!.title,
+            film ?: appState.value.rollToEdit!!.film,
+            nonXa ?: appState.value.rollToEdit!!.nonXa,
         )
-        _state.update { it.copy(rollToEdit = roll) }
+        _appState.update { it.copy(rollToEdit = roll) }
     }
 
     fun updateRollsListState(list: List<Roll>) {
-        _state.update { it.copy( rollsList = list) }
+        _appState.update { it.copy( rollsList = list) }
     }
 
     private suspend fun tryUploadImage(rollTitle: String, file: File): Boolean {
@@ -230,15 +317,15 @@ class MainViewModel @Inject constructor (
     fun getRandomPic() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                _state.value = state.value.copy(isLoading = true)
-                _state.value = state.value.copy(
+                _appState.value = appState.value.copy(isLoading = true)
+                _appState.value = appState.value.copy(
                     pic = api.getRandomPic(),
                     isLoading = false
                 )
 
             } catch (e: Exception) {
                 Log.e("MainViewModel", "getRandomPic: ", e)
-                _state.value = state.value.copy(isLoading = false)
+                _appState.value = appState.value.copy(isLoading = false)
             }
         }
     }

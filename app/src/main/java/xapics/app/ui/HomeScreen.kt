@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -28,7 +30,7 @@ import xapics.app.MainViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, goToEditFilmsScreen: () -> Unit, goToUploadScreen: () -> Unit
+    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -48,6 +50,7 @@ fun HomeScreen(
             }
         }
 
+        /**
         Row {
             Button(
                 onClick = {
@@ -84,23 +87,7 @@ fun HomeScreen(
                 Text("2023")
             }
         }
-        Button(
-            onClick = {
-                viewModel.getFilmsList()
-                goToEditFilmsScreen()
-            },
-        ) {
-            Text("Edit films")
-        }
-        Button(
-            onClick = {
-//                viewModel.getFilmsList()
-                viewModel.getRollsList()
-                goToUploadScreen()
-            },
-        ) {
-            Text("Edit rolls / upload photos")
-        }
+         */
     }
 }
 
@@ -109,7 +96,7 @@ fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, getPicsLis
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .padding(end = 20.dp)
+            .padding(horizontal = 12.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFF333333))
             .padding(1.dp)
@@ -119,6 +106,8 @@ fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, getPicsLis
                 goToPicsListScreen()
             }
     ) {
+        CircularProgressIndicator() // TODO remove?
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -128,7 +117,9 @@ fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, getPicsLis
                     .crossfade(true)
                     .build(),
                 contentDescription = "Thumbnail of the $rollTitle roll",
-                modifier = Modifier.height(130.dp)
+                modifier = Modifier
+                    .height(100.dp)
+                    .width((100 * 1.5).dp)
             )
             Text(text = rollTitle)
         }

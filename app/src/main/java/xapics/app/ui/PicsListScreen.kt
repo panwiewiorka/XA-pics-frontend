@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -41,22 +40,11 @@ fun PicsListScreen(
     Box(
         contentAlignment = Alignment.Center
     ) {
-        val sst = rememberLazyListState()
+        val scrollState = rememberLazyListState()
         Row {
-//            LazyColumn(
-//                state = sst,
-//                modifier = Modifier) {
-//                items(5) {
-//                    Perforation(h = 310.dp)
-//                }
-//            }
-
             LazyColumn(
-                state = sst,
-                modifier = Modifier
-                    .fillMaxSize()
-//                .padding(32.dp)
-//                    .align(Alignment.TopCenter)
+                state = scrollState,
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(appState.picsList?.size ?: 0) {
                     BoxWithConstraints {
@@ -67,7 +55,7 @@ fun PicsListScreen(
             }
         }
 
-
+        /**
         Row(
             modifier = Modifier.align(Alignment.TopCenter)
         ) {
@@ -100,6 +88,7 @@ fun PicsListScreen(
                 Text("2023")
             }
         }
+        */
 
         if(appState.isLoading) {
             CircularProgressIndicator()
@@ -119,11 +108,11 @@ fun PicItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(bottom = 16.dp)
     ) {
-        Perforation(height)
-        Spacer(modifier = Modifier.width(16.dp))
-        Picture(picIndex, pic, updatePicState, goToPicScreen, modifier = Modifier.weight(1f))
-        Spacer(modifier = Modifier.width(16.dp))
-        Perforation(height)
+//        Perforation(height)
+        Spacer(modifier = Modifier.width(32.dp))
+        Picture(picIndex, pic, updatePicState, goToPicScreen, modifier = Modifier.weight(1f).height(height))
+        Spacer(modifier = Modifier.width(32.dp))
+//        Perforation(height)
     }
 }
 
@@ -151,17 +140,26 @@ fun Perf(height: Dp) {
 
 @Composable
 fun Picture(picIndex: Int, pic: Pic, updatePicState: (Int) -> Unit, goToPicScreen: () -> Unit, modifier: Modifier) {
-    AsyncImage(
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
-            .clip(RoundedCornerShape(2.dp))
-            .clickable {
-                updatePicState(picIndex)
-                goToPicScreen()
-            },
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(pic.imageUrl)
-            .crossfade(true)
-            .build(),
-        contentDescription = pic.description,
-    )
+            .background(Color(0xFF333333))
+    ) {
+        CircularProgressIndicator() // TODO remove?
+
+        AsyncImage(
+            modifier = modifier
+                .clip(RoundedCornerShape(2.dp))
+                .clickable {
+                    updatePicState(picIndex)
+                    goToPicScreen()
+                },
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(pic.imageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = pic.description,
+        )
+    }
+
 }

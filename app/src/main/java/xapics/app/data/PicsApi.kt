@@ -1,9 +1,11 @@
 package xapics.app.data
 
 import okhttp3.MultipartBody
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -12,16 +14,40 @@ import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.Pic
 import xapics.app.Roll
+import xapics.app.auth.AuthRequest
+import xapics.app.auth.TokenResponse
 
 interface PicsApi {
-    @GET("/randompic")
+
+    @POST("signup")
+    suspend fun signUp(
+        @Body request: AuthRequest
+    )
+
+    @POST("signin")
+    suspend fun signIn(
+        @Body request: AuthRequest
+    ): TokenResponse
+
+    @GET("authenticate")
+    suspend fun authenticate(
+        @Header("Authorization") token: String
+    )
+
+//    @GET("profile")
+//    suspend fun getUserInfo(
+//        @Header("Authorization") token: String
+//    ): String
+
+    @GET("randompic")
     suspend fun getRandomPic(): Pic
 
     @GET("picslist")
     suspend fun getPicsList(
         @Query("year") year: String?,
         @Query("roll") roll: String?,
-        @Query("film") film: String?
+        @Query("film") film: String?,
+        @Query("tag") tag: String?
     ): List<Pic>
 
     @GET("films")

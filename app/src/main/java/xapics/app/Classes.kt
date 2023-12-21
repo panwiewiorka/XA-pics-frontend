@@ -10,6 +10,7 @@ data class Pic(
     val year: Int,
     val description: String,
     val imageUrl: String,
+    val tags: String,
     val film: String,
 )
 
