@@ -19,12 +19,10 @@ import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
-import xapics.app.PicType.*
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
 import xapics.app.ui.auth.AuthState
-import xapics.app.ui.auth.AuthUiEvent
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -45,6 +43,7 @@ class MainViewModel @Inject constructor (
     private val resultChannel = Channel<AuthResult<Unit>>()
     val authResults = resultChannel.receiveAsFlow()
 
+    /*
     fun onAuthEvent(event: AuthUiEvent) {
         when(event) {
             is AuthUiEvent.SignInUsernameChanged -> {
@@ -67,6 +66,7 @@ class MainViewModel @Inject constructor (
             }
         }
     }
+
 
     private fun signUp() {
         viewModelScope.launch {
@@ -91,8 +91,24 @@ class MainViewModel @Inject constructor (
             authState = authState.copy(isLoading = false)
         }
     }
+     */
 
-    private fun authenticate() {
+    fun signUpOrIn(user: String, pass: String, signUp: Boolean) {
+        viewModelScope.launch {
+            authState = authState.copy(isLoading = true)
+            val result = if(signUp) repository.signUp(
+                username = user,
+                password = pass
+            ) else repository.signIn(
+                username = user,
+                password = pass
+            )
+            resultChannel.send(result)
+            authState = authState.copy(isLoading = false)
+        }
+    }
+
+    fun authenticate() {
         viewModelScope.launch {
             authState = authState.copy(isLoading = true)
             val result = repository.authenticate()
@@ -101,26 +117,138 @@ class MainViewModel @Inject constructor (
         }
     }
 
-//    private fun authenticate0() {
-//        viewModelScope.launch {
-//            authState = authState.copy(isLoading = true)
-//            val result = repository.getUserInfo(::gg)
-//            resultChannel.send(result)
-//            authState = authState.copy(isLoading = false)
-//        }
-//    }
-//
-//    private fun gg(userId: Int?) {
-//        authState = authState.copy(userId = userId)
-//    }
+    fun logOut() {
+        repository.logOut()
+    }
+
+    fun getUserInfo() {
+        viewModelScope.launch {
+            authState = authState.copy(isLoading = true)
+            val result = repository.getUserInfo(::getUserIdAndCollections)
+            resultChannel.send(result)
+            authState = authState.copy(isLoading = false)
+        }
+    }
+
+    private fun getUserIdAndCollections(userId: Int?) {
+        authState = authState.copy(userId = userId)
+        getAllCollections()
+    }
 
 
     init {
-        authenticate()
+//        authenticate()
+        getUserInfo()
 //        getPicsList(2020)
         getRollsList()
     }
 
+
+    fun editCollection(collection: String, picId: Int) {
+        viewModelScope.launch {
+            val result = repository.editCollection(
+                collection = collection,
+                picId = picId
+            )
+            when (result) {
+                is AuthResult.Authorized -> {
+                    Log.d(TAG, "Pic $picId added to $collection")
+                    getPicCollections(picId) // TODO locally (check success first). Same everywhere ^v
+                }
+                is AuthResult.Unauthorized -> Log.d(TAG, "401 unauthorized")
+                is AuthResult.UnknownError -> Log.d(TAG, "Unknown error")
+            }
+        }
+    }
+
+    fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?) {
+        // if renamedTitle == null -> delete collection
+        viewModelScope.launch {
+            val result = repository.renameOrDeleteCollection(
+                collectionTitle = collectionTitle,
+                renamedTitle = renamedTitle
+            )
+            when (result) {
+                is AuthResult.Authorized -> {
+                    val userCollections = appState.value.userCollections?.toMutableList()
+                    val index = userCollections?.indexOfFirst { it.title == collectionTitle }
+                    if (renamedTitle != null) {
+                        Log.d(TAG, "Collection $collectionTitle renamed to $renamedTitle")
+                        if (index != null && index != -1) {
+                            userCollections[index] = Thumb(renamedTitle, userCollections[index].thumbUrl)
+                        }
+                    } else {
+                        Log.d(TAG, "Collection $collectionTitle deleted")
+                        if (index != null) {
+                            userCollections.removeAt(index)
+                        }
+                    }
+                    _appState.update { it.copy(
+                        userCollections = userCollections
+                    ) }
+                }
+                is AuthResult.Unauthorized -> Log.d(TAG, "401 unauthorized")
+                is AuthResult.UnknownError -> Log.d(TAG, "Unknown error")
+            }
+        }
+    }
+
+    fun getCollection(collection: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption)
+        }
+    }
+
+    fun getAllCollections() {
+        viewModelScope.launch {
+            Log.d(TAG, "1 BEFORE getAllCollections: ${authState.userId}")
+            repository.getAllCollections(::updateAllCollections)
+        }
+    }
+
+    private fun updateAllCollections(userCollections: List<Thumb>?) {
+        _appState.value = appState.value.copy(
+            userCollections = userCollections,
+        )
+        Log.d(TAG, "2 AFTER getAllCollections: ${authState.userId}")
+    }
+
+    fun updateCollectionToSaveTo(collection: String) {
+        val newCollection = appState.value.userCollections?.firstOrNull { it.title == collection } == null
+        _appState.value = appState.value.copy(
+            collectionToSaveTo = collection,
+        )
+        if(newCollection) {
+            _appState.value = appState.value.copy(
+                userCollections = appState.value.userCollections?.plus(Thumb(collection, appState.value.pic!!.imageUrl)),
+            )
+        }
+    }
+
+    private fun updatePicsList(picsList: List<Pic>) {
+        _appState.value = appState.value.copy(
+            picsList = picsList,
+            picIndex = 1,
+        )
+    }
+
+    fun updateTopBarCaption(caption: String) {
+        _appState.value = appState.value.copy(
+            topBarCaption = caption
+        )
+    }
+
+    private fun getPicCollections(picId: Int) {
+        viewModelScope.launch {
+            repository.getPicCollections(picId, ::updatePicCollections)
+        }
+    }
+
+    private fun updatePicCollections(picCollections: List<String>) {
+        _appState.value = appState.value.copy(
+            picCollections = picCollections,
+        )
+    }
 
     fun getFilmsList() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -162,8 +290,6 @@ class MainViewModel @Inject constructor (
                     rollThumbnails = api.getRollThumbnails(),
                     isLoading = false
                 )
-//                Log.d(TAG, "getRollsList: ${state.value.rollsList}")
-
             } catch (e: Exception) {
                 Log.e(TAG, "getRollsList: ", e)
                 _appState.value = appState.value.copy(isLoading = false)
@@ -191,15 +317,18 @@ class MainViewModel @Inject constructor (
                     picIndex = 1,
                     isLoading = false
                 )
+                updateTopBarCaption((year?.toString() ?: "") + (roll ?: "") + if(film != null) "$film film" else "" + if(tag != null) "#$tag" else "")
 
             } catch (e: Exception) {
-                Log.e("MainViewModel", "getPicsList: ", e)
+                Log.e(TAG, "getPicsList: ", e)
                 _appState.value = appState.value.copy(isLoading = false)
             }
         }
     }
 
     fun updatePicState(picIndex: Int) {
+        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)!!.id}")
+        getPicCollections(appState.value.picsList?.get(picIndex)!!.id)
         _appState.update {
             it.copy(
                 pic = appState.value.picsList?.get(picIndex),
@@ -208,26 +337,26 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPic(picType: PicType) {
-        when(picType) {
-            FIRST -> _appState.value = appState.value.copy(
-                pic = appState.value.picsList?.first(),
-                picIndex = 0
-            )
-            PREV -> {
-                _appState.value = appState.value.copy(
-                    pic = appState.value.picsList?.get(appState.value.picIndex!! - 1),
-                    picIndex = appState.value.picIndex!! - 1
-                )
-            }
-            NEXT -> {
-                _appState.value = appState.value.copy(
-                    pic = appState.value.picsList?.get(appState.value.picIndex!! + 1),
-                    picIndex = appState.value.picIndex!! + 1
-                )
-            }
-        }
-    }
+//    fun getPic(picType: PicType) {
+//        when(picType) {
+//            FIRST -> _appState.value = appState.value.copy(
+//                pic = appState.value.picsList?.first(),
+//                picIndex = 0
+//            )
+//            PREV -> {
+//                _appState.value = appState.value.copy(
+//                    pic = appState.value.picsList?.get(appState.value.picIndex!! - 1),
+//                    picIndex = appState.value.picIndex!! - 1
+//                )
+//            }
+//            NEXT -> {
+//                _appState.value = appState.value.copy(
+//                    pic = appState.value.picsList?.get(appState.value.picIndex!! + 1),
+//                    picIndex = appState.value.picIndex!! + 1
+//                )
+//            }
+//        }
+//    }
 
     fun selectFilmToEdit(film: Film?) {
         _appState.update { it.copy( filmToEdit = film) }

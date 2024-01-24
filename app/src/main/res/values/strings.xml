@@ -7,4 +7,5 @@
     <string name="upload_screen">Upload screen</string>
     <string name="auth_screen">Auth screen</string>
     <string name="profile_screen">Profile screen</string>
+    <string name="fav_collection">Favourites</string>
 </resources>

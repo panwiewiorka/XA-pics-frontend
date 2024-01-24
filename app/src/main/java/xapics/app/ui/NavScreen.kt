@@ -1,27 +1,49 @@
 package xapics.app.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.MainViewModel
 import xapics.app.R
@@ -46,12 +68,17 @@ fun NavScreen(
 
     val viewModel: MainViewModel = hiltViewModel()
     val appState by viewModel.appState.collectAsState()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     Scaffold (
         topBar = {
             TopBar(
                 goToHomeScreen = { navController.navigate(NavList.HomeScreen.name) },
-                goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
+                goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
+                goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
+                logOut = viewModel::logOut,
+                topBarCaption = appState.topBarCaption,
+                page = navBackStackEntry?.destination?.route
             )
         }
     ) { innerPadding ->
@@ -102,70 +129,99 @@ fun NavScreen(
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
                     viewModel,
-                    goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
+                    goToProfileScreen = {
+                        navController.popBackStack()
+                        navController.navigate(NavList.ProfileScreen.name)
+                                        },
                 )
             }
             composable(route = NavList.ProfileScreen.name) {
                 ProfileScreen(
                     viewModel,
+                    appState.userCollections,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) },
-                    goToUploadScreen = { navController.navigate(NavList.UploadScreen.name) }
+                    goToUploadScreen = { navController.navigate(NavList.UploadScreen.name) },
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )
             }
-            /**
-            composable(route = NavList.SideDish.name) {
-                SideDishMenuScreen(
-                    onNextButtonClicked = { navController.navigate(NavList.Accompaniment.name) },
-                    onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(viewModel, navController)
-                    },
-                    options = sideDishMenuItems,
-                    onSelectionChanged = { viewModel.updateSideDish(it) }
-                )
-            }
-            composable(route = NavList.Accompaniment.name) {
-                AccompanimentMenuScreen(
-                    onNextButtonClicked = { navController.navigate(NavList.Checkout.name) },
-                    onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(viewModel, navController)
-                    },
-                    options = accompanimentMenuItems,
-                    onSelectionChanged = { viewModel.updateAccompaniment(it) }
-                )
-            }
-            composable(route = NavList.Checkout.name) {
-                ///val context = LocalContext.current
-                CheckoutScreen(
-                    orderUiState = uiState,
-                    onNextButtonClicked = { navController.navigate(NavList.Start.name) },
-                    onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(viewModel, navController)
-                    }
-                )
-            }
-            */
         }
     }
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
     goToHomeScreen: () -> Unit,
-    goToAuthScreen: () -> Unit
+    goToAuthScreen: () -> Unit,
+    goToPicsListScreen: () -> Unit,
+    logOut: () -> Unit,
+    topBarCaption: String,
+    page: String?
 ) {
-    Row {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         IconButton(onClick = goToHomeScreen) {
-            Icon(Icons.Outlined.ArrowBack, "Go to Home screen")
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(Icons.Default.Search, "Search photos")
+            Image(painterResource(R.drawable.xa_pics_mini_closed_export), contentDescription = "Go to home screen", modifier = Modifier.padding(6.dp))
         }
         Spacer(modifier = Modifier.width(12.dp))
-        IconButton(onClick = goToAuthScreen) {
-            Icon(Icons.Outlined.AccountCircle, "Go to Profile screen")
+
+        val focusRequester = remember { FocusRequester() }
+        val text = when (page) {
+            "HomeScreen" -> "XA Pics"
+            "PicsListScreen" -> topBarCaption
+            "PicScreen" -> topBarCaption
+            "AuthScreen" -> topBarCaption
+            "ProfileScreen" -> "Collections"
+            else -> ""
+        }
+        var searchOn by rememberSaveable { mutableStateOf(false) }
+        var queue by rememberSaveable { mutableStateOf("") }
+        if(searchOn) {
+            TextField(
+                value = queue,
+                onValueChange = { queue = it },
+                keyboardActions = KeyboardActions(onAny = {
+                    // TODO search
+                    searchOn = false
+                }),
+                modifier = Modifier
+                    .weight(1f)
+//                    .height(28.dp)
+                    .focusRequester(focusRequester),
+                )
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
+        } else {
+            Text(
+                text = text,
+                fontSize = 20.sp,
+                maxLines = 1,
+                modifier = Modifier
+                    .basicMarquee()
+                    .clickable(enabled = page == "PicScreen") { goToPicsListScreen() }
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        IconButton(onClick = { searchOn = !searchOn }) {
+            Icon(Icons.Default.Search, "Search photos")
+        }
+        Spacer(modifier = Modifier.width(6.dp))
+        if(page == "ProfileScreen") {
+            IconButton(onClick = {
+                logOut()
+                goToAuthScreen()
+            }) {
+                Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
+            }
+        } else {
+            IconButton(onClick = goToAuthScreen) {
+                Icon(Icons.Outlined.AccountCircle, "Go to Profile screen")
+            }
         }
     }
 }

@@ -3,8 +3,12 @@ package xapics.app
 
 data class AppState(
     val picsList: List<Pic>? = null,
-    val rollThumbnails: List<Pair<String, String>>? = null,
-    val filmsList: List<Film>? = null, //listOf(Film("Ektachrome", 100, FilmType.SLIDE), Film("Aerocolor", 125, FilmType.NEGATIVE)),
+    val topBarCaption: String = "",
+    val picCollections: List<String> = emptyList(),
+    val collectionToSaveTo: String = "Favourites",
+    val userCollections: List<Thumb>? = null,
+    val rollThumbnails: List<Thumb>? = null,
+    val filmsList: List<Film>? = null,
     val rollsList: List<Roll>? = null,
     val pic: Pic? = null,
     val picIndex: Int? = null,

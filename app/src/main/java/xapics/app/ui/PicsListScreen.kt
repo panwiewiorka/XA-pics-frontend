@@ -16,9 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +30,7 @@ import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.Pic
+import xapics.app.ui.theme.PicBG
 
 @Composable
 fun PicsListScreen(
@@ -49,46 +48,20 @@ fun PicsListScreen(
                 items(appState.picsList?.size ?: 0) {
                     BoxWithConstraints {
                         val height = ((maxWidth - 64.dp).value / 1.5).dp
-                        PicItem(picIndex = it, pic = appState.picsList!![it], updatePicState = viewModel::updatePicState, goToPicScreen, height)
+                        val pic = appState.picsList!![it]
+                        PicItem(
+                            pic = pic,
+                            height = height,
+                            onClick = {
+//                                viewModel.getPicCollections(pic.id)
+                                viewModel.updatePicState(it)
+                                goToPicScreen()
+                            }
+                        )
                     }
                 }
             }
         }
-
-        /**
-        Row(
-            modifier = Modifier.align(Alignment.TopCenter)
-        ) {
-            Button(
-                onClick = {
-                    viewModel.getPicsList(film = "Ektachrome")
-                },
-            ) {
-                Text("Ektachrome")
-            }
-            Button(
-                onClick = {
-                    viewModel.getPicsList(film = "Aerocolor")
-                },
-            ) {
-                Text("Aerocolor")
-            }
-            Button(
-                onClick = {
-                    viewModel.getPicsList(year = 2021)
-                },
-            ) {
-                Text("2021")
-            }
-            Button(
-                onClick = {
-                    viewModel.getPicsList(year = 2023)
-                },
-            ) {
-                Text("2023")
-            }
-        }
-        */
 
         if(appState.isLoading) {
             CircularProgressIndicator()
@@ -98,21 +71,23 @@ fun PicsListScreen(
 
 @Composable
 fun PicItem(
-    picIndex: Int,
     pic: Pic,
-    updatePicState: (Int) -> Unit,
-    goToPicScreen: () -> Unit,
-    height: Dp
+    height: Dp,
+    onClick: () -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(bottom = 16.dp)
     ) {
-//        Perforation(height)
         Spacer(modifier = Modifier.width(32.dp))
-        Picture(picIndex, pic, updatePicState, goToPicScreen, modifier = Modifier.weight(1f).height(height))
+        Picture(
+            pic,
+            onClick,
+            modifier = Modifier
+                .weight(1f)
+                .height(height)
+        )
         Spacer(modifier = Modifier.width(32.dp))
-//        Perforation(height)
     }
 }
 
@@ -134,26 +109,18 @@ fun Perforation(height: Dp) {
 }
 
 @Composable
-fun Perf(height: Dp) {
-
-}
-
-@Composable
-fun Picture(picIndex: Int, pic: Pic, updatePicState: (Int) -> Unit, goToPicScreen: () -> Unit, modifier: Modifier) {
+fun Picture(pic: Pic, onClick: () -> Unit, modifier: Modifier) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .background(Color(0xFF333333))
+            .background(PicBG)
     ) {
         CircularProgressIndicator() // TODO remove?
 
         AsyncImage(
             modifier = modifier
                 .clip(RoundedCornerShape(2.dp))
-                .clickable {
-                    updatePicState(picIndex)
-                    goToPicScreen()
-                },
+                .clickable { onClick() },
             model = ImageRequest.Builder(LocalContext.current)
                 .data(pic.imageUrl)
                 .crossfade(true)

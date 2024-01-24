@@ -1,12 +1,11 @@
 package xapics.app
 
-import java.util.Date
-
-enum class PicType { FIRST, NEXT, PREV }
+//enum class PicType { FIRST, NEXT, PREV }
 
 enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
 
 data class Pic(
+    val id: Int,
     val year: Int,
     val description: String,
     val imageUrl: String,
@@ -25,7 +24,11 @@ data class Film(
 data class Roll(
     val title: String = "",
     val film: String = "",
-//    val film: Film? = null,
 //    val date: Date,
     val nonXa: Boolean = false,
+)
+
+data class Thumb(
+    val title: String,
+    val thumbUrl: String
 )

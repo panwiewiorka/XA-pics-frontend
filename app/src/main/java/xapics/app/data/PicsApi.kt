@@ -10,6 +10,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
+import xapics.app.Thumb
 import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.Pic
@@ -34,10 +35,52 @@ interface PicsApi {
         @Header("Authorization") token: String
     )
 
-//    @GET("profile")
-//    suspend fun getUserInfo(
-//        @Header("Authorization") token: String
-//    ): String
+    @GET("profile")
+    suspend fun getUserInfo(
+        @Header("Authorization") token: String
+    ): String
+
+    @GET("pic-collections")
+    suspend fun getPicCollections(
+        @Header("Authorization") token: String,
+        @Query("picid") picId: Int
+    ): List<String>
+
+    @GET("all-collections")
+    suspend fun getAllCollections(
+        @Header("Authorization") token: String,
+    ): List<Thumb>
+
+//    @FormUrlEncoded
+//    @POST("collections")
+//    suspend fun createCollection(
+//        @Header("Authorization") token: String,
+//        @Field("title") title: String,
+//    )
+
+    @FormUrlEncoded
+    @POST("collection")
+    suspend fun editCollection(
+//        @Field("user") user: String,
+        @Header("Authorization") token: String,
+        @Field("collection") collection: String,
+        @Field("picId") picId: Int,
+    )
+
+    @GET("collection")
+    suspend fun getCollection(
+        @Header("Authorization") token: String,
+        @Query("collection") collection: String
+    ): List<Pic>
+
+    @FormUrlEncoded
+    @POST("rename-delete-collection")
+    suspend fun renameOrDeleteCollection(
+//        @Field("user") user: String,
+        @Header("Authorization") token: String,
+        @Field("collectionTitle") collectionTitle: String,
+        @Field("renamedTitle") renamedTitle: String?,
+    )
 
     @GET("randompic")
     suspend fun getRandomPic(): Pic
@@ -68,7 +111,7 @@ interface PicsApi {
     suspend fun getRollsList(): List<Roll>
 
     @GET("rollthumbs")
-    suspend fun getRollThumbnails(): List<Pair<String, String>>
+    suspend fun getRollThumbnails(): List<Thumb>
 
     @FormUrlEncoded
     @POST("rolls")

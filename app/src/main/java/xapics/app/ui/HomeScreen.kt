@@ -1,6 +1,9 @@
 package xapics.app.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,11 +26,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
+import xapics.app.R
+import xapics.app.ui.theme.PicBG
 
 @Composable
 fun HomeScreen(
@@ -36,74 +45,39 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 16.dp)
+            .padding(top = 4.dp)
     ) {
         LazyRow {
             items(appState.rollThumbnails?.size ?: 0) {
+                val imageUrl = appState.rollThumbnails!![it].thumbUrl
+                val rollTitle = appState.rollThumbnails[it].title
                 RollCard(
-                    appState.isLoading,
-                    appState.rollThumbnails!![it].first,
-                    appState.rollThumbnails[it].second,
-                    viewModel::getPicsList,
-                    goToPicsListScreen
-                )
+                    width = 150.dp, // TODO
+                    isLoading = appState.isLoading,
+                    imageUrl = imageUrl,
+                    rollTitle = rollTitle,
+                ) {
+                    viewModel.getPicsList(null, rollTitle, null)
+                    goToPicsListScreen()
+                }
             }
         }
-
-        /**
-        Row {
-            Button(
-                onClick = {
-                    viewModel.getPicsList(film = "Ektachrome")
-                    goToPicsListScreen()
-                },
-            ) {
-                Text("Ektachrome")
-            }
-            Button(
-                onClick = {
-                    viewModel.getPicsList(film = "Aerocolor")
-                    goToPicsListScreen()
-                },
-            ) {
-                Text("Aerocolor")
-            }
-        }
-        Row {
-            Button(
-                onClick = {
-                    viewModel.getPicsList(year = 2021)
-                    goToPicsListScreen()
-                },
-            ) {
-                Text("2021")
-            }
-            Button(
-                onClick = {
-                    viewModel.getPicsList(year = 2023)
-                    goToPicsListScreen()
-                },
-            ) {
-                Text("2023")
-            }
-        }
-         */
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, getPicsList: (Int?, String?, String?) -> Unit, goToPicsListScreen: () -> Unit) {
+fun RollCard(width: Dp, isLoading: Boolean, imageUrl: String, rollTitle: String, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .padding(horizontal = 12.dp)
+            .padding(12.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF333333))
+            .background(PicBG)
             .padding(1.dp)
             .clip(RoundedCornerShape(15.dp))
             .clickable {
-                getPicsList(null, rollTitle, null)
-                goToPicsListScreen()
+                onClick()
             }
     ) {
         CircularProgressIndicator() // TODO remove?
@@ -118,10 +92,12 @@ fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, getPicsLis
                     .build(),
                 contentDescription = "Thumbnail of the $rollTitle roll",
                 modifier = Modifier
-                    .height(100.dp)
-                    .width((100 * 1.5).dp)
+                    .width(width)
+                    .height((width.value / 1.5).dp)
+//                    .height(100.dp)
+//                    .width((100 * 1.5).dp)
             )
-            Text(text = rollTitle)
+            Text(text = "  $rollTitle  ", maxLines = 1, modifier = Modifier.basicMarquee())
         }
 
         if(isLoading) {
