@@ -3,7 +3,8 @@ package xapics.app
 
 data class AppState(
     val picsList: List<Pic>? = null,
-    val topBarCaption: String = "",
+    val topBarCaption: String = "XA pics",
+    val userId: Int? = null,
     val picCollections: List<String> = emptyList(),
     val collectionToSaveTo: String = "Favourites",
     val userCollections: List<Thumb>? = null,

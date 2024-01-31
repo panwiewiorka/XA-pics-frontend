@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,25 +43,44 @@ import xapics.app.ui.theme.PicBG
 fun HomeScreen(
     viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 4.dp)
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        LazyRow {
-            items(appState.rollThumbnails?.size ?: 0) {
-                val imageUrl = appState.rollThumbnails!![it].thumbUrl
-                val rollTitle = appState.rollThumbnails[it].title
-                RollCard(
-                    width = 150.dp, // TODO
-                    isLoading = appState.isLoading,
-                    imageUrl = imageUrl,
-                    rollTitle = rollTitle,
-                ) {
-                    viewModel.getPicsList(null, rollTitle, null)
-                    goToPicsListScreen()
+        if (appState.isLoading) {
+            CircularProgressIndicator()
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 4.dp)
+        ) {
+            val rolls = appState.rollThumbnails?.size ?: 0
+
+            if (rolls == 0 && !appState.isLoading) {
+                Text(text = "No connection to server")
+                IconButton(onClick = { viewModel.getRollsList() }) {
+                    Icon(painterResource(R.drawable.baseline_refresh_24), contentDescription = "refresh")
                 }
+            } else {
+                LazyRow {
+                    items(rolls) {
+                        val imageUrl = appState.rollThumbnails!![it].thumbUrl
+                        val rollTitle = appState.rollThumbnails[it].title
+                        RollCard(
+                            width = 150.dp, // FIXME
+                            isLoading = appState.isLoading,
+                            imageUrl = imageUrl,
+                            rollTitle = rollTitle,
+                        ) {
+                            viewModel.getPicsList(null, rollTitle, null)
+                            goToPicsListScreen()
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
@@ -101,7 +122,7 @@ fun RollCard(width: Dp, isLoading: Boolean, imageUrl: String, rollTitle: String,
         }
 
         if(isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator() // FIXME
         }
     }
 }

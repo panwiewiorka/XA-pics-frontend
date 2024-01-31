@@ -36,7 +36,7 @@ interface PicsApi {
     )
 
     @GET("profile")
-    suspend fun getUserInfo(
+    suspend fun getUserId(
         @Header("Authorization") token: String
     ): String
 
