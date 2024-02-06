@@ -1,31 +1,34 @@
 package xapics.app.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,11 +41,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,7 +60,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.TAG
 import xapics.app.ui.auth.AuthScreen
 import xapics.app.ui.auth.ProfileScreen
 
@@ -74,23 +83,35 @@ fun NavScreen(
 
     val viewModel: MainViewModel = hiltViewModel()
     val appState by viewModel.appState.collectAsState()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = NavList.valueOf(
+        backStackEntry?.destination?.route ?: NavList.HomeScreen.name
+    )
 
     Scaffold (
+        modifier = Modifier.pointerInput(appState.showSearch) {
+            detectTapGestures(onTap = {
+                if (appState.showSearch) viewModel.changeShowSearchState()
+            })
+        },
         topBar = {
             TopBar(
-                goToHomeScreen = { navController.navigate(NavList.HomeScreen.name) },
+                goBack = { navController.popBackStack() },
                 goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                 goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                 goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                 goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 updateTopBarCaption = viewModel::updateTopBarCaption,
+                search = viewModel::search,
+                showSearch = appState.showSearch,
+                changeShowSearchState = viewModel::changeShowSearchState,
                 logOut = viewModel::logOut,
                 topBarCaption = appState.topBarCaption,
-                page = navBackStackEntry?.destination?.route,
-                appState.userId,
+                page = backStackEntry?.destination?.route,
+                pageName = currentScreen.title,
+                userId = appState.userId,
             )
-        }
+        },
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -163,69 +184,108 @@ fun NavScreen(
                     viewModel,
                     appState.userId,
                     appState.userCollections,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                    goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) },
-                    goToUploadScreen = { navController.navigate(NavList.UploadScreen.name) },
-                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
-                )
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
+                ) { navController.navigate(NavList.PicsListScreen.name) }
             }
         }
     }
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    goToHomeScreen: () -> Unit,
+    goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
     updateTopBarCaption: (String) -> Unit,
+    search: (String) -> Unit,
+    showSearch: Boolean,
+    changeShowSearchState: () -> Unit,
     logOut: () -> Unit,
     topBarCaption: String,
     page: String?,
+    @StringRes pageName: Int,
     userId: Int?,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = {
-            updateTopBarCaption("XA pics")
-            goToHomeScreen()
-        }) {
-            Image(painterResource(R.drawable.xa_pics_mini_closed_export), contentDescription = "Go to home screen", modifier = Modifier.padding(6.dp))
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-
         val focusRequester = remember { FocusRequester() }
         val text = when (page) {
-//            "HomeScreen" -> "XA Pics"
-//            "PicsListScreen" -> topBarCaption
-//            "PicScreen" -> topBarCaption
-//            "AuthScreen" -> topBarCaption
-            "ProfileScreen" -> "Collections"
-            else -> topBarCaption
+            "PicsListScreen" -> topBarCaption
+            "PicScreen" -> topBarCaption
+            else -> stringResource(id = pageName)
         }
-        var searchOn by rememberSaveable { mutableStateOf(false) }
-        var queue by rememberSaveable { mutableStateOf("") }
-        if(searchOn) {
-            TextField(
-                value = queue,
-                onValueChange = { queue = it },
-                keyboardActions = KeyboardActions(onAny = {
-                    // TODO search
-                    searchOn = false
-                }),
-                modifier = Modifier
-                    .weight(1f)
+        var showClearSearchButton by rememberSaveable { mutableStateOf(false) }
+        val theText = ""
+        var query by remember { mutableStateOf( TextFieldValue (
+            text = theText,
+            selection = TextRange(theText.length)
+        )) }
+
+        if(page == "HomeScreen") {
+            IconButton(enabled = false, onClick = {  }) {
+                Image(painterResource(R.drawable.xa_pics_mini_closed_export), contentDescription = null, modifier = Modifier.padding(6.dp))
+            }
+        } else {
+            IconButton(onClick = { goBack() }) {
+                Icon(Icons.Outlined.ArrowBack, "go Back")
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        if(showSearch) {
+            Box(modifier = Modifier.weight(1f)) {
+                BasicTextField(
+                    value = query,
+                    onValueChange = {
+                        showClearSearchButton = false
+                        query = it
+                                    },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 16.sp, color = Color.LightGray),
+                    cursorBrush = SolidColor(Color.LightGray),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        if (query.text != "") {
+                            search(query.text)
+                            goToPicsListScreen()
+                        }
+                        changeShowSearchState()
+//                        showSearch = false
+                    }),
+                    modifier = Modifier
+                        .fillMaxWidth()
+//                        .weight(1f)
 //                    .height(28.dp)
-                    .focusRequester(focusRequester),
+//                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                        .border(1.dp, Color.Gray, RoundedCornerShape(20.dp))
+                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                        .focusRequester(focusRequester),
                 )
+                if (showClearSearchButton && query.text.isNotEmpty()) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "clear search",
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .align(Alignment.CenterEnd)
+                            .clickable {
+                                query = TextFieldValue("")
+                                showClearSearchButton = false
+                            }
+                    )
+                }
+            }
+
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
+                showClearSearchButton = true
             }
         } else {
             Text(
@@ -234,14 +294,22 @@ fun TopBar(
                 maxLines = 1,
                 modifier = Modifier
                     .basicMarquee()
+                    .weight(1f)
                     .clickable(enabled = page == "PicScreen") { goToPicsListScreen() }
             )
-            Spacer(modifier = Modifier.weight(1f))
         }
-        IconButton(onClick = { searchOn = !searchOn }) {
+        IconButton(onClick = {
+            if (showSearch && query.text != "") {
+                search(query.text)
+                goToPicsListScreen()
+            }
+            changeShowSearchState()
+        }) {
             Icon(Icons.Default.Search, "Search photos")
         }
+
         Spacer(modifier = Modifier.width(6.dp))
+
         if(page == "AdminScreen" || page == "ProfileScreen") {
             IconButton(onClick = {
                 logOut() // TODO when logOut() finished -> goToAuthScreen()
@@ -263,5 +331,8 @@ fun TopBar(
                 Icon(Icons.Outlined.AccountCircle, "Go to Profile screen")
             }
         }
+    }
+    LaunchedEffect(page) {
+        if(showSearch) changeShowSearchState()
     }
 }

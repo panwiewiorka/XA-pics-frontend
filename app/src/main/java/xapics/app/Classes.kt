@@ -4,6 +4,8 @@ package xapics.app
 
 enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
 
+enum class PicsListType { ROLL, FILM, YEAR, TAGS, SEARCH }
+
 data class Pic(
     val id: Int,
     val year: Int,

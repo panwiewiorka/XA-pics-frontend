@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -69,13 +70,14 @@ fun HomeScreen(
                     items(rolls) {
                         val imageUrl = appState.rollThumbnails!![it].thumbUrl
                         val rollTitle = appState.rollThumbnails[it].title
+                        val currentPage = stringResource(R.string.home_screen)
                         RollCard(
                             width = 150.dp, // FIXME
                             isLoading = appState.isLoading,
                             imageUrl = imageUrl,
                             rollTitle = rollTitle,
                         ) {
-                            viewModel.getPicsList(null, rollTitle, null)
+                            viewModel.getPicsList(currentPage, null, rollTitle, null)
                             goToPicsListScreen()
                         }
                     }

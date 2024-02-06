@@ -1,7 +1,10 @@
 package xapics.app.ui
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -45,6 +48,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -105,7 +109,7 @@ fun PicScreen(
                 val picId = appState.pic.id
 
                 Box {
-                    CollectionsMenu(appState.userCollections, appState.picCollections, picId, viewModel::editCollection, viewModel::updateCollectionToSaveTo)
+                    CollectionsMenu(appState.userCollections, appState.picCollections, appState.collectionToSaveTo, picId, viewModel::editCollection, viewModel::updateCollectionToSaveTo)
                 }
 
                 IconButton(
@@ -115,7 +119,7 @@ fun PicScreen(
                 ) {
                     val collection = appState.collectionToSaveTo
                     val picInCollection = appState.picCollections.contains(collection)
-                    if(collection == "Favourites") {
+                    if(collection == stringResource(R.string.fav_collection)) {
                         if(picInCollection) {
                             Icon (Icons.Filled.Favorite, "Remove from $collection")
                         } else {
@@ -149,18 +153,18 @@ fun PicScreen(
 
         FlowRow(modifier = Modifier) {
             PicTag(appState.pic?.film ?: "", FilmTag) {
-                viewModel.getPicsList(film = appState.pic?.film)
+                viewModel.getPicsList(appState.topBarCaption, film = appState.pic?.film)
                 goToPicsListScreen()
             }
 
             PicTag(appState.pic?.year?.toString() ?: "", YearTag) {
-                viewModel.getPicsList(year = appState.pic?.year)
+                viewModel.getPicsList(appState.topBarCaption, year = appState.pic?.year)
                 goToPicsListScreen()
             }
 
             appState.picCollections.forEach {
                 PicTag(text = it, color = CollectionTag) {
-                    viewModel.getCollection(it)
+                    viewModel.getCollection(appState.topBarCaption, it)
                     goToPicsListScreen()
                 }
             }
@@ -169,7 +173,7 @@ fun PicScreen(
             tags?.forEach {
                 val tag = it.trim()
                 PicTag(tag, DefaultTag) {
-                    viewModel.getPicsList(tag = tag)
+                    viewModel.getPicsList(appState.topBarCaption, tag = tag)
                     goToPicsListScreen()
                 }
             }
@@ -199,6 +203,7 @@ fun PicTag(text: String, color: Color, onClick: () -> Unit) {
 fun CollectionsMenu(
     userCollections: List<Thumb>?,
     picCollections: List<String>,
+    collectionToSaveTo: String,
     picId: Int,
     editCollection: (String, Int) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
@@ -207,6 +212,7 @@ fun CollectionsMenu(
     var newCollectionDialogOpened by remember { mutableStateOf(false) }
     var newCollectionTitle by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
 
     fun addToNewCollection(title: String) {
         editCollection(title, picId)
@@ -217,6 +223,7 @@ fun CollectionsMenu(
     Column(
         horizontalAlignment = Alignment.End,
     ) {
+        val favs = stringResource(R.string.fav_collection)
         IconButton(onClick = { collectionListOpened = true },) {
             Icon(Icons.Outlined.Menu, "Add to another collection")
         }
@@ -228,27 +235,29 @@ fun CollectionsMenu(
             DropdownMenuItem(
                 text = {
                     Box {
-                        Text("Favourites")
+                        Text(favs)
                     }
                 },
                 trailingIcon = {
                     IconButton(
-                        onClick = { editCollection("Favourites", picId) },
+                        onClick = { editCollection(favs, picId) },
 //                        modifier = Modifier.padding(end = 0.dp)
                     ) {
-                        if (picCollections.contains("Favourites")) {
-                            Icon(Icons.Filled.Favorite, "Remove from Favourites")
+                        if (picCollections.contains(favs)) {
+                            Icon(Icons.Filled.Favorite, "Remove from $favs")
                         } else {
-                            Icon(Icons.Outlined.FavoriteBorder, "Add to Favourites")
+                            Icon(Icons.Outlined.FavoriteBorder, "Add to $favs")
                         }
                     }
                 },
-                onClick = { addToNewCollection("Favourites") },
-                modifier = Modifier.align(Alignment.End)
+                onClick = { addToNewCollection(favs) },
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .then(if (collectionToSaveTo == favs) Modifier.background(Color.DarkGray) else Modifier)
             )
             userCollections?.forEach {
                 val collectionTitle = it.title
-                if (collectionTitle != "Favourites") {
+                if (collectionTitle != favs) {
                     DropdownMenuItem(
                         text = { Text(collectionTitle) },
                         trailingIcon = {
@@ -262,7 +271,9 @@ fun CollectionsMenu(
                             }
                         },
                         onClick = { addToNewCollection(collectionTitle) },
-                        modifier = Modifier.align(Alignment.End)
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .then(if (collectionToSaveTo == collectionTitle) Modifier.background(Color.DarkGray) else Modifier)
                     )
                 }
             }
@@ -284,31 +295,54 @@ fun CollectionsMenu(
     }
 
     if (newCollectionDialogOpened) {
+        newCollectionTitle = ""
         AlertDialog(
             onDismissRequest = {
                 newCollectionDialogOpened = false
                 collectionListOpened = false
             }
         ) {
+            fun onNaming() = when {
+                newCollectionTitle == "" -> {
+                    Toast.makeText(
+                        context,
+                        "Empty name is not available",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                newCollectionTitle == " " -> {
+                    Toast.makeText(
+                        context,
+                        "Empty name is not available",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                userCollections?.firstOrNull { it.title == newCollectionTitle }?.title == newCollectionTitle -> {
+                    Toast.makeText(
+                        context,
+                        "Collection already exists",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else -> {
+                    addToNewCollection(newCollectionTitle)
+                    newCollectionDialogOpened = false
+                    collectionListOpened = false
+                }
+            }
+
             OutlinedTextField(
                 value = newCollectionTitle,
                 onValueChange = {newCollectionTitle = it},
                 singleLine = true,
                 label = { Text(text = "Collection title") },
                 trailingIcon = {
-                    IconButton(onClick = {
-                        addToNewCollection(newCollectionTitle)
-                        newCollectionDialogOpened = false
-                        collectionListOpened = false
-                    }) {
+                    IconButton(onClick = { onNaming() }) {
                         Icon(painterResource(R.drawable.star_border), "Add to $newCollectionTitle collection")
                     }
                                },
 //                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-                keyboardActions = KeyboardActions(onAny = {
-                    addToNewCollection(newCollectionTitle)
-                    newCollectionDialogOpened = false
-                }),
+                keyboardActions = KeyboardActions(onAny = { onNaming() }),
                 modifier = Modifier
                     .background(Color(0x55000000))
                     .focusRequester(focusRequester),

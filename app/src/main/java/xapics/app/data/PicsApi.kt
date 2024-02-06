@@ -85,12 +85,18 @@ interface PicsApi {
     @GET("randompic")
     suspend fun getRandomPic(): Pic
 
+    @GET("search")
+    suspend fun search(
+        @Query("query") query: String
+    ): List<Pic>
+
     @GET("picslist")
     suspend fun getPicsList(
         @Query("year") year: String?,
         @Query("roll") roll: String?,
         @Query("film") film: String?,
-        @Query("tag") tag: String?
+        @Query("tag") tag: String?,
+        @Query("description") description: String?,
     ): List<Pic>
 
     @GET("films")

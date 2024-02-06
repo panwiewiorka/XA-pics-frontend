@@ -12,6 +12,5 @@ interface AuthRepository {
     suspend fun editCollection(collection: String, picId: Int): AuthResult<Unit>
     suspend fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?): AuthResult<Unit>
     suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit, updateTopBarCaption: (String) -> Unit): AuthResult<Unit>
-//    suspend fun getAllCollections(updateAllCollections: (List<Thumb>) -> Unit): AuthResult<Unit>
     suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<Unit>
 }

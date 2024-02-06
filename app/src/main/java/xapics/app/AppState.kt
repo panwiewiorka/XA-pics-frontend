@@ -3,6 +3,8 @@ package xapics.app
 
 data class AppState(
     val picsList: List<Pic>? = null,
+    val picsListType: PicsListType? = null, // TODO
+    val captionsList: List<String> = emptyList(),
     val topBarCaption: String = "XA pics",
     val userId: Int? = null,
     val picCollections: List<String> = emptyList(),
@@ -15,5 +17,6 @@ data class AppState(
     val picIndex: Int? = null,
     val filmToEdit: Film? = null,
     val rollToEdit: Roll? = null,
+    val showSearch: Boolean = false,
     val isLoading: Boolean = false
 )

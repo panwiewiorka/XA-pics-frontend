@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">XA pics</string>
-    <string name="home_screen">Home screen</string>
-    <string name="pics_list_screen">Pics list screen</string>
-    <string name="pic_screen">Pic Screen</string>
-    <string name="edit_films_screen">Edit films screen</string>
-    <string name="upload_screen">Upload screen</string>
-    <string name="auth_screen">Auth screen</string>
-    <string name="admin_screen">Admin screen</string>
-    <string name="profile_screen">Profile screen</string>
+    <string name="home_screen">XA pics</string>
+    <string name="pics_list_screen"> </string>
+    <string name="pic_screen"> </string>
+    <string name="edit_films_screen">Edit films</string>
+    <string name="upload_screen">Upload photo</string>
+    <string name="auth_screen"> </string>
+    <string name="admin_screen">Admin console</string>
+    <string name="profile_screen">Collections</string>
     <string name="fav_collection">Favourites</string>
 </resources>

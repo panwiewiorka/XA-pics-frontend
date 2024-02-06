@@ -1,14 +1,9 @@
 package xapics.app
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +17,6 @@ import retrofit2.HttpException
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
-import xapics.app.ui.auth.AuthState
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -38,67 +32,16 @@ class MainViewModel @Inject constructor (
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
-//    var authState by mutableStateOf(AuthState())
-
     private val resultChannel = Channel<AuthResult<Unit>>()
     val authResults = resultChannel.receiveAsFlow()
 
     init {
         authenticate()
-//        getUserInfo() // TODO needed?
+        getUserInfo() // TODO needed?
 //        getPicsList(2020)
         getRollsList()
     }
 
-    /*
-    fun onAuthEvent(event: AuthUiEvent) {
-        when(event) {
-            is AuthUiEvent.SignInUsernameChanged -> {
-                authState = authState.copy(signInUsername = event.value)
-            }
-            is AuthUiEvent.SignInPasswordChanged -> {
-                authState = authState.copy(signInPassword = event.value)
-            }
-            is AuthUiEvent.SignIn -> {
-                signIn()
-            }
-            is AuthUiEvent.SignUpUsernameChanged -> {
-                authState = authState.copy(signUpUsername = event.value)
-            }
-            is AuthUiEvent.SignUpPasswordChanged -> {
-                authState = authState.copy(signUpPassword = event.value)
-            }
-            is AuthUiEvent.SignUp -> {
-                signUp()
-            }
-        }
-    }
-
-
-    private fun signUp() {
-        viewModelScope.launch {
-            authState = authState.copy(isLoading = true)
-            val result = repository.signUp(
-                username = authState.signUpUsername,
-                password = authState.signUpPassword
-            )
-            resultChannel.send(result)
-            authState = authState.copy(isLoading = false)
-        }
-    }
-
-    private fun signIn() {
-        viewModelScope.launch {
-            authState = authState.copy(isLoading = true)
-            val result = repository.signIn(
-                username = authState.signInUsername,
-                password = authState.signInPassword
-            )
-            resultChannel.send(result)
-            authState = authState.copy(isLoading = false)
-        }
-    }
-     */
 
     private fun updateLoadingState(loading: Boolean) {
         _appState.update { it.copy(isLoading = loading) }
@@ -115,10 +58,10 @@ class MainViewModel @Inject constructor (
                     username = user,
                     password = pass
                 )
-                _appState.update { it.copy(
-                    userId = 0,
-                    userCollections = null,
-                ) }
+//                _appState.update { it.copy(
+//                    userId = 0,
+//                    userCollections = null,
+//                ) }
                 resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
@@ -149,14 +92,10 @@ class MainViewModel @Inject constructor (
     fun getUserInfo() {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "getUserInfo: start")
                 updateLoadingState(true)
                 val result = repository.getUserInfo(::updateUserId, ::updateUserCollections)
-                Log.d(TAG, "getUserInfo: after API")
                 resultChannel.send(result)
-                Log.d(TAG, "getUserInfo: after result")
                 updateLoadingState(false)
-                Log.d(TAG, "getUserInfo: success")
             } catch (e: Exception) {
                 Log.e(TAG, "getUserInfo(): ", e)
                 updateLoadingState(false)
@@ -227,23 +166,14 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getCollection(collection: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption)
+    fun getCollection(currentPage: String, collection: String) {
+        updateTopBarCaption(collection)
+        viewModelScope.launch {
+            repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption) // TODO remove ::updateTopBarCaption
+//            addToCaptionList(collection)
+//            updateTopBarCaption(collection)
         }
     }
-
-//    fun getAllCollections() {
-//        viewModelScope.launch {
-//            repository.getAllCollections(::updateAllCollections)
-//        }
-//    }
-
-//    private fun updateAllCollections(userCollections: List<Thumb>?) {
-//        _appState.value = appState.value.copy(
-//            userCollections = userCollections,
-//        )
-//    }
 
     fun updateCollectionToSaveTo(collection: String) {
         val newCollection = appState.value.userCollections?.firstOrNull { it.title == collection } == null
@@ -280,10 +210,11 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             picCollections = picCollections,
         )}
+        Log.d(TAG, "updatePicCollections: picCollections = ${appState.value.picCollections}")
     }
 
     fun getFilmsList() {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
@@ -300,7 +231,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun postFilm(isNewFilm: Boolean, film: Film, ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             api.postFilm(
                 isNewFilm,
                 film.filmName,
@@ -313,7 +244,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun getRollsList() {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
@@ -330,7 +261,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun postRoll(isNewRoll: Boolean, roll: Roll, ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             api.postRoll(
                 isNewRoll,
                 roll.title,
@@ -340,21 +271,66 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPicsList(year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null) {
-        CoroutineScope(Dispatchers.IO).launch {
+    fun getPicsList(currentPage: String, year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null, description: String? = null,) {
+        val caption =
+            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film" else "" + if(tag != null) "#$tag" else "" +
+                    if(description != null) "\"$description\"" else ""
+        updateTopBarCaption(caption)
+        viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
-                    picsList = api.getPicsList(year?.toString(), roll, film, tag),
+                    picsList = api.getPicsList(year?.toString(), roll, film, tag, description),
                     picIndex = 1,
                     isLoading = false
                 )}
-                updateTopBarCaption((year?.toString() ?: "") + (roll ?: "") + if(film != null) "$film film" else "" + if(tag != null) "#$tag" else "")
-
             } catch (e: Exception) {
                 Log.e(TAG, "getPicsList: ", e)
                 updateLoadingState(false)
             }
+        }
+    }
+
+    fun search(query: String) {
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+                api.search(query)
+                _appState.update { it.copy(
+                    picsList = api.search(query),
+                    picIndex = 1,
+                    isLoading = false
+                )}
+                updateTopBarCaption("\"$query\"")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "search: ", e)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun changeShowSearchState(showSearch: Boolean? = null) {
+        _appState.update { it.copy(showSearch = showSearch ?: !appState.value.showSearch) }
+    }
+
+    private fun addToCaptionList(caption: String) {
+        _appState.update { it.copy(
+            captionsList = appState.value.captionsList + caption
+        )}
+    }
+
+    fun removeLastCaptionFromList() {
+        _appState.update { it.copy(
+            captionsList = appState.value.captionsList.drop(1)
+        )}
+    }
+
+    fun replaceTopBarCaptionWithPrevious() {
+        val list = appState.value.captionsList
+        if (list.isNotEmpty()) {
+            updateTopBarCaption(list.last())
+            removeLastCaptionFromList()
         }
     }
 
@@ -368,27 +344,6 @@ class MainViewModel @Inject constructor (
             )
         }
     }
-
-//    fun getPic(picType: PicType) {
-//        when(picType) {
-//            FIRST -> _appState.value = appState.value.copy(
-//                pic = appState.value.picsList?.first(),
-//                picIndex = 0
-//            )
-//            PREV -> {
-//                _appState.value = appState.value.copy(
-//                    pic = appState.value.picsList?.get(appState.value.picIndex!! - 1),
-//                    picIndex = appState.value.picIndex!! - 1
-//                )
-//            }
-//            NEXT -> {
-//                _appState.value = appState.value.copy(
-//                    pic = appState.value.picsList?.get(appState.value.picIndex!! + 1),
-//                    picIndex = appState.value.picIndex!! + 1
-//                )
-//            }
-//        }
-//    }
 
     fun selectFilmToEdit(film: Film?) {
         _appState.update { it.copy( filmToEdit = film) }
@@ -469,14 +424,14 @@ class MainViewModel @Inject constructor (
     }
 
     fun uploadImage(rollTitle: String, file: File) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
         //viewModelScope.launch {
             tryUploadImage(rollTitle, file)
         }
     }
 
     fun getRandomPic() {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(

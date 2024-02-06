@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -72,17 +73,11 @@ fun AuthScreen(
             Log.d(TAG, "result is $result")
             when(result) {
                 is AuthResult.Authorized -> {
-//                    Toast.makeText(
-//                        context,
-//                        "You're authorized",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                    viewModel.getAllCollections()
-//                    Log.d(TAG, "3 AuthScreen: ${viewModel.authState.userId}")
                     val resultId = result.data.toString().toIntOrNull()
-                    if(resultId != null) viewModel.updateUserId(resultId)
-                    Log.d(TAG, "updateUserId(): result = $resultId, userId = ${viewModel.appState.value.userId}")
-                    when (viewModel.appState.value.userId) {
+                    val stateId = viewModel.appState.value.userId
+                    if(resultId != null && resultId != stateId) viewModel.updateUserId(resultId)
+                    Log.d(TAG, "updateUserId(): result = $resultId, userId = $stateId")
+                    when (stateId) {
                         null -> {
                             Toast.makeText(
                                 context,
@@ -91,11 +86,10 @@ fun AuthScreen(
                             ).show()
                         }
                         1 -> {
-                            viewModel.updateTopBarCaption("Admin console")
+//                            viewModel.updateTopBarCaption("Admin console")
                             goToAdminScreen()
                         }
                         else -> {
-//                            viewModel.getUserInfo()
                             goToProfileScreen()
                         }
                     }
@@ -131,7 +125,10 @@ fun AuthScreen(
             .fillMaxSize()
             .clickable(
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }) { focusManager.clearFocus() },
+                interactionSource = remember { MutableInteractionSource() }) {
+                focusManager.clearFocus()
+                viewModel.changeShowSearchState(false)
+                                                                             },
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 32.dp),
@@ -143,7 +140,7 @@ fun AuthScreen(
             var passField by rememberSaveable { mutableStateOf("") }
             var passVisible by rememberSaveable { mutableStateOf(false) }
 
-            TextField(
+            OutlinedTextField(
                 value = userField,
                 onValueChange = {
                     userField = it
@@ -156,7 +153,7 @@ fun AuthScreen(
                     onNext = { focusRequester.requestFocus() }
                 )
             )
-            TextField(
+            OutlinedTextField(
                 value = passField,
                 onValueChange = {
                     passField = it

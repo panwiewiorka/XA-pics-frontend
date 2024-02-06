@@ -81,13 +81,11 @@ class AuthRepositoryImpl(
 
     override suspend fun getUserInfo(updateUserId: (Int?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
         return try {
-            Log.d(TAG, "getUserInfoAPI: start")
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 //            val userId = api.getUserId("Bearer $token")
             val userCollections = api.getAllCollections("Bearer $token")
 //            updateUserId(userId.toIntOrNull())
             updateUserCollections(userCollections)
-            Log.d(TAG, "getUserInfoAPI: success")
             AuthResult.Authorized()
         } catch (e: HttpException) {
             Log.e(TAG, "getUserInfo: ", e)
@@ -143,27 +141,11 @@ class AuthRepositoryImpl(
         }
     }
 
-//    override suspend fun getAllCollections(updateAllCollections: (List<Thumb>) -> Unit): AuthResult<Unit> {
-//        return try {
-//            val token = prefs.getString("jwt", null)
-//            val collections = api.getAllCollections ("Bearer $token")
-//            Log.d(TAG, "getAllCollections: $collections")
-//            Log.d(TAG, "prefsStringValue: $token")
-//            updateAllCollections(collections)
-//            AuthResult.Authorized()
-//        } catch (e: HttpException) {
-//            if (e.code() == 401) {
-//                AuthResult.Unauthorized()
-//            } else {
-//                AuthResult.UnknownError()
-//            }
-//        }
-//    }
-
     override suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null)
             val collectionsList = api.getPicCollections ("Bearer $token", picId)
+            Log.d(TAG, "getPicCollections: collectionsList = $collectionsList")
             updatePicCollections(collectionsList)
             AuthResult.Authorized()
         } catch (e: HttpException) {
