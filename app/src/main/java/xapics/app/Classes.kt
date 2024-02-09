@@ -34,3 +34,7 @@ data class Thumb(
     val title: String,
     val thumbUrl: String
 )
+
+data class TheString(
+    val text: String
+)

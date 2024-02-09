@@ -6,7 +6,7 @@ data class AppState(
     val picsListType: PicsListType? = null, // TODO
     val captionsList: List<String> = emptyList(),
     val topBarCaption: String = "XA pics",
-    val userId: Int? = null,
+    val userName: String? = null,
     val picCollections: List<String> = emptyList(),
     val collectionToSaveTo: String = "Favourites",
     val userCollections: List<Thumb>? = null,
@@ -18,5 +18,6 @@ data class AppState(
     val filmToEdit: Film? = null,
     val rollToEdit: Roll? = null,
     val showSearch: Boolean = false,
+    val getBackAfterLoggingIn: Boolean = false,
     val isLoading: Boolean = false
 )

@@ -2,23 +2,16 @@ package xapics.app.ui.auth
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,10 +21,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -42,8 +33,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.TAG
@@ -52,6 +41,7 @@ import xapics.app.auth.AuthResult
 @Composable
 fun AuthScreen(
     viewModel: MainViewModel,
+    popBackStack: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
 ) {
@@ -62,58 +52,67 @@ fun AuthScreen(
     LaunchedEffect(Unit) {
         viewModel.updateTopBarCaption("Log in")
 //        viewModel.authenticate()
-//        Log.d(TAG, "Authenticate once")
+        Log.d(TAG, "AuthScreen is shown")
     }
 
     LaunchedEffect(viewModel, context) {
 //        viewModel.authenticate()
-        Log.d(TAG, "Launched Effect started")
+        Log.d(TAG, "AuthScreen: Launched Effect started")
 
         viewModel.authResults.collect { result ->
-            Log.d(TAG, "result is $result")
-            when(result) {
-                is AuthResult.Authorized -> {
-                    val resultId = result.data.toString().toIntOrNull()
-                    val stateId = viewModel.appState.value.userId
-                    if(resultId != null && resultId != stateId) viewModel.updateUserId(resultId)
-                    Log.d(TAG, "updateUserId(): result = $resultId, userId = $stateId")
-                    when (stateId) {
-                        null -> {
-                            Toast.makeText(
-                                context,
-                                "userID = null",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        1 -> {
-//                            viewModel.updateTopBarCaption("Admin console")
-                            goToAdminScreen()
-                        }
-                        else -> {
-                            goToProfileScreen()
+            Log.d(TAG, "AuthScreen: result is $result")
+            val resultUserName = result.data.toString()
+//            val resultId = result.data.toString().toIntOrNull()
+            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
+            if (resultUserName != "null") {
+                when(result) {
+                    is AuthResult.Authorized -> {
+                        val stateUserName = viewModel.appState.value.userName
+                        if(resultUserName != stateUserName) viewModel.updateUserName(resultUserName)
+                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
+                        when {
+                            viewModel.appState.value.getBackAfterLoggingIn -> {
+                                viewModel.rememberToGetBackAfterLoggingIn(false)
+                                popBackStack()
+                            }
+                            viewModel.appState.value.userName == null -> {
+                                Toast.makeText(
+                                    context,
+                                    "username = null",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            viewModel.appState.value.userName == "admin" -> {
+                                popBackStack()
+                                goToAdminScreen()
+                            }
+                            else -> {
+                                popBackStack()
+                                goToProfileScreen()
+                            }
                         }
                     }
-                }
-                is AuthResult.Conflicted -> {
-                    Toast.makeText(
-                        context,
-                        result.data.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                is AuthResult.Unauthorized -> {
-                    Toast.makeText(
-                        context,
-                        "You are not authorized",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                is AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "An unknown error occurred",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    is AuthResult.Conflicted -> {
+                        Toast.makeText(
+                            context,
+                            result.data.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is AuthResult.Unauthorized -> {
+                        Toast.makeText(
+                            context,
+                            "You are not authorized",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is AuthResult.UnknownError -> {
+                        Toast.makeText(
+                            context,
+                            "An unknown error occurred",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }

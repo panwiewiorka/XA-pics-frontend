@@ -18,9 +18,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,31 +58,21 @@ import xapics.app.ui.theme.PicBG
 @Composable
 fun ProfileScreen(
     viewModel: MainViewModel,
-    userId: Int?,
+    isLoading: Boolean,
+    userName: String?,
     userCollections: List<Thumb>?,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
 ) {
-
-    LaunchedEffect(Unit) {
-        if (userId != null) viewModel.getUserInfo()
-    }
-
     val context = LocalContext.current
 
     LaunchedEffect(viewModel, context) {
-        Log.d(TAG, "Launched Effect Profile started")
+        Log.d(TAG, "ProfileScreen: Launched Effect started")
 
         viewModel.authResults.collect { result ->
-            Log.d(TAG, "result is $result")
+            Log.d(TAG, "ProfileScreen: result is $result")
             when(result) {
-                is AuthResult.Authorized -> {
-//                    if (userId == null) {
-//                        viewModel.authenticate()
-//                        Log.d(TAG, "Authorized, before getUserInfo(): userID = $userId")
-//                        viewModel.getUserInfo()
-//                    }
-                }
+                is AuthResult.Authorized -> { }
                 is AuthResult.Conflicted -> {
                     Toast.makeText(
                         context,
@@ -86,7 +81,7 @@ fun ProfileScreen(
                     ).show()
                 }
                 is AuthResult.Unauthorized -> {
-                    Log.d(TAG, "result is Unauthorized, goToAuthScreen")
+                    Log.d(TAG, "result is Unauthorized, goToAuthScreen()")
                     goToAuthScreen()
                 }
                 is AuthResult.UnknownError -> {
@@ -99,20 +94,23 @@ fun ProfileScreen(
             }
         }
     }
+
+    LaunchedEffect(Unit) {
+        if (userName != null) viewModel.getUserInfo()
+    }
     
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        UserView(userId, userCollections, viewModel::getCollection, goToPicsListScreen, viewModel::renameOrDeleteCollection, context)
-//        when (userId) {
-//            null -> Box(modifier = Modifier
-//                .fillMaxSize()
-//                .background(Color.Red))
-//            0 -> CircularProgressIndicator() //goToAuthScreen() // TODO
-//            1 -> AdminView(viewModel, goToEditFilmsScreen, goToUploadScreen)
-//            else -> UserView(userId, userCollections, viewModel::getCollection, goToPicsListScreen, viewModel::renameOrDeleteCollection)
-//        }
+        UserView(
+            userCollections,
+            viewModel::getCollection,
+            goToPicsListScreen,
+            viewModel::renameOrDeleteCollection,
+            context
+        )
+        if (isLoading) CircularProgressIndicator()
     }
 }
 
@@ -120,18 +118,16 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserView(
-    userId: Int?,
     userCollections: List<Thumb>?,
     getCollection: (String, String) -> Unit,
     goToPicsListScreen: () -> Unit,
     renameOrDeleteCollection:(String, String?) -> Unit,
     context: Context,
 ) {
-    var showRenameDialog by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var renamedTitle by remember { mutableStateOf("") }
-    var collectionTitle by remember { mutableStateOf("") }
-//    val focusRequester = remember { FocusRequester() }
+    var showRenameDialog by rememberSaveable { mutableStateOf(false) }
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var renamedTitle by rememberSaveable { mutableStateOf("") }
+    var collectionTitle by rememberSaveable { mutableStateOf("") }
 
     @Composable
     fun DeleteDialog() {
@@ -169,12 +165,24 @@ fun UserView(
         }
     }
 
-    Text("User ID = $userId")
-    LazyVerticalGrid(
-        columns = GridCells.FixedSize(176.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        if(userCollections != null) {
+    if(userCollections.isNullOrEmpty()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row {
+                Icon (Icons.Filled.Favorite, null)
+                Spacer(modifier = Modifier.width(20.dp))
+                Icon (Icons.Filled.Star, null)
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Text("Favourite pics will be show here")
+
+        }
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.FixedSize(176.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             items(userCollections.size) {
                 val rollTitle = userCollections[it].title
                 val thumbUrl = userCollections[it].thumbUrl
@@ -182,7 +190,12 @@ fun UserView(
                 val currentPage = stringResource(R.string.profile_screen)
 
                 Box {
-                    RollCard (width = 150.dp, isLoading = false, imageUrl = thumbUrl, rollTitle = rollTitle) {
+                    RollCard(
+                        width = 150.dp,
+                        isLoading = false,
+                        imageUrl = thumbUrl,
+                        rollTitle = rollTitle
+                    ) {
                         getCollection(currentPage, rollTitle)
                         goToPicsListScreen()
                     }
@@ -193,17 +206,20 @@ fun UserView(
                         .alpha(0.7f)
                         .background(Color(0x44000000))
                     if (rollTitle == favs) {
-                        IconButton (
+                        IconButton(
                             modifier = modifier,
                             onClick = {
                                 collectionTitle = favs
                                 showDeleteDialog = true
                             }
                         ) {
-                            Icon (painterResource(R.drawable.baseline_delete_outline_24),"Delete collection")
+                            Icon(
+                                painterResource(R.drawable.baseline_delete_outline_24),
+                                "Delete collection"
+                            )
                         }
                     } else {
-                        IconButton (
+                        IconButton(
                             modifier = modifier,
                             onClick = {
                                 renamedTitle = rollTitle
@@ -211,13 +227,17 @@ fun UserView(
                                 showRenameDialog = true
                             }
                         ) {
-                            Icon (painterResource(R.drawable.baseline_edit_24),"Rename or delete collection")
+                            Icon(
+                                painterResource(R.drawable.baseline_edit_24),
+                                "Rename or delete collection"
+                            )
                         }
                     }
                 }
             }
         }
     }
+    
     if (showRenameDialog) {
         AlertDialog(onDismissRequest = { showRenameDialog = false }) {
             Column(

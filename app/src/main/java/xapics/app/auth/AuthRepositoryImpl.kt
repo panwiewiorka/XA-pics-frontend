@@ -39,9 +39,10 @@ class AuthRepositoryImpl(
             prefs.edit()
                 .putString("jwt", response.token)
                 .apply()
-            val userId = response.userId
-            Log.d(TAG, "signIn: userId = $userId")
-            AuthResult.Authorized(userId) as AuthResult<Unit>
+            val respondedUserName = response.userId
+            Log.d(TAG, "signIn: userName = $respondedUserName")
+            Log.d(TAG, "signIn: token = ${response.token}")
+            AuthResult.Authorized(respondedUserName) as AuthResult<Unit>
         } catch (e: HttpException) {
             Log.e(TAG, "signIn: ", e)
             (
@@ -54,14 +55,14 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun authenticate(updateUserId: (Int?) -> Unit): AuthResult<Unit> {
+    override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
-            val userId = api.getUserId("Bearer $token")
+            val userName = api.getUserName("Bearer $token").text
 //            api.authenticate("Bearer $token")
-            Log.d(TAG, "authenticate: userId = $userId")
-            updateUserId(userId.toIntOrNull())
-            AuthResult.Authorized(userId) as AuthResult<Unit>
+            updateUserName(userName)
+//            updateUserId(userId.toIntOrNull())
+            AuthResult.Authorized(userName) as AuthResult<Unit>
         } catch (e: HttpException) {
             Log.e(TAG, "authenticate: ", e)
             if (e.code() == 401) {
@@ -79,7 +80,7 @@ class AuthRepositoryImpl(
         return AuthResult.Unauthorized()
     }
 
-    override suspend fun getUserInfo(updateUserId: (Int?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
+    override suspend fun getUserInfo(updateUserName: (String?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 //            val userId = api.getUserId("Bearer $token")

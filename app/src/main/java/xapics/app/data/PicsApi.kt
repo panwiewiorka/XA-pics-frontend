@@ -15,6 +15,7 @@ import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.Pic
 import xapics.app.Roll
+import xapics.app.TheString
 import xapics.app.auth.AuthRequest
 import xapics.app.auth.TokenResponse
 
@@ -35,10 +36,15 @@ interface PicsApi {
         @Header("Authorization") token: String
     )
 
+//    @GET("profile")
+//    suspend fun getUserId(
+//        @Header("Authorization") token: String
+//    ): String
+
     @GET("profile")
-    suspend fun getUserId(
+    suspend fun getUserName(
         @Header("Authorization") token: String
-    ): String
+    ): TheString
 
     @GET("pic-collections")
     suspend fun getPicCollections(

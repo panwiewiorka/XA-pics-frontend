@@ -4,7 +4,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -33,6 +33,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,17 +41,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import xapics.app.AppState
@@ -67,7 +73,7 @@ import xapics.app.ui.theme.YearTag
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PicScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit
+    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, goToAuthScreen: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -109,12 +115,24 @@ fun PicScreen(
                 val picId = appState.pic.id
 
                 Box {
-                    CollectionsMenu(appState.userCollections, appState.picCollections, appState.collectionToSaveTo, picId, viewModel::editCollection, viewModel::updateCollectionToSaveTo)
+                    CollectionsMenu(
+                        appState.userCollections,
+                        appState.picCollections,
+                        appState.collectionToSaveTo,
+                        picId,
+                        viewModel::editCollection,
+                        viewModel::updateCollectionToSaveTo,
+                        viewModel::rememberToGetBackAfterLoggingIn,
+                    ) { goToAuthScreen() }
                 }
 
                 IconButton(
                     onClick = {
-                        viewModel.editCollection(appState.collectionToSaveTo, picId)
+                        val isAuthorised = viewModel.editCollection(appState.collectionToSaveTo, picId)
+                        if (!isAuthorised) {
+                            viewModel.rememberToGetBackAfterLoggingIn(true)
+                            goToAuthScreen()
+                        }
                     },
                 ) {
                     val collection = appState.collectionToSaveTo
@@ -187,14 +205,17 @@ fun PicScreen(
 
 @Composable
 fun PicTag(text: String, color: Color, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = color
-        ),
-        modifier = Modifier.padding(horizontal = 4.dp)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .padding(horizontal = 4.dp)
+            .padding(bottom = 8.dp)
+            .clip(RoundedCornerShape(99.dp))
+            .background(color)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clickable { onClick() }
     ) {
-        Text(text)
+        Text(text, fontSize = 14.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.sp, color = MaterialTheme.colorScheme.onPrimary)
     }
 }
 
@@ -205,19 +226,26 @@ fun CollectionsMenu(
     picCollections: List<String>,
     collectionToSaveTo: String,
     picId: Int,
-    editCollection: (String, Int) -> Unit,
+    editCollection: (String, Int) -> Boolean,
     updateCollectionToSaveTo:(String) -> Unit,
+    rememberToGetBackAfterLoggingIn: (Boolean?) -> Unit,
+    goToAuthScreen: () -> Unit,
 ) {
-    var collectionListOpened by remember { mutableStateOf(false) }
-    var newCollectionDialogOpened by remember { mutableStateOf(false) }
-    var newCollectionTitle by remember { mutableStateOf("") }
+    var collectionListOpened by rememberSaveable { mutableStateOf(false) }
+    var newCollectionDialogOpened by rememberSaveable { mutableStateOf(false) }
+    var newCollectionTitle by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
 
-    fun addToNewCollection(title: String) {
-        editCollection(title, picId)
-        updateCollectionToSaveTo(title)
+    fun addToNewCollectionOrLogIn(title: String) {
+        val isAuthorized = editCollection(title, picId)
         collectionListOpened = false
+        if(!isAuthorized) {
+            rememberToGetBackAfterLoggingIn(true)
+            goToAuthScreen()
+        } else {
+            updateCollectionToSaveTo(title)
+        }
     }
 
     Column(
@@ -240,7 +268,13 @@ fun CollectionsMenu(
                 },
                 trailingIcon = {
                     IconButton(
-                        onClick = { editCollection(favs, picId) },
+                        onClick = {
+                            val isAuthorized = editCollection(favs, picId)
+                            if(!isAuthorized) {
+                                rememberToGetBackAfterLoggingIn(true)
+                                goToAuthScreen()
+                            }
+                                  },
 //                        modifier = Modifier.padding(end = 0.dp)
                     ) {
                         if (picCollections.contains(favs)) {
@@ -250,7 +284,7 @@ fun CollectionsMenu(
                         }
                     }
                 },
-                onClick = { addToNewCollection(favs) },
+                onClick = { addToNewCollectionOrLogIn(favs) },
                 modifier = Modifier
                     .align(Alignment.End)
                     .then(if (collectionToSaveTo == favs) Modifier.background(Color.DarkGray) else Modifier)
@@ -261,7 +295,13 @@ fun CollectionsMenu(
                     DropdownMenuItem(
                         text = { Text(collectionTitle) },
                         trailingIcon = {
-                            IconButton(onClick = { editCollection(collectionTitle, picId) }) {
+                            IconButton(onClick = {
+                                val isAuthorized = editCollection(collectionTitle, picId)
+                                if(!isAuthorized) {
+                                    rememberToGetBackAfterLoggingIn(true)
+                                    goToAuthScreen()
+                                }
+                            }) {
                                 if (picCollections.contains(collectionTitle)) {
                                     Icon(Icons.Filled.Star, "Remove to $collectionTitle")
                                 } else {
@@ -270,10 +310,14 @@ fun CollectionsMenu(
                                 }
                             }
                         },
-                        onClick = { addToNewCollection(collectionTitle) },
+                        onClick = { addToNewCollectionOrLogIn(collectionTitle) },
                         modifier = Modifier
                             .align(Alignment.End)
-                            .then(if (collectionToSaveTo == collectionTitle) Modifier.background(Color.DarkGray) else Modifier)
+                            .then(
+                                if (collectionToSaveTo == collectionTitle) Modifier.background(
+                                    Color.DarkGray
+                                ) else Modifier
+                            )
                     )
                 }
             }
@@ -325,9 +369,8 @@ fun CollectionsMenu(
                     ).show()
                 }
                 else -> {
-                    addToNewCollection(newCollectionTitle)
+                    addToNewCollectionOrLogIn(newCollectionTitle)
                     newCollectionDialogOpened = false
-                    collectionListOpened = false
                 }
             }
 

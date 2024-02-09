@@ -96,7 +96,7 @@ fun NavScreen(
         },
         topBar = {
             TopBar(
-                goBack = { navController.popBackStack() },
+                popBackStack = { navController.popBackStack() },
                 goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                 goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                 goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
@@ -108,8 +108,9 @@ fun NavScreen(
                 logOut = viewModel::logOut,
                 topBarCaption = appState.topBarCaption,
                 page = backStackEntry?.destination?.route,
+                previousPage = navController.previousBackStackEntry?.destination?.route,
                 pageName = currentScreen.title,
-                userId = appState.userId,
+                userName = appState.userName,
             )
         },
     ) { innerPadding ->
@@ -136,7 +137,8 @@ fun NavScreen(
                 PicScreen(
                     viewModel,
                     appState,
-                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
                 )
             }
             composable(route = NavList.EditFilmsScreen.name) {
@@ -160,14 +162,9 @@ fun NavScreen(
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
                     viewModel,
-                    goToAdminScreen = {
-                        navController.popBackStack()
-                        navController.navigate(NavList.AdminScreen.name)
-                    },
-                    goToProfileScreen = {
-                        navController.popBackStack()
-                        navController.navigate(NavList.ProfileScreen.name)
-                                        },
+                    popBackStack = { navController.popBackStack() },
+                    goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
+                    goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                 )
             }
             composable(route = NavList.AdminScreen.name) {
@@ -182,7 +179,8 @@ fun NavScreen(
             composable(route = NavList.ProfileScreen.name) {
                 ProfileScreen(
                     viewModel,
-                    appState.userId,
+                    appState.isLoading,
+                    appState.userName,
                     appState.userCollections,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
                 ) { navController.navigate(NavList.PicsListScreen.name) }
@@ -195,7 +193,7 @@ fun NavScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    goBack: () -> Unit,
+    popBackStack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
@@ -207,8 +205,9 @@ fun TopBar(
     logOut: () -> Unit,
     topBarCaption: String,
     page: String?,
+    previousPage: String?,
     @StringRes pageName: Int,
-    userId: Int?,
+    userName: String?,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -218,6 +217,7 @@ fun TopBar(
         val text = when (page) {
             "PicsListScreen" -> topBarCaption
             "PicScreen" -> topBarCaption
+            "ProfileScreen" -> userName ?: ""
             else -> stringResource(id = pageName)
         }
         var showClearSearchButton by rememberSaveable { mutableStateOf(false) }
@@ -227,19 +227,21 @@ fun TopBar(
             selection = TextRange(theText.length)
         )) }
 
-        if(page == "HomeScreen") {
+        if (page == "ProfileScreen" && page == previousPage) popBackStack()
+
+        if (page == "HomeScreen") {
             IconButton(enabled = false, onClick = {  }) {
                 Image(painterResource(R.drawable.xa_pics_mini_closed_export), contentDescription = null, modifier = Modifier.padding(6.dp))
             }
         } else {
-            IconButton(onClick = { goBack() }) {
+            IconButton(onClick = { popBackStack() }) {
                 Icon(Icons.Outlined.ArrowBack, "go Back")
             }
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        if(showSearch) {
+        if (showSearch) {
             Box(modifier = Modifier.weight(1f)) {
                 BasicTextField(
                     value = query,
@@ -312,6 +314,7 @@ fun TopBar(
 
         if(page == "AdminScreen" || page == "ProfileScreen") {
             IconButton(onClick = {
+                popBackStack()
                 logOut() // TODO when logOut() finished -> goToAuthScreen()
                 goToAuthScreen()
             }) {
@@ -321,9 +324,9 @@ fun TopBar(
             IconButton(
                 enabled = page != "AuthScreen",
                 onClick = {
-                    when (userId) {
+                    when (userName) {
                         null -> goToAuthScreen()
-                        1 -> goToAdminScreen()
+                        "admin" -> goToAdminScreen()
                         else -> goToProfileScreen()
                     }
                 }
