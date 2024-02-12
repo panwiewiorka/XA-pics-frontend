@@ -152,6 +152,7 @@ fun AuthScreen(
                     onNext = { focusRequester.requestFocus() }
                 )
             )
+
             OutlinedTextField(
                 value = passField,
                 onValueChange = {
@@ -185,9 +186,12 @@ fun AuthScreen(
             Button(onClick = { viewModel.signUpOrIn(userField, passField, signupMode) }) {
                 Text(buttonText, fontSize = 20.sp)
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row {
                 Text(text = questionText)
+
                 Text(text = changeModeText, textDecoration = TextDecoration.Underline, modifier = Modifier.clickable {
                     viewModel.updateTopBarCaption(changeModeText)
                     signupMode = !signupMode

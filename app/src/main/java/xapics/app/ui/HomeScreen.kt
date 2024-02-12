@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
+import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.PicBG
 
 @Composable
@@ -84,47 +86,6 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun RollCard(width: Dp, isLoading: Boolean, imageUrl: String, rollTitle: String, onClick: () -> Unit) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .padding(12.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(PicBG)
-            .padding(1.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .clickable {
-                onClick()
-            }
-    ) {
-        CircularProgressIndicator() // TODO remove?
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Thumbnail of the $rollTitle roll",
-                modifier = Modifier
-                    .width(width)
-                    .height((width.value / 1.5).dp)
-//                    .height(100.dp)
-//                    .width((100 * 1.5).dp)
-            )
-            Text(text = "  $rollTitle  ", maxLines = 1, modifier = Modifier.basicMarquee())
-        }
-
-        if(isLoading) {
-            CircularProgressIndicator() // FIXME
         }
     }
 }

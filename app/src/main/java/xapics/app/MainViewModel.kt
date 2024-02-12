@@ -37,7 +37,7 @@ class MainViewModel @Inject constructor (
 
     init {
         authenticate()
-//        getUserInfo() // TODO needed?
+        getUserInfo() // TODO needed?
 //        getPicsList(2020)
         getRollsList()
     }

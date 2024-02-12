@@ -1,6 +1,5 @@
 package xapics.app.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +28,6 @@ import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.Pic
-import xapics.app.TAG
-import xapics.app.ui.theme.PicBG
 
 @Composable
 fun PicsListScreen(
@@ -102,13 +99,13 @@ fun Picture(pic: Pic, onClick: () -> Unit, modifier: Modifier) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .background(PicBG)
+            .clip(RoundedCornerShape(2.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         CircularProgressIndicator() // TODO remove?
 
         AsyncImage(
             modifier = modifier
-                .clip(RoundedCornerShape(2.dp))
                 .clickable { onClick() },
             model = ImageRequest.Builder(LocalContext.current)
                 .data(pic.imageUrl)

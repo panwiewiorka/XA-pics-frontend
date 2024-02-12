@@ -51,7 +51,7 @@ import xapics.app.R
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.auth.AuthResult
-import xapics.app.ui.RollCard
+import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.FilmTag
 import xapics.app.ui.theme.PicBG
 
@@ -142,12 +142,16 @@ fun UserView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Delete \"$collectionTitle\"?")
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row {
                     Button(onClick = { showDeleteDialog = false }) {
                         Text(text = "Cancel")
                     }
+
                     Spacer(modifier = Modifier.width(8.dp))
+
                     Button(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = FilmTag
@@ -171,10 +175,14 @@ fun UserView(
         ) {
             Row {
                 Icon (Icons.Filled.Favorite, null)
+
                 Spacer(modifier = Modifier.width(20.dp))
+
                 Icon (Icons.Filled.Star, null)
             }
+
             Spacer(modifier = Modifier.height(20.dp))
+
             Text("Favourite pics will be show here")
 
         }
@@ -273,6 +281,7 @@ fun UserView(
                         showRenameDialog = false
                     }
                 }
+
                 OutlinedTextField(
                     value = renamedTitle,
                     onValueChange = {renamedTitle = it},
@@ -287,13 +296,16 @@ fun UserView(
                     modifier = Modifier
                         .background(Color(0x55000000))
                 )
+
                 Text(text = "or")
+
                 Button(
                     onClick = {
                         showDeleteDialog = true
                     }
                 ) {
                     Text(text = "Delete collection")
+
                     Icon(painterResource(R.drawable.baseline_delete_outline_24), contentDescription = null)
                 }
             }
