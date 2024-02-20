@@ -43,6 +43,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.R
@@ -74,14 +76,15 @@ fun TopBar(
         val text = when (page) {
             "PicsListScreen" -> topBarCaption
             "PicScreen" -> topBarCaption
+            "AuthScreen" -> topBarCaption
             "ProfileScreen" -> userName ?: ""
             else -> stringResource(id = pageName)
         }
         var showClearSearchButton by rememberSaveable { mutableStateOf(false) }
-        val theText = ""
+        val searchText = ""
         var query by remember { mutableStateOf( TextFieldValue (
-            text = theText,
-            selection = TextRange(theText.length)
+            text = searchText,
+            selection = TextRange(searchText.length)
         )
         ) }
 
@@ -89,7 +92,7 @@ fun TopBar(
         fun HomeOrBackButton() {
             if (page == "HomeScreen") {
                 IconButton(enabled = false, onClick = {  }) {
-                    Image(painterResource(R.drawable.xa_pics_mini_closed_export), contentDescription = null, modifier = Modifier.padding(6.dp))
+                    Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
                 IconButton(onClick = { popBackStack() }) {
@@ -153,6 +156,7 @@ fun TopBar(
                     text = text,
                     fontSize = 20.sp,
                     maxLines = 1,
+                    overflow = Ellipsis,
                     modifier = Modifier
                         .basicMarquee()
                         .weight(1f)

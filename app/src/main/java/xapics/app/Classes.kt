@@ -6,6 +6,19 @@ enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
 
 enum class PicsListType { ROLL, FILM, YEAR, TAGS, SEARCH }
 
+class PicsListQuery(
+    private val year: Int?,
+    private val roll: String?,
+    private val film: String?,
+    private val tag: String?,
+    private val description: String?,
+) {
+    fun flattenToString():String {
+        return (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
+                    if(description != null) "\"$description\" " else ""
+    }
+}
+
 data class Pic(
     val id: Int,
     val year: Int,

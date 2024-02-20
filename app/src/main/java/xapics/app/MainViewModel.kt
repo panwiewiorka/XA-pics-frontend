@@ -37,9 +37,11 @@ class MainViewModel @Inject constructor (
 
     init {
         authenticate()
-        getUserInfo() // TODO needed?
+        getUserInfo {} // TODO needed?
 //        getPicsList(2020)
         getRollsList()
+        getRandomPic()
+        getAllTags()
     }
 
 
@@ -87,14 +89,18 @@ class MainViewModel @Inject constructor (
 
     fun logOut() {
         repository.logOut()
+        _appState.update { it.copy(
+            userName = null
+        ) }
     }
 
-    fun getUserInfo() {
+    fun getUserInfo(goToAuthScreen: () -> Unit) {
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 val result = repository.getUserInfo(::updateUserName, ::updateUserCollections)
-                resultChannel.send(result)
+                if (result is AuthResult.Unauthorized) goToAuthScreen()
+//                resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "getUserInfo(): ", e)
@@ -115,8 +121,7 @@ class MainViewModel @Inject constructor (
         ) }
     }
 
-    fun editCollection(collection: String, picId: Int): Boolean {
-        var isAuthorised = false
+    fun editCollectionOrLogIn(collection: String, picId: Int, goToAuthScreen: () -> Unit) {
         viewModelScope.launch {
             try {
 //                updateLoadingState(true)
@@ -128,14 +133,14 @@ class MainViewModel @Inject constructor (
                     is AuthResult.Authorized -> {
                         Log.d(TAG, "Pic $picId added to $collection")
                         getPicCollections(picId) // TODO locally (check success first). Same everywhere ^v
-                        isAuthorised = true
                     }
                     is AuthResult.Unauthorized -> {
+                        rememberToGetBackAfterLoggingIn(true)
+                        goToAuthScreen()
                         Log.d(TAG, "401 unauthorized")
                     }
                     else -> {
                         Log.d(TAG, "Unknown error")
-                        isAuthorised = true
                     }
                 }
 //                updateLoadingState(false)
@@ -144,7 +149,6 @@ class MainViewModel @Inject constructor (
 //                updateLoadingState(false)
             }
         }
-        return isAuthorised
     }
 
     fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?) {
@@ -185,8 +189,9 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getCollection(currentPage: String, collection: String) {
+    fun getCollection(collection: String) {
         updateTopBarCaption(collection)
+        clearPicsList()
         viewModelScope.launch {
             try {
                 repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption) // TODO remove ::updateTopBarCaption
@@ -210,10 +215,17 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    private fun updatePicsList(picsList: List<Pic>) {
+    private fun updatePicsList(picsList: List<Pic>? = null) { // TODO partly replace with vv clearPicsList()
         _appState.update { it.copy(
-            picsList = picsList,
+            picsList = picsList ?: emptyList(),
             picIndex = 1,
+        )}
+    }
+
+    private fun clearPicsList() {
+        _appState.update { it.copy(
+            picsList = null,
+            picIndex = null,
         )}
     }
 
@@ -226,9 +238,13 @@ class MainViewModel @Inject constructor (
     private fun getPicCollections(picId: Int) {
         viewModelScope.launch {
             try {
+//                updateLoadingState(true) // if uncomment -> tags in PicScreen will fade out before fade in
                 repository.getPicCollections(picId, ::updatePicCollections)
+//                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.d(TAG, "getPicCollections: ", e)
+                changeConnectionErrorVisibility(true)
+//                updateLoadingState(false)
             }
         }
     }
@@ -285,10 +301,17 @@ class MainViewModel @Inject constructor (
                     isLoading = false
                 )}
             } catch (e: Exception) {
+                changeConnectionErrorVisibility(true)
                 Log.e(TAG, "getRollsList(): ", e)
                 updateLoadingState(false)
             }
         }
+    }
+
+    fun changeConnectionErrorVisibility(show: Boolean? = null){
+        _appState.update { it.copy(
+            showConnectionError = show ?: !appState.value.showConnectionError
+        )}
     }
 
     fun postRoll(isNewRoll: Boolean, roll: Roll, ) {
@@ -307,11 +330,16 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPicsList(currentPage: String, year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null, description: String? = null,) {
+    fun getPicsList(year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null, description: String? = null,) {
         val caption =
-            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film" else "" + if(tag != null) "#$tag" else "" +
-                    if(description != null) "\"$description\"" else ""
-        updateTopBarCaption(caption)
+            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
+                    if(description != null) "\"$description\" " else ""
+
+        _appState.update { it.copy(
+            picsListQuery = PicsListQuery(year, roll, film, tag, description)
+        ) }
+//        updateTopBarCaption(caption)
+        clearPicsList()
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
@@ -328,10 +356,11 @@ class MainViewModel @Inject constructor (
     }
 
     fun search(query: String) {
+        clearPicsList()
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                api.search(query)
+//                api.search(query)
                 _appState.update { it.copy(
                     picsList = api.search(query),
                     picIndex = 1,
@@ -378,13 +407,13 @@ class MainViewModel @Inject constructor (
 
     fun updatePicState(picIndex: Int) {
         Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)!!.id}")
-        getPicCollections(appState.value.picsList?.get(picIndex)!!.id)
         _appState.update {
             it.copy(
-                pic = appState.value.picsList?.get(picIndex),
+                pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
                 picIndex = picIndex
             )
         }
+        getPicCollections(appState.value.picsList?.get(picIndex)!!.id)
     }
 
     fun selectFilmToEdit(film: Film?) {
@@ -484,7 +513,23 @@ class MainViewModel @Inject constructor (
                 )}
 
             } catch (e: Exception) {
-                Log.e("MainViewModel", "getRandomPic: ", e)
+                Log.e(TAG, "getRandomPic: ", e)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun getAllTags() {
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+                _appState.update { it.copy(
+                    tags = api.getAllTags(),
+                    isLoading = false
+                )}
+
+            } catch (e: Exception) {
+                Log.e(TAG, "getAllTags: ", e)
                 updateLoadingState(false)
             }
         }

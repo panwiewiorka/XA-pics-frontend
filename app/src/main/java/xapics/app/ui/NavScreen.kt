@@ -81,47 +81,48 @@ fun NavScreen(
         ) {
             composable(route = NavList.HomeScreen.name) {
                 HomeScreen(
-                    viewModel,
-                    appState,
+                    viewModel = viewModel,
+                    appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )
             }
             composable(route = NavList.PicsListScreen.name) {
                 PicsListScreen(
-                    viewModel,
-                    appState,
-                    goToPicScreen = { navController.navigate(NavList.PicScreen.name) }
+                    viewModel = viewModel,
+                    appState = appState,
+                    goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
+                    caption = appState.picsListQuery?.flattenToString() ?: ""
                 )
             }
             composable(route = NavList.PicScreen.name) {
                 PicScreen(
-                    viewModel,
-                    appState,
+                    viewModel = viewModel,
+                    appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
                 )
             }
             composable(route = NavList.EditFilmsScreen.name) {
                 EditFilmsScreen(
-                    viewModel,
-                    appState,
+                    viewModel = viewModel,
+                    appState = appState,
                     goToHomeScreen = { navController.navigate(NavList.HomeScreen.name) },
                     goToUploadScreen = { navController.navigate(NavList.UploadScreen.name) },
-                    snackbarHostState
+                    snackbarHostState = snackbarHostState
                 )
             }
             composable(route = NavList.UploadScreen.name) {
                 UploadScreen(
-                    viewModel,
-                    appState,
+                    viewModel = viewModel,
+                    appState = appState,
                     goToHomeScreen = { navController.navigate(NavList.HomeScreen.name) },
                     goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) },
-                    snackbarHostState
+                    snackbarHostState = snackbarHostState
                 )
             }
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
-                    viewModel,
+                    viewModel = viewModel,
                     popBackStack = { navController.popBackStack() },
                     goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
@@ -129,7 +130,7 @@ fun NavScreen(
             }
             composable(route = NavList.AdminScreen.name) {
                 AdminScreen(
-                    viewModel,
+                    viewModel = viewModel,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) },
                     goToUploadScreen = { navController.navigate(NavList.UploadScreen.name) },
@@ -138,12 +139,13 @@ fun NavScreen(
             }
             composable(route = NavList.ProfileScreen.name) {
                 ProfileScreen(
-                    viewModel,
-                    appState.isLoading,
-                    appState.userName,
-                    appState.userCollections,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
-                ) { navController.navigate(NavList.PicsListScreen.name) }
+                    viewModel = viewModel,
+                    isLoading = appState.isLoading,
+                    userName = appState.userName,
+                    userCollections = appState.userCollections,
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
+                )
             }
         }
     }

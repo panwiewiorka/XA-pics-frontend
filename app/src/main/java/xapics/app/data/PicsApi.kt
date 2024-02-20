@@ -36,11 +36,6 @@ interface PicsApi {
         @Header("Authorization") token: String
     )
 
-//    @GET("profile")
-//    suspend fun getUserId(
-//        @Header("Authorization") token: String
-//    ): String
-
     @GET("profile")
     suspend fun getUserName(
         @Header("Authorization") token: String
@@ -57,17 +52,9 @@ interface PicsApi {
         @Header("Authorization") token: String,
     ): List<Thumb>
 
-//    @FormUrlEncoded
-//    @POST("collections")
-//    suspend fun createCollection(
-//        @Header("Authorization") token: String,
-//        @Field("title") title: String,
-//    )
-
     @FormUrlEncoded
     @POST("collection")
     suspend fun editCollection(
-//        @Field("user") user: String,
         @Header("Authorization") token: String,
         @Field("collection") collection: String,
         @Field("picId") picId: Int,
@@ -82,7 +69,6 @@ interface PicsApi {
     @FormUrlEncoded
     @POST("rename-delete-collection")
     suspend fun renameOrDeleteCollection(
-//        @Field("user") user: String,
         @Header("Authorization") token: String,
         @Field("collectionTitle") collectionTitle: String,
         @Field("renamedTitle") renamedTitle: String?,
@@ -133,6 +119,9 @@ interface PicsApi {
         @Field("film") film: String,
         @Field("nonXa") nonXa: Boolean,
     )
+
+    @GET("tags")
+    suspend fun getAllTags(): List<List<String>>
 
     @POST("file")
     @Multipart

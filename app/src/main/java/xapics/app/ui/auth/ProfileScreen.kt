@@ -1,7 +1,6 @@
 package xapics.app.ui.auth
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,13 +27,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,12 +47,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.TAG
 import xapics.app.Thumb
-import xapics.app.auth.AuthResult
 import xapics.app.ui.composables.RollCard
+import xapics.app.ui.theme.AlmostWhite
+import xapics.app.ui.theme.AlphaBlack
 import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.PicBG
+import xapics.app.ui.theme.GrayDark
+import xapics.app.ui.theme.MyError
+import xapics.app.ui.theme.myTextFieldColors
 
 @Composable
 fun ProfileScreen(
@@ -66,37 +67,37 @@ fun ProfileScreen(
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(viewModel, context) {
-        Log.d(TAG, "ProfileScreen: Launched Effect started")
-
-        viewModel.authResults.collect { result ->
-            Log.d(TAG, "ProfileScreen: result is $result")
-            when(result) {
-                is AuthResult.Authorized -> { }
-                is AuthResult.Conflicted -> {
-                    Toast.makeText(
-                        context,
-                        result.data.toString(),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                is AuthResult.Unauthorized -> {
-                    Log.d(TAG, "result is Unauthorized, goToAuthScreen()")
-                    goToAuthScreen()
-                }
-                is AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "An unknown error occurred",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
+//    LaunchedEffect(viewModel, context) {
+//        Log.d(TAG, "ProfileScreen: Launched Effect started")
+//
+//        viewModel.authResults.collect { result ->
+//            Log.d(TAG, "ProfileScreen: result is $result")
+//            when(result) {
+//                is AuthResult.Authorized -> { }
+//                is AuthResult.Conflicted -> {
+//                    Toast.makeText(
+//                        context,
+//                        result.data.toString(),
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//                is AuthResult.Unauthorized -> {
+//                    Log.d(TAG, "result is Unauthorized, goToAuthScreen()")
+//                    goToAuthScreen()
+//                }
+//                is AuthResult.UnknownError -> {
+//                    Toast.makeText(
+//                        context,
+//                        "An unknown error occurred",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
+//        }
+//    }
 
     LaunchedEffect(Unit) {
-        if (userName != null) viewModel.getUserInfo()
+        if (userName != null) viewModel.getUserInfo(goToAuthScreen)
     }
     
     Box(
@@ -119,7 +120,7 @@ fun ProfileScreen(
 @Composable
 fun UserView(
     userCollections: List<Thumb>?,
-    getCollection: (String, String) -> Unit,
+    getCollection: (String) -> Unit,
     goToPicsListScreen: () -> Unit,
     renameOrDeleteCollection:(String, String?) -> Unit,
     context: Context,
@@ -134,7 +135,7 @@ fun UserView(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             modifier = Modifier
-                .background(PicBG, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(16.dp))
                 .padding(horizontal = 16.dp)
                 .padding(vertical = 36.dp)
         ) {
@@ -154,7 +155,7 @@ fun UserView(
 
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = FilmTag
+                            containerColor = MaterialTheme.colorScheme.error
                         ),
                         onClick = {
                             renameOrDeleteCollection(collectionTitle, null)
@@ -195,7 +196,7 @@ fun UserView(
                 val rollTitle = userCollections[it].title
                 val thumbUrl = userCollections[it].thumbUrl
                 val favs = stringResource(R.string.fav_collection)
-                val currentPage = stringResource(R.string.profile_screen)
+//                val currentPage = stringResource(R.string.profile_screen)
 
                 Box {
                     RollCard(
@@ -204,7 +205,7 @@ fun UserView(
                         imageUrl = thumbUrl,
                         rollTitle = rollTitle
                     ) {
-                        getCollection(currentPage, rollTitle)
+                        getCollection(rollTitle)
                         goToPicsListScreen()
                     }
                     val modifier = Modifier
@@ -212,7 +213,7 @@ fun UserView(
                         .offset(-(13).dp, 13.dp)
                         .clip(RoundedCornerShape(15.dp))
                         .alpha(0.7f)
-                        .background(Color(0x44000000))
+                        .background(AlphaBlack)
                     if (rollTitle == favs) {
                         IconButton(
                             modifier = modifier,
@@ -223,7 +224,8 @@ fun UserView(
                         ) {
                             Icon(
                                 painterResource(R.drawable.baseline_delete_outline_24),
-                                "Delete collection"
+                                "Delete collection",
+                                tint = AlmostWhite
                             )
                         }
                     } else {
@@ -237,7 +239,8 @@ fun UserView(
                         ) {
                             Icon(
                                 painterResource(R.drawable.baseline_edit_24),
-                                "Rename or delete collection"
+                                "Rename or delete collection",
+                                tint = AlmostWhite
                             )
                         }
                     }
@@ -293,11 +296,12 @@ fun UserView(
                         }
                                    },
                     keyboardActions = KeyboardActions(onAny = { onRename() }),
+                    colors = myTextFieldColors(),
                     modifier = Modifier
-                        .background(Color(0x55000000))
+//                        .background(Color(0x55000000))
                 )
 
-                Text(text = "or")
+                Text(text = "or", color = AlmostWhite)
 
                 Button(
                     onClick = {

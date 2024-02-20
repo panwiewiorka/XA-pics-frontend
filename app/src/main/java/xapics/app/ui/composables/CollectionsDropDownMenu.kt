@@ -18,6 +18,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TAG
 import xapics.app.Thumb
+import xapics.app.ui.theme.myTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,9 +49,8 @@ fun CollectionsDropDownMenu(
     picCollections: List<String>,
     collectionToSaveTo: String,
     picId: Int,
-    editCollection: (String, Int) -> Boolean,
+    editCollectionOrLogIn: (String, Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
-    rememberToGetBackAfterLoggingIn: (Boolean?) -> Unit,
     goToAuthScreen: () -> Unit,
 ) {
     var collectionListOpened by rememberSaveable { mutableStateOf(false) }
@@ -59,15 +59,10 @@ fun CollectionsDropDownMenu(
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
 
-    fun addToNewCollectionOrLogIn(title: String) {
-        val isAuthorized = editCollection(title, picId)
+    fun editCollectionAndCloseMenu(title: String) {
+        editCollectionOrLogIn(title, picId, goToAuthScreen)
+        updateCollectionToSaveTo(title)
         collectionListOpened = false
-        if(!isAuthorized) {
-            rememberToGetBackAfterLoggingIn(true)
-            goToAuthScreen()
-        } else {
-            updateCollectionToSaveTo(title)
-        }
     }
 
     Column(
@@ -90,13 +85,7 @@ fun CollectionsDropDownMenu(
                 },
                 trailingIcon = {
                     IconButton(
-                        onClick = {
-                            val isAuthorized = editCollection(favs, picId)
-                            if(!isAuthorized) {
-                                rememberToGetBackAfterLoggingIn(true)
-                                goToAuthScreen()
-                            }
-                        },
+                        onClick = { editCollectionOrLogIn(favs, picId, goToAuthScreen) },
                     ) {
                         if (picCollections.contains(favs)) {
                             Icon(Icons.Filled.Favorite, "Remove from $favs")
@@ -105,10 +94,10 @@ fun CollectionsDropDownMenu(
                         }
                     }
                 },
-                onClick = { addToNewCollectionOrLogIn(favs) },
+                onClick = { editCollectionAndCloseMenu(favs) },
                 modifier = Modifier
                     .align(Alignment.End)
-                    .then(if (collectionToSaveTo == favs) Modifier.background(Color.DarkGray) else Modifier)
+                    .then(if (collectionToSaveTo == favs) Modifier.background(MaterialTheme.colorScheme.secondary) else Modifier)
             )
             userCollections?.forEach {
                 val collectionTitle = it.title
@@ -116,27 +105,21 @@ fun CollectionsDropDownMenu(
                     DropdownMenuItem(
                         text = { Text(collectionTitle) },
                         trailingIcon = {
-                            IconButton(onClick = {
-                                val isAuthorized = editCollection(collectionTitle, picId)
-                                if(!isAuthorized) {
-                                    rememberToGetBackAfterLoggingIn(true)
-                                    goToAuthScreen()
-                                }
-                            }) {
+                            IconButton(onClick = { editCollectionOrLogIn(collectionTitle, picId, goToAuthScreen) }) {
                                 if (picCollections.contains(collectionTitle)) {
-                                    Icon(Icons.Filled.Star, "Remove to $collectionTitle")
+                                    Icon(Icons.Filled.Star, "Remove from $collectionTitle")
                                 } else {
                                     Log.d(TAG, "CollectionsMenu: ${userCollections.size}, $collectionTitle, $picCollections, ${picCollections.contains(collectionTitle)}")
                                     Icon(painterResource(id = R.drawable.star_border), "Add to $collectionTitle")
                                 }
                             }
                         },
-                        onClick = { addToNewCollectionOrLogIn(collectionTitle) },
+                        onClick = { editCollectionAndCloseMenu(collectionTitle) },
                         modifier = Modifier
                             .align(Alignment.End)
                             .then(
                                 if (collectionToSaveTo == collectionTitle) Modifier.background(
-                                    Color.DarkGray
+                                    MaterialTheme.colorScheme.secondary
                                 ) else Modifier
                             )
                     )
@@ -190,7 +173,7 @@ fun CollectionsDropDownMenu(
                     ).show()
                 }
                 else -> {
-                    addToNewCollectionOrLogIn(newCollectionTitle)
+                    editCollectionAndCloseMenu(newCollectionTitle)
                     newCollectionDialogOpened = false
                 }
             }
@@ -207,9 +190,10 @@ fun CollectionsDropDownMenu(
                 },
 //                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
                 keyboardActions = KeyboardActions(onAny = { onNaming() }),
+                colors = myTextFieldColors(),
                 modifier = Modifier
-                    .background(Color(0x55000000))
-                    .focusRequester(focusRequester),
+//                    .background(Color(0x55000000), RoundedCornerShape(4.dp))
+                    .focusRequester(focusRequester)
             )
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
