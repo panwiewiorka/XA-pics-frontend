@@ -1,6 +1,5 @@
 package xapics.app.ui
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +39,6 @@ import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.FilmType.*
 import xapics.app.MainViewModel
-import xapics.app.TAG
 
 
 @Composable
@@ -94,10 +92,6 @@ fun EditFilmsScreen(
                 )
 
             RadioButtons(appState.filmToEdit, viewModel::editFilmField, focusManager::clearFocus)
-
-            TextAndSwitch("X-pro", appState.filmToEdit.xpro, focusManager::clearFocus) { viewModel.editFilmField(xpro = !appState.filmToEdit.xpro) }
-
-            TextAndSwitch("Expired", appState.filmToEdit.expired, focusManager::clearFocus) { viewModel.editFilmField(expired = !appState.filmToEdit.expired) }
 
             Spacer(Modifier.weight(1f))
 
@@ -191,7 +185,7 @@ fun TextAndSwitch(text: String, switchedOn: Boolean, onSwitch: (Boolean) -> Unit
 @Composable
 fun RadioButtons(
     filmToEdit: Film,
-    editFilmField: (String?, Int?, FilmType?, Boolean?, Boolean?) -> Unit,
+    editFilmField: (String?, Int?, FilmType?) -> Unit,
     clearFocus: () -> Unit
 ) {
     Row(
@@ -199,12 +193,12 @@ fun RadioButtons(
     ) {
         val offsetModifier = Modifier.offset((-6).dp)
         Text(text = "Slide")
-        RadioButton(selected = filmToEdit.type == SLIDE, onClick = { clearFocus(); editFilmField(null, null, SLIDE, null, null) }, modifier = offsetModifier)
+        RadioButton(selected = filmToEdit.type == SLIDE, onClick = { clearFocus(); editFilmField(null, null, SLIDE) }, modifier = offsetModifier)
         Spacer(modifier = Modifier.weight(1f))
         Text(text = "Negative")
-        RadioButton(selected =  filmToEdit.type == NEGATIVE, onClick = { clearFocus(); editFilmField(null, null, NEGATIVE, null, null) }, modifier = offsetModifier)
+        RadioButton(selected =  filmToEdit.type == NEGATIVE, onClick = { clearFocus(); editFilmField(null, null, NEGATIVE) }, modifier = offsetModifier)
         Spacer(modifier = Modifier.weight(1f))
         Text(text = "B/W")
-        RadioButton(selected =  filmToEdit.type == BW, onClick = { clearFocus(); editFilmField(null, null, BW, null, null) }, modifier = offsetModifier)
+        RadioButton(selected =  filmToEdit.type == BW, onClick = { clearFocus(); editFilmField(null, null, BW) }, modifier = offsetModifier)
     }
 }

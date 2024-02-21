@@ -101,8 +101,6 @@ interface PicsApi {
         @Field("filmName") filmName: String,
         @Field("iso") iso: Int,
         @Field("type") type: FilmType,
-        @Field("xpro") xpro: Boolean,
-        @Field("expired") expired: Boolean,
     )
 
     @GET("rolls")
@@ -117,6 +115,8 @@ interface PicsApi {
         @Field("isNewRoll") isNewFilm: Boolean,
         @Field("title") title: String,
         @Field("film") film: String,
+        @Field("xpro") xpro: Boolean,
+        @Field("expired") expired: Boolean,
         @Field("nonXa") nonXa: Boolean,
     )
 

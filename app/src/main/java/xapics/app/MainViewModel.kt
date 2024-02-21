@@ -73,7 +73,7 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    private fun authenticate() {
+    fun authenticate() {
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
@@ -280,8 +280,6 @@ class MainViewModel @Inject constructor (
                     film.filmName,
                     film.iso ?: 0,
                     film.type,
-                    film.xpro,
-                    film.expired
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "postFilm: ", e)
@@ -321,6 +319,8 @@ class MainViewModel @Inject constructor (
                     isNewRoll,
                     roll.title,
                     roll.film,
+                    roll.xpro,
+                    roll.expired,
                     roll.nonXa
                 )
             } catch (e: Exception) {
@@ -424,15 +424,11 @@ class MainViewModel @Inject constructor (
         filmName: String? = null,
         iso: Int? = null,
         type: FilmType? = null,
-        xpro: Boolean? = null,
-        expired: Boolean? = null,
     ) {
         val film = Film(
             filmName ?: appState.value.filmToEdit!!.filmName,
             iso ?: appState.value.filmToEdit!!.iso,
             type ?: appState.value.filmToEdit!!.type,
-            xpro ?: appState.value.filmToEdit!!.xpro,
-            expired ?: appState.value.filmToEdit!!.expired,
         )
         _appState.update { it.copy(filmToEdit = film) }
     }
@@ -448,12 +444,16 @@ class MainViewModel @Inject constructor (
     fun editRollField(
         title: String? = null,
         film: String? = null,
+        xpro: Boolean? = null,
+        expired: Boolean? = null,
         nonXa: Boolean? = null,
     ) {
         Log.d(TAG, "editRollField: film = $film")
         val roll = Roll(
             title ?: appState.value.rollToEdit!!.title,
             film ?: appState.value.rollToEdit!!.film,
+            xpro ?: appState.value.rollToEdit!!.xpro,
+            expired ?: appState.value.rollToEdit!!.expired,
             nonXa ?: appState.value.rollToEdit!!.nonXa,
         )
         _appState.update { it.copy(rollToEdit = roll) }

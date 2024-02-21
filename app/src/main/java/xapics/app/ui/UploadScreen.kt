@@ -93,6 +93,10 @@ fun UploadScreen(
                 FilmSelector(selectFilmToEdit = viewModel::selectFilmToEdit, filmsList = appState.filmsList, true, viewModel::editRollField, goToEditFilmsScreen)
             }
 
+            TextAndSwitch("Expired", appState.rollToEdit.expired, focusManager::clearFocus) { viewModel.editRollField(expired = !appState.rollToEdit.expired) }
+
+            TextAndSwitch("X-pro", appState.rollToEdit.xpro, focusManager::clearFocus) { viewModel.editRollField(xpro = !appState.rollToEdit.xpro) }
+
             TextAndSwitch("Filmed not on XA", appState.rollToEdit.nonXa, focusManager::clearFocus) { viewModel.editRollField(nonXa = !appState.rollToEdit.nonXa) }
 
             var imageUri by remember {

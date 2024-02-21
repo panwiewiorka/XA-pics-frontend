@@ -59,7 +59,6 @@ fun PicsListScreen(
         }
     }
 
-
     if (appState.showConnectionError) {
         ConnectionErrorButton {
             // TODO viewModel.getPicsList(currentPage, null, rollTitle, null)

@@ -26,20 +26,26 @@ data class Pic(
     val imageUrl: String,
     val tags: String,
     val film: String,
+    val filmType: FilmType,
+    val iso: Int,
+    val expired: Boolean,
+    val xpro: Boolean,
+    val nonXa: Boolean,
+//    val collections: String? = null,
 )
 
 data class Film(
     val filmName: String = "",
     val iso: Int? = null,
     val type: FilmType = FilmType.NULL,
-    val xpro: Boolean = false,
-    val expired: Boolean = false,
 )
 
 data class Roll(
     val title: String = "",
     val film: String = "",
 //    val date: Date,
+    val expired: Boolean = false,
+    val xpro: Boolean = false,
     val nonXa: Boolean = false,
 )
 

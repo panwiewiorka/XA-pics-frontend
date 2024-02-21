@@ -69,6 +69,7 @@ import xapics.app.ui.composables.PicTag
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
+import xapics.app.ui.theme.GrayMedium
 import xapics.app.ui.theme.YearTag
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class,)
@@ -83,6 +84,7 @@ fun PicScreen(
         appState.picsList?.size ?: 0
     }
 
+    /*
 //    val scope = rememberCoroutineScope()
     var animateFirstMove by remember { mutableStateOf(true) }
     var animateValue by remember { mutableStateOf(15.dp) }
@@ -111,6 +113,7 @@ fun PicScreen(
         animateValue = (-10).dp
         alphaValue = 1f
     }
+     */
 
     LaunchedEffect(pagerState.currentPage) {
         viewModel.updatePicState(pagerState.currentPage)
@@ -133,6 +136,7 @@ fun PicScreen(
 
                 Box {
 
+                    /*
                     if (pagerState.currentPage > 0) {
                         Icon(
                             Icons.Default.KeyboardArrowLeft,
@@ -155,6 +159,8 @@ fun PicScreen(
                         )
                     }
 
+                     */
+
                     HorizontalPager(
                         state = pagerState,
                         pageSize = PageSize.Fill,
@@ -164,7 +170,7 @@ fun PicScreen(
                         BoxWithConstraints(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 32.dp)
+//                                .padding(horizontal = 32.dp)
                         ) {
                             val height = (maxWidth.value / 1.5).dp
                             AsyncPic(
@@ -183,7 +189,7 @@ fun PicScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 32.dp).fillMaxWidth()
+                        modifier = Modifier.padding(start = 32.dp, end = 16.dp).fillMaxWidth()
                     ) {
                         Column {
                             Text(text = "${appState.picIndex + 1} / ${appState.picsList.size}")
@@ -243,6 +249,26 @@ fun PicScreen(
                             modifier = Modifier.padding(horizontal = 28.dp)
                         ) {
                             PicTag(state.pic!!.film, FilmTag) {
+                                viewModel.getPicsList(film = appState.pic.film)
+                                goToPicsListScreen()
+                            }
+
+                            PicTag(state.pic.filmType.toString().lowercase(), GrayMedium) {
+                                viewModel.getPicsList(film = appState.pic.film)
+                                goToPicsListScreen()
+                            }
+
+                            PicTag("iso ${state.pic.iso}", GrayMedium) {
+                                viewModel.getPicsList(film = appState.pic.film)
+                                goToPicsListScreen()
+                            }
+
+                            PicTag(if(state.pic.expired) "expired" else "non-expired", GrayMedium) {
+                                viewModel.getPicsList(film = appState.pic.film)
+                                goToPicsListScreen()
+                            }
+
+                            PicTag(if(state.pic.nonXa) "non-XA" else "XA", GrayMedium) {
                                 viewModel.getPicsList(film = appState.pic.film)
                                 goToPicsListScreen()
                             }

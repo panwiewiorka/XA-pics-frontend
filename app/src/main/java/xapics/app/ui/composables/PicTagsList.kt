@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
@@ -16,7 +17,11 @@ import xapics.app.ui.theme.YearTag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PicTagsList(tagsList: List<List<String>>?) {
+fun PicTagsList(
+    tagsList: List<List<String>>?,
+    getPicsList: (year: Int?, roll: String?, film: String?, tag: String?, description: String?) -> Unit,
+    goToPicsListScreen: () -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -35,11 +40,18 @@ fun PicTagsList(tagsList: List<List<String>>?) {
             ) {
                 list.forEach {
                     PicTag(text = it.trim(), color = color) {
-                        // TODO
+                        when(index) {
+                            0 -> {}
+                            1 -> getPicsList(null, null, it, null, null, )
+                            2 -> {}//getPicsList(null, null, null, null, null, )
+                            3 -> getPicsList(it.toInt(), null, null, null, null, )
+                            4 -> getPicsList(null, null, null, it, null, )
+                        }
+                        goToPicsListScreen()
                     }
                 }
                 if (index == 0) {
-                    PicTag(text = "XA-only", color = color) {
+                    PicTag(text = "XA", color = color) {
                         // TODO
                     }
                     PicTag(text = "non-XA", color = color) {
@@ -51,10 +63,10 @@ fun PicTagsList(tagsList: List<List<String>>?) {
                     PicTag(text = "non-expired", color = color) {
                         // TODO
                     }
-                    PicTag(text = "xpro", color = color) {
+                    PicTag(text = "x-pro", color = color) {
                         // TODO
                     }
-                    PicTag(text = "non-xpro", color = color) {
+                    PicTag(text = "non-x-pro", color = color) {
                         // TODO
                     }
                 }

@@ -1,5 +1,6 @@
 package xapics.app.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -25,27 +26,34 @@ import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.composables.PicTagsList
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 4.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 4.dp)
-        ) {
-            if (appState.showConnectionError) {
+        when {
+            appState.showConnectionError -> {
                 ConnectionErrorButton {
+                    viewModel.authenticate()
+                    viewModel.getUserInfo {} // TODO needed?
+//                        getPicsList(2020)
                     viewModel.getRollsList()
+                    viewModel.getRandomPic()
+                    viewModel.getAllTags()
+
                     viewModel.changeConnectionErrorVisibility(false)
                 }
-            } else {
+            }
+            appState.isLoading -> {
+                CircularProgressIndicator()
+            }
+            else -> {
                 appState.pic?.let {
 
                     BoxWithConstraints(
@@ -74,7 +82,6 @@ fun HomeScreen(
                     items(rolls) {
                         val imageUrl = appState.rollThumbnails!![it].thumbUrl
                         val rollTitle = appState.rollThumbnails[it].title
-                        val currentPage = stringResource(R.string.home_screen)
                         RollCard(
                             width = 150.dp,
                             isLoading = appState.isLoading,
@@ -89,13 +96,9 @@ fun HomeScreen(
 
                 Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-                PicTagsList(appState.tags)
+                PicTagsList(appState.tags, viewModel::getPicsList, goToPicsListScreen)
 
                 Spacer(modifier = Modifier.weight(1f))
-            }
-
-            if (appState.isLoading) {
-                CircularProgressIndicator()
             }
         }
     }
