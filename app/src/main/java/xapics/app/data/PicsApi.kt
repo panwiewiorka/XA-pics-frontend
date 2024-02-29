@@ -41,16 +41,16 @@ interface PicsApi {
         @Header("Authorization") token: String
     ): TheString
 
+    @GET("all-collections")
+    suspend fun getUserCollections(
+        @Header("Authorization") token: String,
+    ): List<Thumb>
+
     @GET("pic-collections")
     suspend fun getPicCollections(
         @Header("Authorization") token: String,
         @Query("picid") picId: Int
     ): List<String>
-
-    @GET("all-collections")
-    suspend fun getAllCollections(
-        @Header("Authorization") token: String,
-    ): List<Thumb>
 
     @FormUrlEncoded
     @POST("collection")
@@ -84,11 +84,7 @@ interface PicsApi {
 
     @GET("picslist")
     suspend fun getPicsList(
-        @Query("year") year: String?,
-        @Query("roll") roll: String?,
-        @Query("film") film: String?,
-        @Query("tag") tag: String?,
-        @Query("description") description: String?,
+        @Query("query") query: String,
     ): List<Pic>
 
     @GET("films")
@@ -121,7 +117,7 @@ interface PicsApi {
     )
 
     @GET("tags")
-    suspend fun getAllTags(): List<List<String>>
+    suspend fun getAllTags(): TheString
 
     @POST("file")
     @Multipart

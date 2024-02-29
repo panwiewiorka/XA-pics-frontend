@@ -330,21 +330,19 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPicsList(year: Int? = null, roll: String? = null, film: String? = null, tag: String? = null, description: String? = null,) {
-        val caption =
-            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
-                    if(description != null) "\"$description\" " else ""
+    fun getPicsList(query: String) {
+//        val caption =
+//            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
+//                    if(description != null) "\"$description\" " else ""
 
-        _appState.update { it.copy(
-            picsListQuery = PicsListQuery(year, roll, film, tag, description)
-        ) }
+//        val query =
 //        updateTopBarCaption(caption)
+        updateLoadingState(true)
         clearPicsList()
         viewModelScope.launch {
             try {
-                updateLoadingState(true)
                 _appState.update { it.copy(
-                    picsList = api.getPicsList(year?.toString(), roll, film, tag, description),
+                    picsList = api.getPicsList(query),
                     picIndex = 1,
                     isLoading = false
                 )}
@@ -523,8 +521,14 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
+
+                val tags = api.getAllTags().string
+                    .split(", ")
+                    .map { it.split(" = ") }
+                    .map { Tag(it[0], it[1]) }
+
                 _appState.update { it.copy(
-                    tags = api.getAllTags(),
+                    tags = tags,
                     isLoading = false
                 )}
 

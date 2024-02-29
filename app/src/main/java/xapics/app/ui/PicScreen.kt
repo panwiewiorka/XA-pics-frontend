@@ -62,6 +62,7 @@ import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.TAG
+import xapics.app.Tag
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.CollectionsDropDownMenu
 import xapics.app.ui.composables.ConnectionErrorButton
@@ -70,6 +71,7 @@ import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
 import xapics.app.ui.theme.GrayMedium
+import xapics.app.ui.theme.RollAttribute
 import xapics.app.ui.theme.YearTag
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class,)
@@ -248,34 +250,62 @@ fun PicScreen(
                         FlowRow(
                             modifier = Modifier.padding(horizontal = 28.dp)
                         ) {
+                            /*
                             PicTag(state.pic!!.film, FilmTag) {
-                                viewModel.getPicsList(film = appState.pic.film)
+                                viewModel.getPicsList("filmName = ${appState.pic.film}")
                                 goToPicsListScreen()
                             }
 
                             PicTag(state.pic.filmType.toString().lowercase(), GrayMedium) {
-                                viewModel.getPicsList(film = appState.pic.film)
+                                viewModel.getPicsList("filmType = ${appState.pic.filmType}")
                                 goToPicsListScreen()
                             }
 
                             PicTag("iso ${state.pic.iso}", GrayMedium) {
-                                viewModel.getPicsList(film = appState.pic.film)
+                                viewModel.getPicsList("iso = ${appState.pic.iso}")
                                 goToPicsListScreen()
                             }
 
                             PicTag(if(state.pic.expired) "expired" else "non-expired", GrayMedium) {
-                                viewModel.getPicsList(film = appState.pic.film)
+                                viewModel.getPicsList("expired = ${appState.pic.expired}")
                                 goToPicsListScreen()
                             }
 
                             PicTag(if(state.pic.nonXa) "non-XA" else "XA", GrayMedium) {
-                                viewModel.getPicsList(film = appState.pic.film)
+                                viewModel.getPicsList("nonXa = ${appState.pic.nonXa}")
                                 goToPicsListScreen()
                             }
 
                             PicTag(state.pic.year.toString(), YearTag) {
-                                viewModel.getPicsList(year = appState.pic.year)
+                                viewModel.getPicsList("year = ${appState.pic.year}")
                                 goToPicsListScreen()
+                            }
+
+                             */
+
+                            if(state.pic != null) {
+                                val tags = state.pic.tags
+                                    .split(", ")
+                                    .map { it.split(" = ") }
+                                    .map { Tag(it[0], it[1]) }
+
+                                tags.forEach {
+                                    val (color, text) = when (it.type) {
+                                        "filmType" -> Pair(GrayMedium, it.value.lowercase())
+                                        "nonXa" -> Pair(RollAttribute, if(it.value == "false") "XA" else "non-XA")
+                                        "expired" -> Pair(RollAttribute, if(it.value == "false") "not expired" else "expired")
+                                        "xpro" -> Pair(RollAttribute, if(it.value == "false") "no cross-process" else "cross-process")
+                                        "iso" -> Pair(GrayMedium, "iso ${it.value}")
+                                        "filmName" -> Pair(FilmTag, it.value)
+                                        "year" -> Pair(YearTag, it.value)
+                                        else -> Pair(DefaultTag, it.value)
+                                    }
+
+                                    PicTag(text = text, color = color) {
+                                        viewModel.getPicsList("${it.type} = ${it.value}")
+                                        goToPicsListScreen()
+                                    }
+                                }
                             }
 
                             state.picCollections.forEach {
@@ -285,14 +315,14 @@ fun PicScreen(
                                 }
                             }
 
-                            val tags = state.pic.tags.split(',')
-                            tags.forEach {
-                                val tag = it.trim()
-                                PicTag(tag, DefaultTag) {
-                                    viewModel.getPicsList(tag = tag)
-                                    goToPicsListScreen()
-                                }
-                            }
+//                            val hashtags = state.pic.tags.split(',')
+//                            hashtags.forEach {
+//                                val hashtag = it.trim()
+//                                PicTag(hashtag, DefaultTag) {
+//                                    viewModel.getPicsList("tag = $hashtag")
+//                                    goToPicsListScreen()
+//                                }
+//                            }
                         }
                     }
                 }

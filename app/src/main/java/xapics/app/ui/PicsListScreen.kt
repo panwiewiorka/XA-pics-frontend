@@ -73,7 +73,7 @@ fun PicsListScreen(
 
             if (appState.picsList == null) {
                 // TODO
-            } else if (appState.picsList.isEmpty()) {
+            } else if (appState.picsList.isEmpty() && !appState.isLoading) {
                 Text("Nothing found :(")
             } else {
                 LazyColumn(

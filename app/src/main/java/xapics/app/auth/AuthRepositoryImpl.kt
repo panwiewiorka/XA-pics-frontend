@@ -58,7 +58,7 @@ class AuthRepositoryImpl(
     override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
-            val userName = api.getUserName("Bearer $token").text
+            val userName = api.getUserName("Bearer $token").string
 //            api.authenticate("Bearer $token")
             updateUserName(userName)
 //            updateUserId(userId.toIntOrNull())
@@ -84,7 +84,7 @@ class AuthRepositoryImpl(
         return try {
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 //            val userId = api.getUserId("Bearer $token")
-            val userCollections = api.getAllCollections("Bearer $token")
+            val userCollections = api.getUserCollections("Bearer $token")
 //            updateUserId(userId.toIntOrNull())
             updateUserCollections(userCollections)
             AuthResult.Authorized()

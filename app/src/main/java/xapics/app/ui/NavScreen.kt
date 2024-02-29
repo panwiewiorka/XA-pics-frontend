@@ -91,7 +91,8 @@ fun NavScreen(
                     viewModel = viewModel,
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
-                    caption = appState.picsListQuery?.flattenToString() ?: ""
+//                    caption = appState.picsListQuery?.flattenToString() ?: ""
+                    caption = "CHANGE THAT"
                 )
             }
             composable(route = NavList.PicScreen.name) {

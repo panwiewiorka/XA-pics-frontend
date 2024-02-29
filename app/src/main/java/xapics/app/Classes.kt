@@ -1,5 +1,7 @@
 package xapics.app
 
+import coil.request.Tags
+
 //enum class PicType { FIRST, NEXT, PREV }
 
 enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
@@ -21,18 +23,25 @@ class PicsListQuery(
 
 data class Pic(
     val id: Int,
-    val year: Int,
-    val description: String,
     val imageUrl: String,
-    val tags: String,
-    val film: String,
-    val filmType: FilmType,
-    val iso: Int,
-    val expired: Boolean,
-    val xpro: Boolean,
-    val nonXa: Boolean,
+    val description: String,
+    val tags: String
 //    val collections: String? = null,
 )
+//data class Pic(
+//    val id: Int,
+//    val year: Int,
+//    val description: String,
+//    val imageUrl: String,
+//    val tags: String,
+//    val film: String,
+//    val filmType: FilmType,
+//    val iso: Int,
+//    val expired: Boolean,
+//    val xpro: Boolean,
+//    val nonXa: Boolean,
+////    val collections: String? = null,
+//)
 
 data class Film(
     val filmName: String = "",
@@ -54,6 +63,13 @@ data class Thumb(
     val thumbUrl: String
 )
 
+// needed to fix this (probably due to String containing special symbols):
+// com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
 data class TheString(
-    val text: String
+    val string: String
+)
+
+data class Tag(
+    val type: String,
+    val value: String
 )
