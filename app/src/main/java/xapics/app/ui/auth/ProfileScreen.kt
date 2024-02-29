@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.Thumb
+import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.AlmostWhite
 import xapics.app.ui.theme.AlphaBlack
@@ -202,7 +203,7 @@ fun UserView(
                     RollCard(
                         width = 150.dp,
                         isLoading = false,
-                        imageUrl = thumbUrl,
+                        imageUrl = BASE_URL + thumbUrl,
                         rollTitle = rollTitle
                     ) {
                         getCollection(rollTitle)

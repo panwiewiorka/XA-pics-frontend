@@ -17,6 +17,7 @@ import retrofit2.HttpException
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
+import xapics.app.data.PicsApi.Companion.BASE_URL
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -346,6 +347,7 @@ class MainViewModel @Inject constructor (
                     picIndex = 1,
                     isLoading = false
                 )}
+                Log.d(TAG, "getPicsList: $query")
             } catch (e: Exception) {
                 Log.e(TAG, "getPicsList: ", e)
                 updateLoadingState(false)

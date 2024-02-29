@@ -1,4 +1,4 @@
-package xapics.app.ui
+package xapics.app.ui.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

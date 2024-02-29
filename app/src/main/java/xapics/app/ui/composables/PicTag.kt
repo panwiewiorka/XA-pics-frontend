@@ -15,9 +15,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import xapics.app.Tag
+import xapics.app.ui.theme.CollectionTag
+import xapics.app.ui.theme.DefaultTag
+import xapics.app.ui.theme.FilmTag
+import xapics.app.ui.theme.GrayMedium
+import xapics.app.ui.theme.RollAttribute
+import xapics.app.ui.theme.YearTag
 
 @Composable
-fun PicTag(text: String, color: Color, onClick: () -> Unit) {
+fun PicTag(tag: Tag, onClick: () -> Unit) {
+
+    val (color, text) = when (tag.type) {
+        "filmType" -> Pair(GrayMedium, tag.value.lowercase())
+        "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
+        "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
+        "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
+        "iso" -> Pair(GrayMedium, "iso ${tag.value}")
+        "filmName" -> Pair(FilmTag, tag.value)
+        "year" -> Pair(YearTag, tag.value)
+        "hashtag" -> Pair(DefaultTag, tag.value)
+        "collection" -> Pair(CollectionTag, tag.value)
+        else -> Pair(Color.Transparent, tag.value)
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

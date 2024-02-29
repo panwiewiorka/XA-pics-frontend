@@ -26,6 +26,7 @@ import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.TAG
+import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 
@@ -89,7 +90,7 @@ fun PicsListScreen(
                             val pic = appState.picsList[it]
 
                             AsyncPic(
-                                url = pic.imageUrl,
+                                url = BASE_URL + pic.imageUrl,
                                 description = pic.description,
                                 modifier = Modifier
                                     .padding(horizontal = 32.dp)

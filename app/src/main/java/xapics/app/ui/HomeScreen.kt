@@ -23,6 +23,7 @@ import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.TAG
+import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.RollCard
@@ -64,9 +65,8 @@ fun HomeScreen(
                             .padding(top = 0.dp, bottom = 32.dp)
                     ) {
                         val height = (maxWidth.value / 1.5).dp
-                        Log.d(TAG, "HomeScreen: ${it.imageUrl}")
                         AsyncPic(
-                            url = it.imageUrl,
+                            url = BASE_URL + it.imageUrl,
                             description = "random pic: ${it.description}",
                             modifier = Modifier
                                 .height(height)
@@ -88,7 +88,7 @@ fun HomeScreen(
                         RollCard(
                             width = 150.dp,
                             isLoading = appState.isLoading,
-                            imageUrl = imageUrl,
+                            imageUrl = BASE_URL + imageUrl,
                             rollTitle = rollTitle,
                         ) {
                             viewModel.getPicsList("roll = $rollTitle")

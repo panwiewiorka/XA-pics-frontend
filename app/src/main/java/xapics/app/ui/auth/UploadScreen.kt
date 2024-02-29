@@ -1,4 +1,4 @@
-package xapics.app.ui
+package xapics.app.ui.auth
 
 import android.net.Uri
 import android.util.Log

@@ -19,8 +19,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.MainViewModel
 import xapics.app.R
+import xapics.app.ui.auth.AdminScreen
 import xapics.app.ui.auth.AuthScreen
+import xapics.app.ui.auth.EditFilmsScreen
 import xapics.app.ui.auth.ProfileScreen
+import xapics.app.ui.auth.UploadScreen
 import xapics.app.ui.composables.TopBar
 
 enum class NavList(@StringRes val title: Int) {
