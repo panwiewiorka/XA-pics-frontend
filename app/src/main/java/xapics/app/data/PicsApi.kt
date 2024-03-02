@@ -119,6 +119,11 @@ interface PicsApi {
     @GET("tags")
     suspend fun getAllTags(): TheString
 
+    @GET("filteredtags")
+    suspend fun getFilteredTags(
+        @Query("query") query: String
+    ): TheString
+
     @POST("file")
     @Multipart
     suspend fun uploadImage(

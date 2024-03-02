@@ -6,6 +6,8 @@ import coil.request.Tags
 
 enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
 
+enum class TagState { DISABLED, ENABLED, SELECTED }
+
 enum class PicsListType { ROLL, FILM, YEAR, TAGS, SEARCH }
 
 class PicsListQuery(
@@ -71,5 +73,6 @@ data class TheString(
 
 data class Tag(
     val type: String,
-    val value: String
+    val value: String,
+    var state: TagState = TagState.ENABLED
 )

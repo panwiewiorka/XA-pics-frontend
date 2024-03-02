@@ -30,6 +30,7 @@ enum class NavList(@StringRes val title: Int) {
     HomeScreen(title = R.string.home_screen),
     PicsListScreen(title = R.string.pics_list_screen),
     PicScreen(title = R.string.pic_screen),
+    SearchScreen(title = R.string.search_screen),
     EditFilmsScreen(title = R.string.edit_films_screen),
     UploadScreen(title = R.string.upload_screen),
     AuthScreen(title = R.string.auth_screen),
@@ -64,6 +65,7 @@ fun NavScreen(
                 goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                 goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                 goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
+                goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
                 updateTopBarCaption = viewModel::updateTopBarCaption,
                 search = viewModel::search,
                 showSearch = appState.showSearch,
@@ -104,6 +106,13 @@ fun NavScreen(
                     appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
+                )
+            }
+            composable(route = NavList.SearchScreen.name) {
+                SearchScreen(
+                    viewModel = viewModel,
+                    appState = appState,
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 )
             }
             composable(route = NavList.EditFilmsScreen.name) {

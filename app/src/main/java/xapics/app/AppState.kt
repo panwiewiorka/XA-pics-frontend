@@ -4,6 +4,7 @@ package xapics.app
 data class AppState(
     val picsList: List<Pic>? = null,
 //    val picsListQuery: PicsListQuery? = null,
+    val onRefresh: () -> Unit = {},
     val tags: List<Tag> = emptyList(),
     val captionsList: List<String> = emptyList(),
     val topBarCaption: String = "XA pics",

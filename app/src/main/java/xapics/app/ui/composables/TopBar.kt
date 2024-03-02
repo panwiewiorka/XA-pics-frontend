@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -57,6 +58,7 @@ fun TopBar(
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
+    goToSearchScreen: () -> Unit,
     updateTopBarCaption: (String) -> Unit,
     search: (String) -> Unit,
     showSearch: Boolean,
@@ -127,16 +129,32 @@ fun TopBar(
                         .padding(horizontal = 6.dp, vertical = 4.dp)
                         .focusRequester(focusRequester),
                 )
-                if (showClearSearchButton && query.text.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .align(Alignment.CenterEnd)
+                ) {
+                    if (showClearSearchButton && query.text.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "clear search",
+                            modifier = Modifier
+//                            .padding(horizontal = 4.dp)
+//                            .align(Alignment.CenterEnd)
+                                .clickable {
+                                    query = TextFieldValue("")
+                                    showClearSearchButton = false
+                                }
+                        )
+                    }
                     Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "clear search",
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Go to advanced search page",
                         modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .align(Alignment.CenterEnd)
+//                            .padding(horizontal = 4.dp)
+//                            .align(Alignment.CenterEnd)
                             .clickable {
-                                query = TextFieldValue("")
-                                showClearSearchButton = false
+                                goToSearchScreen()
                             }
                     )
                 }
@@ -166,7 +184,11 @@ fun TopBar(
 
             IconButton(onClick = {
                 if (showSearch && query.text != "") {
-                    search(query.text)
+                    if(page == "SearchScreen") {
+                        search(query.text)
+                    } else {
+                        search(query.text)
+                    }
                     goToPicsListScreen()
                 }
                 changeShowSearchState()

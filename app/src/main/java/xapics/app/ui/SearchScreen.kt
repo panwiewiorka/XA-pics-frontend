@@ -1,4 +1,4 @@
-package xapics.app.ui.composables
+package xapics.app.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -8,15 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import xapics.app.Tag
+import xapics.app.AppState
+import xapics.app.MainViewModel
+import xapics.app.ui.composables.PicTag
+import xapics.app.ui.composables.PicTagsList
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PicTagsList(
-    tags: List<Tag>,
-    getPicsList: (query: String) -> Unit,
-    changeTagsState: (Tag) -> Unit,
-    goToPicsListScreen: () -> Unit,
+fun SearchScreen(
+    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, // TODO replace with only essentials
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -24,11 +24,9 @@ fun PicTagsList(
         FlowRow(
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            tags.forEach {
+            appState.tags.forEach {
                 PicTag(it) {
-                    getPicsList("${it.type} = ${it.value}")
-                    changeTagsState(it)
-                    goToPicsListScreen()
+                    viewModel.getFilteredTags(it)
                 }
             }
         }

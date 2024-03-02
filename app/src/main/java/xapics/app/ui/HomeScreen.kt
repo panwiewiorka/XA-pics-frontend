@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,9 +27,11 @@ import xapics.app.TAG
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
+import xapics.app.ui.composables.PicTag
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.composables.PicTagsList
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit
@@ -74,7 +77,7 @@ fun HomeScreen(
 //                                .clip(RoundedCornerShape(2.dp))
                         ) {
                             viewModel.getRandomPic()
-                            // TODO goToPicScreen(), any collection?
+                            // TODO goToPicScreen(), caption: Random pic, any collection?
                         }
                     }
                 }
@@ -99,7 +102,20 @@ fun HomeScreen(
 
                 Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-                PicTagsList(appState.tags, viewModel::getPicsList, goToPicsListScreen)
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    FlowRow(
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    ) {
+                        appState.tags.forEach {
+                            PicTag(it) {
+                                viewModel.getPicsList("${it.type} = ${it.value}")
+                                goToPicsListScreen()
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
             }

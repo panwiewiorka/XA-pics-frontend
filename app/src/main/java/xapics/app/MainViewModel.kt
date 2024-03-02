@@ -17,7 +17,7 @@ import retrofit2.HttpException
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
-import xapics.app.data.PicsApi.Companion.BASE_URL
+import xapics.app.TagState.*
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -193,6 +193,9 @@ class MainViewModel @Inject constructor (
     fun getCollection(collection: String) {
         updateTopBarCaption(collection)
         clearPicsList()
+        _appState.update { it.copy(
+            onRefresh = { getCollection(collection) }
+        ) }
         viewModelScope.launch {
             try {
                 repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption) // TODO remove ::updateTopBarCaption
@@ -343,6 +346,7 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 _appState.update { it.copy(
+                    onRefresh = { getPicsList(query) },
                     picsList = api.getPicsList(query),
                     picIndex = 1,
                     isLoading = false
@@ -350,6 +354,7 @@ class MainViewModel @Inject constructor (
                 Log.d(TAG, "getPicsList: $query")
             } catch (e: Exception) {
                 Log.e(TAG, "getPicsList: ", e)
+                changeConnectionErrorVisibility(true)
                 updateLoadingState(false)
             }
         }
@@ -362,6 +367,7 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(true)
 //                api.search(query)
                 _appState.update { it.copy(
+                    onRefresh = { getPicsList(query) },
                     picsList = api.search(query),
                     picIndex = 1,
                     isLoading = false
@@ -536,6 +542,58 @@ class MainViewModel @Inject constructor (
 
             } catch (e: Exception) {
                 Log.e(TAG, "getAllTags: ", e)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun getFilteredTags(clickedTag: Tag) {
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+
+                var selectedTags = appState.value.tags.filter { it.state == SELECTED }
+
+                selectedTags = if (clickedTag.state == SELECTED) {
+                    selectedTags.minus(clickedTag)
+                } else {
+                    selectedTags.plus(clickedTag)
+                }
+
+                val query = selectedTags.map {
+                    "${it.type} = ${it.value}"
+                }.toString().drop(1).dropLast(1)
+
+                Log.d(TAG, "getFilteredTags: $query")
+
+                val filteredTags = (if (query.isEmpty()) api.getAllTags().string else api.getFilteredTags(query).string)
+                    .split(", ")
+                    .map { it.split(" = ") }
+                    .map { Tag(it[0], it[1]) }
+
+                Log.d(TAG, "getFilteredTags AZZ: $filteredTags")
+
+                val refreshedTags = appState.value.tags.toMutableList()
+                refreshedTags.forEach { tag ->
+                    val isClickedTag = clickedTag.type == tag.type && clickedTag.value == tag.value
+                    val shouldBeEnabled = filteredTags.any { it.type == tag.type && it.value == tag.value }
+//                    val shouldBeEnabled = filteredTags.firstOrNull { it.type == tag.type && it.value == tag.value } != null
+
+                    when {
+                        isClickedTag -> if (clickedTag.state == SELECTED) tag.state = ENABLED else tag.state = SELECTED
+                        shouldBeEnabled -> if (tag.state != SELECTED) tag.state = ENABLED
+                        else -> if (selectedTags.none { it.type == tag.type }) tag.state = DISABLED
+//                        else -> if (tag.type != clickedTag.type) tag.state = DISABLED
+                    }
+                }
+
+                _appState.update { it.copy(
+                    tags = refreshedTags,
+                    isLoading = false
+                )}
+
+            } catch (e: Exception) {
+                Log.e(TAG, "getFilteredTags: ", e)
                 updateLoadingState(false)
             }
         }
