@@ -1,8 +1,10 @@
 package xapics.app.ui.composables
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,8 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -37,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,6 +55,9 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.R
+import xapics.app.TAG
+import xapics.app.Tag
+import xapics.app.TagState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -69,6 +78,7 @@ fun TopBar(
     previousPage: String?,
     @StringRes pageName: Int,
     userName: String?,
+    tags: List<Tag>,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -82,13 +92,33 @@ fun TopBar(
             "ProfileScreen" -> userName ?: ""
             else -> stringResource(id = pageName)
         }
-        var showClearSearchButton by rememberSaveable { mutableStateOf(false) }
         val searchText = ""
         var query by remember { mutableStateOf( TextFieldValue (
             text = searchText,
             selection = TextRange(searchText.length)
         )
         ) }
+
+        fun filteredSearch() {
+            val filters = tags.filter { it.state == TagState.SELECTED }.map { "${it.type} = ${it.value}" }.toString().drop(1).dropLast(1)
+            val formattedQuery = query.text.replace(',', ' ')
+            when {
+                page == "SearchScreen" && filters.isNotBlank() -> {
+                    search(
+                        (if (formattedQuery.isBlank()) ""
+                        else "search = $formattedQuery, ")
+                                + filters
+                    )
+                    goToPicsListScreen()
+                }
+                formattedQuery.isNotBlank() -> {
+                    search("search = $formattedQuery")
+                    goToPicsListScreen()
+                }
+                else -> {}
+            }
+            changeShowSearchState()
+        }
 
         @Composable
         fun HomeOrBackButton() {
@@ -97,7 +127,7 @@ fun TopBar(
                     Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
-                IconButton(onClick = { popBackStack() }) {
+                IconButton(enabled = true, onClick = { popBackStack() }) {
                     Icon(Icons.Outlined.ArrowBack, "go Back")
                 }
             }
@@ -105,95 +135,69 @@ fun TopBar(
 
         @Composable
         fun SearchField() {
-            Box(modifier = Modifier.weight(1f)) {
-                BasicTextField(
-                    value = query,
-                    onValueChange = {
-                        showClearSearchButton = false
-                        query = it
-                    },
-                    singleLine = true,
-                    textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        if (query.text != "") {
-                            search(query.text)
-                            goToPicsListScreen()
-                        }
-                        changeShowSearchState()
-                    }),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
-                        .padding(horizontal = 6.dp, vertical = 4.dp)
-                        .focusRequester(focusRequester),
-                )
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .align(Alignment.CenterEnd)
-                ) {
-                    if (showClearSearchButton && query.text.isNotEmpty()) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "clear search",
-                            modifier = Modifier
-//                            .padding(horizontal = 4.dp)
-//                            .align(Alignment.CenterEnd)
-                                .clickable {
-                                    query = TextFieldValue("")
-                                    showClearSearchButton = false
-                                }
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Go to advanced search page",
-                        modifier = Modifier
-//                            .padding(horizontal = 4.dp)
-//                            .align(Alignment.CenterEnd)
-                            .clickable {
-                                goToSearchScreen()
-                            }
-                    )
-                }
-            }
+            BasicTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { filteredSearch() }),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                    .focusRequester(focusRequester),
+            )
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
-                showClearSearchButton = true
             }
         }
 
         @Composable
         fun TitleAndSearch() {
-            if (showSearch) {
-                SearchField()
-            } else {
-                Text(
-                    text = text,
-                    fontSize = 20.sp,
-                    maxLines = 1,
-                    overflow = Ellipsis,
-                    modifier = Modifier
-                        .basicMarquee()
-                        .weight(1f)
-                        .clickable(enabled = page == "PicScreen") { goToPicsListScreen() }
-                )
-            }
-
-            IconButton(onClick = {
-                if (showSearch && query.text != "") {
-                    if(page == "SearchScreen") {
-                        search(query.text)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (showSearch) {
+                        SearchField()
                     } else {
-                        search(query.text)
+                        Text(
+                            text = text,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = Ellipsis,
+                            modifier = Modifier
+                                .basicMarquee()
+                                .weight(1f)
+                                .clickable(enabled = page == "PicScreen") { goToPicsListScreen() }
+                        )
                     }
-                    goToPicsListScreen()
+
+                    if (page != "SearchScreen" && showSearch) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Go to advanced search page",
+                            modifier = Modifier.clickable { goToSearchScreen() }
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        if (showSearch) filteredSearch() else changeShowSearchState()
+                    }) {
+                        Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
+                    }
                 }
-                changeShowSearchState()
-            }) {
-                Icon(Icons.Default.Search, "Search photos")
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(28.dp)
+                        .border(1.dp, if (showSearch) MaterialTheme.colorScheme.outline else Color.Transparent, CircleShape)
+                ) {}
             }
         }
 
@@ -229,11 +233,9 @@ fun TopBar(
 
         HomeOrBackButton()
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(6.dp))
 
         TitleAndSearch()
-
-        Spacer(modifier = Modifier.width(6.dp))
 
         ProfileOrLogOutButton()
     }

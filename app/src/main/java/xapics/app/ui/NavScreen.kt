@@ -76,6 +76,7 @@ fun NavScreen(
                 previousPage = navController.previousBackStackEntry?.destination?.route,
                 pageName = currentScreen.title,
                 userName = appState.userName,
+                tags = appState.tags,
             )
         },
     ) { innerPadding ->

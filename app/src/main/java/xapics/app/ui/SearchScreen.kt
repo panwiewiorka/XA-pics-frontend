@@ -22,7 +22,9 @@ fun SearchScreen(
         modifier = Modifier.fillMaxWidth()
     ) {
         FlowRow(
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier
+                .padding(top = 12.dp)
+                .padding(horizontal = 12.dp)
         ) {
             appState.tags.forEach {
                 PicTag(it) {
