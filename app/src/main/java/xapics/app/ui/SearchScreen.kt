@@ -27,7 +27,7 @@ fun SearchScreen(
                 .padding(horizontal = 12.dp)
         ) {
             appState.tags.forEach {
-                PicTag(it) {
+                PicTag(it, viewModel::getTagColorAndName) {
                     viewModel.getFilteredTags(it)
                 }
             }

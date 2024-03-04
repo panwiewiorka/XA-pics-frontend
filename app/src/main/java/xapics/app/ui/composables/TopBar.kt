@@ -100,8 +100,14 @@ fun TopBar(
         ) }
 
         fun filteredSearch() {
-            val filters = tags.filter { it.state == TagState.SELECTED }.map { "${it.type} = ${it.value}" }.toString().drop(1).dropLast(1)
-            val formattedQuery = query.text.replace(',', ' ')
+            val formattedQuery = query.text
+                .replace(',', ' ')
+                .replace('=', ' ')
+
+            val filters = tags.filter { it.state == TagState.SELECTED }
+                .map { "${it.type} = ${it.value}" }
+                .toString().drop(1).dropLast(1)
+
             when {
                 page == "SearchScreen" && filters.isNotBlank() -> {
                     search(

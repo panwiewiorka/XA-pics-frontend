@@ -10,4 +10,5 @@
     <string name="admin_screen">Admin console</string>
     <string name="profile_screen">Collections</string>
     <string name="fav_collection">Favourites</string>
+    <string name="filtered">Pics filtered by:</string>
 </resources>

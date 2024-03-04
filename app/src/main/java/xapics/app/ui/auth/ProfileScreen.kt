@@ -185,7 +185,7 @@ fun UserView(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("Favourite pics will be show here")
+            Text("Favourite pics will be shown here")
 
         }
     } else {
@@ -197,7 +197,6 @@ fun UserView(
                 val rollTitle = userCollections[it].title
                 val thumbUrl = userCollections[it].thumbUrl
                 val favs = stringResource(R.string.fav_collection)
-//                val currentPage = stringResource(R.string.profile_screen)
 
                 Box {
                     RollCard(

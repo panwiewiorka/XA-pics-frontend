@@ -20,11 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.AppState
 import xapics.app.MainViewModel
+import xapics.app.R
 import xapics.app.TAG
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
@@ -34,7 +36,7 @@ import xapics.app.ui.composables.ConnectionErrorButton
 fun PicsListScreen(
     viewModel: MainViewModel, appState: AppState, goToPicScreen: () -> Unit, caption: String
 ) {
-    Text(text = caption)
+//    Text(text = caption)
 
     LaunchedEffect(Unit) {
 //        Log.d(TAG, "PicsListScreen: topBarCaption = ${appState.topBarCaption}, captionsList.last = ${if(appState.captionsList.isNotEmpty()) appState.captionsList.last() else ""}")
@@ -42,9 +44,8 @@ fun PicsListScreen(
 //            viewModel.replaceTopBarCaptionWithPrevious()
 //        }
         Log.d(TAG, caption)
-        viewModel.updateTopBarCaption(caption)
+//        viewModel.updateTopBarCaption(caption)
     }
-
 
     val context = LocalContext.current
 
@@ -81,6 +82,17 @@ fun PicsListScreen(
                     state = scrollState,
                     modifier = Modifier.fillMaxSize()
                 ) {
+//                    if (appState.topBarCaption == "Pics filtered by:") {
+//                        item {
+//                            Text(
+//                                text = appState.filters,
+//                                modifier = Modifier
+//                                    .padding(horizontal = 32.dp)
+//                                    .padding(bottom = 16.dp)
+//                            )
+//                        }
+//                    }
+
                     items(
                         count = appState.picsList.size,
                         key = { appState.picsList[it].id },

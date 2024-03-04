@@ -1,6 +1,8 @@
 package xapics.app
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +20,15 @@ import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
 import xapics.app.TagState.*
+import xapics.app.ui.theme.CollectionTag
+import xapics.app.ui.theme.DefaultTag
+import xapics.app.ui.theme.FilmTag
+import xapics.app.ui.theme.GrayMedium
+import xapics.app.ui.theme.RollAttribute
+import xapics.app.ui.theme.YearTag
 import java.io.File
 import java.io.IOException
+import java.util.Locale
 import javax.inject.Inject
 
 const val TAG = "mytag"
@@ -233,7 +242,66 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    fun updateTopBarCaption(caption: String) {
+    fun getTagColorAndName(tag: Tag): Pair<Color, String> {
+        return when(tag.type) {
+            "filmType" -> Pair(GrayMedium, tag.value.lowercase())
+            "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
+            "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
+            "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
+            "iso" -> Pair(GrayMedium, "iso ${tag.value}")
+            "filmName" -> Pair(FilmTag, tag.value)
+            "year" -> Pair(YearTag, tag.value)
+            "hashtag" -> Pair(DefaultTag, tag.value)
+            "collection" -> Pair(CollectionTag, tag.value)
+            else -> Pair(Color.Transparent, tag.value)
+        }
+    }
+
+    fun updateTopBarCaption(query: String) {
+        val caption: String
+        if (!query.contains(" = ")) {
+            caption = query
+        } else {
+            val tags = query
+                .split(", ")
+                .map { it.split(" = ") }
+                .map { Tag(it[0], it[1]) }
+
+            val searchIndex = tags.indexOfFirst{it.type == "search"}
+            val isSearchQuery = searchIndex != -1
+            val isFilteredList = tags.size > 1
+
+            caption = when {
+                tags.isEmpty() -> "??? $query"
+                isSearchQuery -> "\"${tags[searchIndex].value}\""
+                isFilteredList -> {
+//                val tagGroups = tags.groupBy { it.type }
+//                var result = ""
+//                tagGroups.keys.forEachIndexed { keyIndex, key ->
+//                    val writingKey = key != "nonXa" && key != "xpro" && key != "expired" && key != "iso"
+//                    if (keyIndex != 0) result += ", "
+//                    if (writingKey) result += "$key: "
+//                    tagGroups[key]?.forEachIndexed { index, tag ->
+//                        if (index != 0) result += " / "
+//                        result += getTagColorAndName(tag).second
+//                    }
+//                }
+//                _appState.update { it.copy(filters = result) }
+                    "Filtered pics"
+                }
+                else -> { // single category
+                    val theTag = tags[0].value
+                    when (tags[0].type) {
+                        "filmType" -> "${theTag.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }} films"
+                        "filmName" -> "film: $theTag"
+                        "hashtag" -> "#$theTag"
+                        else -> getTagColorAndName(tags[0]).second
+                    }
+                }
+            }
+        }
+
+
         _appState.update { it.copy(
             topBarCaption = caption
         )}
@@ -334,46 +402,68 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getPicsList(query: String) {
-//        val caption =
-//            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
-//                    if(description != null) "\"$description\" " else ""
-
-//        val query =
-//        updateTopBarCaption(caption)
-        updateLoadingState(true)
-        clearPicsList()
-        viewModelScope.launch {
-            try {
-                _appState.update { it.copy(
-                    onRefresh = { getPicsList(query) },
-                    picsList = api.getPicsList(query),
-                    picIndex = 1,
-                    isLoading = false
-                )}
-                Log.d(TAG, "getPicsList: $query")
-            } catch (e: Exception) {
-                Log.e(TAG, "getPicsList: ", e)
-                changeConnectionErrorVisibility(true)
-                updateLoadingState(false)
-            }
-        }
-    }
+//    fun getPicsList(query: String) {
+////        val caption =
+////            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
+////                    if(description != null) "\"$description\" " else ""
+//
+////        val query =
+////        updateTopBarCaption(caption)
+//
+//        /*
+//        updateLoadingState(true)
+//        clearPicsList()
+//        viewModelScope.launch {
+//            try {
+//                _appState.update { it.copy(
+//                    onRefresh = { getPicsList(query) },
+//                    picsList = api.getPicsList(query),
+//                    picIndex = 1,
+//                    isLoading = false
+//                )}
+//                Log.d(TAG, "getPicsList: $query")
+//            } catch (e: Exception) {
+//                Log.e(TAG, "getPicsList: ", e)
+//                changeConnectionErrorVisibility(true)
+//                updateLoadingState(false)
+//            }
+//        }
+//
+//         */
+//
+//        // search() // TODO merge
+//        updateLoadingState(true)
+//        clearPicsList()
+//        viewModelScope.launch {
+//            try {
+//                _appState.update { it.copy(
+//                    onRefresh = { search(query) },
+//                    picsList = api.search(query),
+//                    picIndex = 1,
+//                    isLoading = false
+//                )}
+//                updateTopBarCaption("\"$query\"")
+//
+//            } catch (e: Exception) {
+//                Log.e(TAG, "search: ", e)
+//                updateLoadingState(false)
+//            }
+//        }
+//
+//    }
 
     fun search(query: String) {
+        updateLoadingState(true)
         clearPicsList()
+        updateTopBarCaption(query)
         viewModelScope.launch {
             try {
-                updateLoadingState(true)
-//                api.search(query)
                 _appState.update { it.copy(
-                    onRefresh = { getPicsList(query) },
+                    onRefresh = { search(query) },
                     picsList = api.search(query),
                     picIndex = 1,
                     isLoading = false
                 )}
-                updateTopBarCaption("\"$query\"")
-
             } catch (e: Exception) {
                 Log.e(TAG, "search: ", e)
                 updateLoadingState(false)

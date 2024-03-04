@@ -228,15 +228,15 @@ fun PicScreen(
                                     .map { Tag(it[0], it[1]) }
 
                                 tags.forEach {
-                                    PicTag(it) {
-                                        viewModel.getPicsList("${it.type} = ${it.value}")
+                                    PicTag(it, viewModel::getTagColorAndName) {
+                                        viewModel.search("${it.type} = ${it.value}")
                                         goToPicsListScreen()
                                     }
                                 }
                             }
 
                             state.picCollections.forEach {
-                                PicTag(Tag("collection", it)) {
+                                PicTag(Tag("collection", it), viewModel::getTagColorAndName) {
                                     viewModel.getCollection(it)
                                     goToPicsListScreen()
                                 }

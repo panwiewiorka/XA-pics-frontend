@@ -27,20 +27,9 @@ import xapics.app.ui.theme.RollAttribute
 import xapics.app.ui.theme.YearTag
 
 @Composable
-fun PicTag(tag: Tag, onClick: () -> Unit) {
+fun PicTag(tag: Tag, getTagColorAndName: (Tag) -> Pair<Color, String>, onClick: () -> Unit) {
 
-    val (color, text) = when (tag.type) {
-        "filmType" -> Pair(GrayMedium, tag.value.lowercase())
-        "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
-        "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
-        "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
-        "iso" -> Pair(GrayMedium, "iso ${tag.value}")
-        "filmName" -> Pair(FilmTag, tag.value)
-        "year" -> Pair(YearTag, tag.value)
-        "hashtag" -> Pair(DefaultTag, tag.value)
-        "collection" -> Pair(CollectionTag, tag.value)
-        else -> Pair(Color.Transparent, tag.value)
-    }
+    val (color, text) = getTagColorAndName(tag)
 
     Box(
         contentAlignment = Alignment.Center,

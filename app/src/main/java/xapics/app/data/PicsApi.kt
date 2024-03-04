@@ -82,10 +82,10 @@ interface PicsApi {
         @Query("query") query: String
     ): List<Pic>
 
-    @GET("picslist")
-    suspend fun getPicsList(
-        @Query("query") query: String,
-    ): List<Pic>
+//    @GET("picslist")
+//    suspend fun getPicsList(
+//        @Query("query") query: String,
+//    ): List<Pic>
 
     @GET("films")
     suspend fun getFilmsList(): List<Film>

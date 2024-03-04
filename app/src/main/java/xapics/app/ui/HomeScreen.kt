@@ -94,7 +94,7 @@ fun HomeScreen(
                             imageUrl = BASE_URL + imageUrl,
                             rollTitle = rollTitle,
                         ) {
-                            viewModel.getPicsList("roll = $rollTitle")
+                            viewModel.search("roll = $rollTitle")
                             goToPicsListScreen()
                         }
                     }
@@ -109,8 +109,8 @@ fun HomeScreen(
                         modifier = Modifier.padding(horizontal = 12.dp)
                     ) {
                         appState.tags.forEach {
-                            PicTag(it) {
-                                viewModel.getPicsList("${it.type} = ${it.value}")
+                            PicTag(it, viewModel::getTagColorAndName) {
+                                viewModel.search("${it.type} = ${it.value}")
                                 goToPicsListScreen()
                             }
                         }
