@@ -274,21 +274,7 @@ class MainViewModel @Inject constructor (
             caption = when {
                 tags.isEmpty() -> "??? $query"
                 isSearchQuery -> "\"${tags[searchIndex].value}\""
-                isFilteredList -> {
-//                val tagGroups = tags.groupBy { it.type }
-//                var result = ""
-//                tagGroups.keys.forEachIndexed { keyIndex, key ->
-//                    val writingKey = key != "nonXa" && key != "xpro" && key != "expired" && key != "iso"
-//                    if (keyIndex != 0) result += ", "
-//                    if (writingKey) result += "$key: "
-//                    tagGroups[key]?.forEachIndexed { index, tag ->
-//                        if (index != 0) result += " / "
-//                        result += getTagColorAndName(tag).second
-//                    }
-//                }
-//                _appState.update { it.copy(filters = result) }
-                    "Filtered pics"
-                }
+                isFilteredList -> "Filtered pics"
                 else -> { // single category
                     val theTag = tags[0].value
                     when (tags[0].type) {
@@ -402,56 +388,6 @@ class MainViewModel @Inject constructor (
         }
     }
 
-//    fun getPicsList(query: String) {
-////        val caption =
-////            (year?.toString() ?: "") + (roll ?: "") + if(film != null) "film: $film " else "" + if(tag != null) "#$tag " else "" +
-////                    if(description != null) "\"$description\" " else ""
-//
-////        val query =
-////        updateTopBarCaption(caption)
-//
-//        /*
-//        updateLoadingState(true)
-//        clearPicsList()
-//        viewModelScope.launch {
-//            try {
-//                _appState.update { it.copy(
-//                    onRefresh = { getPicsList(query) },
-//                    picsList = api.getPicsList(query),
-//                    picIndex = 1,
-//                    isLoading = false
-//                )}
-//                Log.d(TAG, "getPicsList: $query")
-//            } catch (e: Exception) {
-//                Log.e(TAG, "getPicsList: ", e)
-//                changeConnectionErrorVisibility(true)
-//                updateLoadingState(false)
-//            }
-//        }
-//
-//         */
-//
-//        // search() // TODO merge
-//        updateLoadingState(true)
-//        clearPicsList()
-//        viewModelScope.launch {
-//            try {
-//                _appState.update { it.copy(
-//                    onRefresh = { search(query) },
-//                    picsList = api.search(query),
-//                    picIndex = 1,
-//                    isLoading = false
-//                )}
-//                updateTopBarCaption("\"$query\"")
-//
-//            } catch (e: Exception) {
-//                Log.e(TAG, "search: ", e)
-//                updateLoadingState(false)
-//            }
-//        }
-//
-//    }
-
     fun search(query: String) {
         updateLoadingState(true)
         clearPicsList()
@@ -479,26 +415,6 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             getBackAfterLoggingIn = value ?: appState.value.getBackAfterLoggingIn
         ) }
-    }
-
-    private fun addToCaptionList(caption: String) {
-        _appState.update { it.copy(
-            captionsList = appState.value.captionsList + caption
-        )}
-    }
-
-    fun removeLastCaptionFromList() {
-        _appState.update { it.copy(
-            captionsList = appState.value.captionsList.drop(1)
-        )}
-    }
-
-    fun replaceTopBarCaptionWithPrevious() {
-        val list = appState.value.captionsList
-        if (list.isNotEmpty()) {
-            updateTopBarCaption(list.last())
-            removeLastCaptionFromList()
-        }
     }
 
     fun updatePicState(picIndex: Int) {

@@ -56,9 +56,6 @@ fun HomeScreen(
                     viewModel.changeConnectionErrorVisibility(false)
                 }
             }
-            appState.isLoading -> {
-                CircularProgressIndicator()
-            }
             else -> {
                 appState.pic?.let {
 
@@ -118,6 +115,8 @@ fun HomeScreen(
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                if (appState.isLoading) CircularProgressIndicator()
             }
         }
     }
