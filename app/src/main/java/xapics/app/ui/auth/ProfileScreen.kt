@@ -40,21 +40,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xapics.app.MainViewModel
 import xapics.app.R
+import xapics.app.ShowHide.HIDE
 import xapics.app.Thumb
 import xapics.app.data.PicsApi.Companion.BASE_URL
+import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.AlmostWhite
 import xapics.app.ui.theme.AlphaBlack
-import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.GrayDark
-import xapics.app.ui.theme.MyError
 import xapics.app.ui.theme.myTextFieldColors
 
 @Composable
@@ -63,56 +61,40 @@ fun ProfileScreen(
     isLoading: Boolean,
     userName: String?,
     userCollections: List<Thumb>?,
+    connectionError: Boolean,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
 ) {
     val context = LocalContext.current
 
-//    LaunchedEffect(viewModel, context) {
-//        Log.d(TAG, "ProfileScreen: Launched Effect started")
-//
-//        viewModel.authResults.collect { result ->
-//            Log.d(TAG, "ProfileScreen: result is $result")
-//            when(result) {
-//                is AuthResult.Authorized -> { }
-//                is AuthResult.Conflicted -> {
-//                    Toast.makeText(
-//                        context,
-//                        result.data.toString(),
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//                is AuthResult.Unauthorized -> {
-//                    Log.d(TAG, "result is Unauthorized, goToAuthScreen()")
-//                    goToAuthScreen()
-//                }
-//                is AuthResult.UnknownError -> {
-//                    Toast.makeText(
-//                        context,
-//                        "An unknown error occurred",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        }
-//    }
-
     LaunchedEffect(Unit) {
         if (userName != null) viewModel.getUserInfo(goToAuthScreen)
     }
-    
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        UserView(
-            userCollections,
-            viewModel::getCollection,
-            goToPicsListScreen,
-            viewModel::renameOrDeleteCollection,
-            context
-        )
-        if (isLoading) CircularProgressIndicator()
+        when {
+            connectionError -> {
+                ConnectionErrorButton {
+                    viewModel.showConnectionError(HIDE)
+                    viewModel.getUserInfo(goToAuthScreen)
+                }
+            }
+            isLoading -> {
+                CircularProgressIndicator()
+            }
+            else -> {
+                UserView(
+                    userCollections,
+                    viewModel::getCollection,
+                    goToPicsListScreen,
+                    viewModel::renameOrDeleteCollection,
+                    context
+                )
+            }
+        }
     }
 }
 

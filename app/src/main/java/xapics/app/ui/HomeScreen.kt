@@ -1,8 +1,6 @@
 package xapics.app.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,18 +16,15 @@ import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xapics.app.AppState
 import xapics.app.MainViewModel
-import xapics.app.R
-import xapics.app.TAG
+import xapics.app.ShowHide.*
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.PicTag
 import xapics.app.ui.composables.RollCard
-import xapics.app.ui.composables.PicTagsList
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -44,7 +39,7 @@ fun HomeScreen(
             .padding(top = 4.dp)
     ) {
         when {
-            appState.showConnectionError -> {
+            appState.connectionError.isShown -> {
                 ConnectionErrorButton {
                     viewModel.authenticate()
                     viewModel.getUserInfo {} // TODO needed?
@@ -53,7 +48,7 @@ fun HomeScreen(
                     viewModel.getRandomPic()
                     viewModel.getAllTags()
 
-                    viewModel.changeConnectionErrorVisibility(false)
+                    viewModel.showConnectionError(HIDE)
                 }
             }
             else -> {

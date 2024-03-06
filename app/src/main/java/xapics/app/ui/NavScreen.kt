@@ -1,6 +1,8 @@
 package xapics.app.ui
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
@@ -9,8 +11,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.MainViewModel
 import xapics.app.R
+import xapics.app.ShowHide.*
 import xapics.app.ui.auth.AdminScreen
 import xapics.app.ui.auth.AuthScreen
 import xapics.app.ui.auth.EditFilmsScreen
@@ -38,6 +47,10 @@ enum class NavList(@StringRes val title: Int) {
     ProfileScreen(title = R.string.profile_screen),
 }
 
+val Int.nonScaledSp
+    @Composable
+    get() = (this / LocalDensity.current.fontScale).sp
+
 @SuppressLint("RestrictedApi")
 @Composable
 fun NavScreen(
@@ -52,24 +65,29 @@ fun NavScreen(
         backStackEntry?.destination?.route ?: NavList.HomeScreen.name
     )
 
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    var backPressHandled by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold (
-        modifier = Modifier.pointerInput(appState.showSearch) {
+        modifier = Modifier.pointerInput(appState.searchField) {
             detectTapGestures(onTap = {
-                if (appState.showSearch) viewModel.changeShowSearchState()
+                if (appState.searchField.isShown) viewModel.showSearch(HIDE)
             })
         },
         topBar = {
             TopBar(
                 popBackStack = { navController.popBackStack() },
+                loadStateSnapshot = viewModel::loadStateSnapshot,
                 goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                 goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                 goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                 goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
-                updateTopBarCaption = viewModel::updateTopBarCaption,
                 search = viewModel::search,
-                showSearch = appState.showSearch,
-                changeShowSearchState = viewModel::changeShowSearchState,
+                showPicsList = viewModel::showPicsList,
+                searchField = appState.searchField,
+                showSearch = viewModel::showSearch,
                 logOut = viewModel::logOut,
                 topBarCaption = appState.topBarCaption,
                 page = backStackEntry?.destination?.route,
@@ -80,6 +98,14 @@ fun NavScreen(
             )
         },
     ) { innerPadding ->
+        BackHandler(
+            enabled = backStackEntry?.destination?.route == "PicsListScreen" || backStackEntry?.destination?.route == "PicScreen"
+        ) {
+            viewModel.loadStateSnapshot()
+            navController.popBackStack()
+            if (backStackEntry?.destination?.route == "PicsListScreen") viewModel.showPicsList(HIDE)
+        }
+
         NavHost(
             navController = navController,
             startDestination = NavList.HomeScreen.name,
@@ -98,7 +124,6 @@ fun NavScreen(
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
                     popBackStack = { navController.popBackStack() },
-                    page = backStackEntry?.destination?.route,
                     previousPage = navController.previousBackStackEntry?.destination?.route,
                 )
             }
@@ -141,6 +166,7 @@ fun NavScreen(
                     popBackStack = { navController.popBackStack() },
                     goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
+                    isLoading = appState.isLoading,
                 )
             }
             composable(route = NavList.AdminScreen.name) {
@@ -158,6 +184,7 @@ fun NavScreen(
                     isLoading = appState.isLoading,
                     userName = appState.userName,
                     userCollections = appState.userCollections,
+                    connectionError = appState.connectionError.isShown,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )

@@ -5,4 +5,5 @@ sealed class AuthResult<T>(val data: T? = null) {
     class Conflicted<T>(data: T? = null): AuthResult<T>(data)
     class Unauthorized<T>: AuthResult<T>()
     class UnknownError<T>: AuthResult<T>()
+    class ConnectionError<T>: AuthResult<T>()
 }

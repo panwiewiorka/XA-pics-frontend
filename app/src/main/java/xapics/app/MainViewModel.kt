@@ -2,7 +2,6 @@ package xapics.app
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +19,8 @@ import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
 import xapics.app.TagState.*
+import xapics.app.ShowHide.*
+import xapics.app.OnPicsListScreenRefresh.*
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
@@ -45,6 +46,10 @@ class MainViewModel @Inject constructor (
     private val resultChannel = Channel<AuthResult<Unit>>()
     val authResults = resultChannel.receiveAsFlow()
 
+    var stateHistory: MutableList<StateSnapshot> = mutableListOf()
+
+    var onPicsListScreenRefresh = Pair(SEARCH, "")
+
     init {
         authenticate()
         getUserInfo {} // TODO needed?
@@ -60,9 +65,9 @@ class MainViewModel @Inject constructor (
     }
 
     fun signUpOrIn(user: String, pass: String, signUp: Boolean) {
+        updateLoadingState(true)
         viewModelScope.launch {
             try {
-                updateLoadingState(true)
                 val result = if(signUp) repository.signUp(
                     username = user,
                     password = pass
@@ -78,6 +83,7 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "signUpOrIn(): ", e)
+                resultChannel.send(AuthResult.ConnectionError())
                 updateLoadingState(false)
             }
         }
@@ -113,6 +119,7 @@ class MainViewModel @Inject constructor (
 //                resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
+                showConnectionError(SHOW)
                 Log.e(TAG, "getUserInfo(): ", e)
                 updateLoadingState(false)
             }
@@ -191,6 +198,7 @@ class MainViewModel @Inject constructor (
                     is AuthResult.Conflicted -> TODO()
                     is AuthResult.Unauthorized -> Log.d(TAG, "401 unauthorized")
                     is AuthResult.UnknownError -> Log.d(TAG, "Unknown error")
+                    is AuthResult.ConnectionError -> Log.d(TAG, "Connection error")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "renameOrDeleteCollection: ", e)
@@ -200,17 +208,18 @@ class MainViewModel @Inject constructor (
     }
 
     fun getCollection(collection: String) {
-        updateTopBarCaption(collection)
         clearPicsList()
-        _appState.update { it.copy(
-            onRefresh = { getCollection(collection) }
-        ) }
+        updateLoadingState(true)
+        updateTopBarCaption(collection)
         viewModelScope.launch {
             try {
-                repository.getCollection(collection, ::updatePicsList, ::updateTopBarCaption) // TODO remove ::updateTopBarCaption
-//            addToCaptionList(collection)
-//            updateTopBarCaption(collection)
+                repository.getCollection(collection, ::updatePicsList)
+                updateLoadingState(false)
+                saveStateSnapshot()
             } catch (e: Exception) {
+                onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
+                showConnectionError(SHOW)
+                updateLoadingState(false)
                 Log.e(TAG, "getCollection: ", e)
             }
         }
@@ -301,7 +310,7 @@ class MainViewModel @Inject constructor (
 //                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.d(TAG, "getPicCollections: ", e)
-                changeConnectionErrorVisibility(true)
+                showConnectionError(SHOW)
 //                updateLoadingState(false)
             }
         }
@@ -357,16 +366,16 @@ class MainViewModel @Inject constructor (
                     isLoading = false
                 )}
             } catch (e: Exception) {
-                changeConnectionErrorVisibility(true)
+                showConnectionError(SHOW)
                 Log.e(TAG, "getRollsList(): ", e)
                 updateLoadingState(false)
             }
         }
     }
 
-    fun changeConnectionErrorVisibility(show: Boolean? = null){
+    fun showConnectionError(showOrHide: ShowHide){
         _appState.update { it.copy(
-            showConnectionError = show ?: !appState.value.showConnectionError
+            connectionError = showOrHide
         )}
     }
 
@@ -389,26 +398,28 @@ class MainViewModel @Inject constructor (
     }
 
     fun search(query: String) {
-        updateLoadingState(true)
         clearPicsList()
+        updateLoadingState(true)
         updateTopBarCaption(query)
         viewModelScope.launch {
             try {
                 _appState.update { it.copy(
-                    onRefresh = { search(query) },
                     picsList = api.search(query),
                     picIndex = 1,
                     isLoading = false
                 )}
+                saveStateSnapshot() // TODO check whether it waits for api ^^
             } catch (e: Exception) {
                 Log.e(TAG, "search: ", e)
+                onPicsListScreenRefresh = Pair(SEARCH, query)
+                showConnectionError(SHOW)
                 updateLoadingState(false)
             }
         }
     }
 
-    fun changeShowSearchState(showSearch: Boolean? = null) {
-        _appState.update { it.copy(showSearch = showSearch ?: !appState.value.showSearch) }
+    fun showSearch(showOrHide: ShowHide) {
+        _appState.update { it.copy(searchField = showOrHide) }
     }
 
     fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
@@ -418,14 +429,14 @@ class MainViewModel @Inject constructor (
     }
 
     fun updatePicState(picIndex: Int) {
-        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)!!.id}")
+        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
         _appState.update {
             it.copy(
                 pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
                 picIndex = picIndex
             )
         }
-        getPicCollections(appState.value.picsList?.get(picIndex)!!.id)
+        appState.value.picsList?.get(picIndex)?.id?.let { getPicCollections(it) }
     }
 
     fun selectFilmToEdit(film: Film?) {
@@ -603,5 +614,40 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             }
         }
+    }
+
+    fun saveStateSnapshot() {
+        stateHistory.add(
+            StateSnapshot(
+                appState.value.picsList,
+                appState.value.pic,
+                appState.value.picIndex,
+                appState.value.topBarCaption,
+            )
+        )
+    }
+
+    fun loadStateSnapshot() {
+        stateHistory.removeLast()
+        if (stateHistory.isNotEmpty()) {
+            val last = stateHistory.last()
+            _appState.update { it.copy(
+                picsList = last.picsList,
+                pic = last.pic,
+                picIndex = last.picIndex,
+                topBarCaption = last.topBarCaption
+            ) }
+        }
+    }
+
+    fun updateStateSnapshot() {
+        stateHistory.last().pic = appState.value.pic
+        stateHistory.last().picIndex = appState.value.picIndex
+    }
+
+    fun showPicsList(show: ShowHide) {
+        _appState.update { it.copy(
+            picsListColumn = show
+        ) }
     }
 }

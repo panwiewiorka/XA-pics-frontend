@@ -47,24 +47,27 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import xapics.app.R
+import xapics.app.ShowHide
+import xapics.app.ShowHide.*
 import xapics.app.Tag
 import xapics.app.TagState
+import xapics.app.ui.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
     popBackStack: () -> Unit,
+    loadStateSnapshot: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
-    updateTopBarCaption: (String) -> Unit,
     search: (String) -> Unit,
-    showSearch: Boolean,
-    changeShowSearchState: () -> Unit,
+    showPicsList: (ShowHide) -> Unit,
+    searchField: ShowHide,
+    showSearch: (ShowHide) -> Unit,
     logOut: () -> Unit,
     topBarCaption: String,
     page: String?,
@@ -112,11 +115,11 @@ fun TopBar(
                 }
                 formattedQuery.isNotBlank() -> {
                     search("search = $formattedQuery")
-                    goToPicsListScreen()
+                    if (page != "PicsListScreen") goToPicsListScreen()
                 }
                 else -> {}
             }
-            changeShowSearchState()
+            showSearch(HIDE)
         }
 
         @Composable
@@ -126,7 +129,11 @@ fun TopBar(
                     Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
-                IconButton(enabled = true, onClick = { popBackStack() }) {
+                IconButton(enabled = true, onClick = {
+                    if (page == "PicsListScreen" || page == "PicScreen") loadStateSnapshot()
+                    popBackStack()
+                    if (page == "PicsListScreen") showPicsList(HIDE)
+                }) {
                     Icon(Icons.Outlined.ArrowBack, "go Back")
                 }
             }
@@ -138,7 +145,7 @@ fun TopBar(
                 value = query,
                 onValueChange = { query = it },
                 singleLine = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface),
+                textStyle = TextStyle(fontSize = 16.nonScaledSp, color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { filteredSearch() }),
@@ -161,12 +168,12 @@ fun TopBar(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (showSearch) {
+                    if (searchField.isShown) {
                         SearchField()
                     } else {
                         Text(
                             text = text,
-                            fontSize = 20.sp,
+                            fontSize = 18.nonScaledSp,
                             maxLines = 1,
                             overflow = Ellipsis,
                             modifier = Modifier
@@ -176,7 +183,7 @@ fun TopBar(
                         )
                     }
 
-                    if (page != "SearchScreen" && showSearch) {
+                    if (page != "SearchScreen" && searchField.isShown) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -185,7 +192,7 @@ fun TopBar(
                     }
 
                     IconButton(onClick = {
-                        if (showSearch) filteredSearch() else changeShowSearchState()
+                        if (searchField.isShown) filteredSearch() else showSearch(SHOW)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -195,7 +202,11 @@ fun TopBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(28.dp)
-                        .border(1.dp, if (showSearch) MaterialTheme.colorScheme.outline else Color.Transparent, CircleShape)
+                        .border(
+                            1.dp,
+                            if (searchField.isShown) MaterialTheme.colorScheme.outline else Color.Transparent,
+                            CircleShape
+                        )
                 ) {}
             }
         }
@@ -239,6 +250,6 @@ fun TopBar(
         ProfileOrLogOutButton()
     }
     LaunchedEffect(page) {
-        if (showSearch) changeShowSearchState()
+        if (searchField.isShown) showSearch(HIDE)
     }
 }

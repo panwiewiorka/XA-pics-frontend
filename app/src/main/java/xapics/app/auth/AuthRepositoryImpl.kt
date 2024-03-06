@@ -126,12 +126,11 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit, updateTopBarCaption: (String) -> Unit): AuthResult<Unit> {
+    override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null)
             val picsList = api.getCollection("Bearer $token", collection).reversed()
             updatePicsList(picsList)
-            updateTopBarCaption(collection)
             AuthResult.Authorized()
         } catch (e: HttpException) {
             if (e.code() == 401) {

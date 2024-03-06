@@ -1,6 +1,6 @@
 package xapics.app.ui
 
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
@@ -39,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.TAG
+import xapics.app.ShowHide.*
 import xapics.app.Tag
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
@@ -52,6 +53,8 @@ import xapics.app.ui.composables.PicTag
 fun PicScreen(
     viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, goToAuthScreen: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     val pagerState = rememberPagerState(
         initialPage = appState.picIndex ?: 0,
         initialPageOffsetFraction = 0f
@@ -90,15 +93,26 @@ fun PicScreen(
     }
      */
 
-    LaunchedEffect(pagerState.currentPage) {
-        viewModel.updatePicState(pagerState.currentPage)
-        Log.d(TAG, "PicScreen: pagerState = $pagerState.currentPage")
+    LaunchedEffect(Unit) {
+        viewModel.updateTopBarCaption(viewModel.stateHistory.last().topBarCaption)
+        if (appState.picsList?.size == 1) {
+            Toast.makeText(
+                context,
+                "Showing the only pic found",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
-    if (appState.showConnectionError) {
+    LaunchedEffect(pagerState.currentPage) {
+        viewModel.updatePicState(pagerState.currentPage)
+        viewModel.updateStateSnapshot()
+    }
+
+    if (appState.connectionError.isShown) {
         ConnectionErrorButton {
             appState.picIndex?.let { viewModel.updatePicState(it) }
-            viewModel.changeConnectionErrorVisibility(false)
+            viewModel.showConnectionError(HIDE)
         }
     } else {
         Column(
@@ -162,7 +176,9 @@ fun PicScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Row(
-                        modifier = Modifier.padding(start = 32.dp, end = 16.dp).fillMaxWidth()
+                        modifier = Modifier
+                            .padding(start = 32.dp, end = 16.dp)
+                            .fillMaxWidth()
                     ) {
                         Column {
                             Text(text = "${appState.picIndex + 1} / ${appState.picsList.size}")
@@ -238,6 +254,7 @@ fun PicScreen(
                             state.picCollections.forEach {
                                 PicTag(Tag("collection", it), viewModel::getTagColorAndName) {
                                     viewModel.getCollection(it)
+                                    viewModel.saveStateSnapshot()
                                     goToPicsListScreen()
                                 }
                             }

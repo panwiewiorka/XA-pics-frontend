@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,15 +36,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.MainViewModel
 import xapics.app.R
+import xapics.app.ShowHide.*
 import xapics.app.TAG
 import xapics.app.auth.AuthResult
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AuthScreen(
     viewModel: MainViewModel,
     popBackStack: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
+    isLoading: Boolean,
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -113,7 +117,20 @@ fun AuthScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+                    is AuthResult.ConnectionError -> {
+                        Toast.makeText(
+                            context,
+                            "No connection to server",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
+            } else if (result is AuthResult.ConnectionError) {
+                Toast.makeText(
+                    context,
+                    "No connection to server",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -126,8 +143,8 @@ fun AuthScreen(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }) {
                 focusManager.clearFocus()
-                viewModel.changeShowSearchState(false)
-                                                                             },
+                viewModel.showSearch(HIDE)
+            },
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 32.dp),
@@ -172,7 +189,10 @@ fun AuthScreen(
                 visualTransformation = if (passVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
                 keyboardActions = KeyboardActions(
-                    onGo = { viewModel.signUpOrIn(userField, passField, signupMode) }
+                    onGo = {
+                        viewModel.signUpOrIn(userField, passField, signupMode)
+                        focusManager.clearFocus()
+                    }
                 ),
                 maxLines = 1,
             )
@@ -183,13 +203,30 @@ fun AuthScreen(
                 Triple(" Log in ", "Don't have an account?   ", "Sign up")
             }
 
-            Button(onClick = { viewModel.signUpOrIn(userField, passField, signupMode) }) {
-                Text(buttonText, fontSize = 20.sp)
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier.height(68.dp)
+            ) {
+                Button(
+                    enabled = !isLoading,
+                    onClick = {
+                        viewModel.signUpOrIn(userField, passField, signupMode)
+                        focusManager.clearFocus()
+                    }
+                ) {
+                    Text(buttonText, fontSize = 18.sp)
+                }
+
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row {
+            FlowRow(
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Text(text = questionText)
 
                 Text(text = changeModeText, textDecoration = TextDecoration.Underline, modifier = Modifier.clickable {
