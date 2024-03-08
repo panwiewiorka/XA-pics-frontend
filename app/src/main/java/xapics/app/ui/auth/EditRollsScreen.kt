@@ -21,6 +21,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ import xapics.app.ui.composables.AsyncPic
 fun EditRollsScreen(
     viewModel: MainViewModel,
     appState: AppState,
+    goToAuthScreen: () -> Unit,
     goToEditFilmsScreen: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -138,7 +141,7 @@ fun EditRollsScreen(
                     modifier = Modifier.align(Alignment.End).padding(horizontal = 32.dp)
                 ) {
                     Button(
-                        enabled = !appState.isLoading,
+                        enabled = !appState.isLoading && appState.rollToEdit.title.isNotEmpty(),
                         onClick = {
                             val tempRollsList = appState.rollsList?.toMutableList()
                             val rollIndex = tempRollsList?.indexOfFirst {
@@ -153,9 +156,9 @@ fun EditRollsScreen(
                             }
 
                             viewModel.updateRollsListState(savingRollsList ?: emptyList())
-                            viewModel.postRoll(rollIndex == -1, appState.rollToEdit)
+                            viewModel.postRoll(rollIndex == -1, appState.rollToEdit, goToAuthScreen)
                         }) {
-                        Text("Save roll") // TODO success / error
+                        Text("Save roll")
                     }
 
                     if (appState.isLoading) CircularProgressIndicator()
@@ -238,6 +241,10 @@ fun TextAndSwitch(
                 onSwitch(switchedOn)
                 clearFocus()
                               },
+            colors = SwitchDefaults.colors(
+                checkedBorderColor = Color.Transparent,
+                uncheckedBorderColor = Color.Transparent,
+            )
 //            modifier = Modifier.width(6.dp).height(6.dp)
         )
     }

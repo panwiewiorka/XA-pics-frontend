@@ -64,6 +64,7 @@ import java.util.Locale
 fun UploadPicsScreen(
     viewModel: MainViewModel,
     appState: AppState,
+    goToAuthScreen: () -> Unit,
 ) {
     var description by rememberSaveable { mutableStateOf("") }
     var year by rememberSaveable { mutableStateOf("") }
@@ -146,27 +147,13 @@ fun UploadPicsScreen(
                     onResult = { uri -> imageUri = uri }
                 )
 
-                Button(onClick = {
-//                    val tempRollsList = appState.rollsList?.toMutableList()
-//                    val rollIndex = tempRollsList?.indexOfFirst {
-//                        it.title == appState.rollToEdit.title
-//                    }
-//
-//                    val savingRollsList = if (rollIndex == -1) {
-//                        tempRollsList.plus (appState.rollToEdit)
-//                    } else {
-//                        tempRollsList?.set(rollIndex!!, appState.rollToEdit)
-//                        tempRollsList
-//                    }
-//
-//                    viewModel.updateRollsListState(savingRollsList ?: emptyList())
-//                    viewModel.postRoll(rollIndex == -1, appState.rollToEdit)
-//
-
-                    pickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                }) {
+                Button(
+                    onClick = {
+                        pickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+                ) {
                     Text("Choose pic")
                 }
 
@@ -229,17 +216,21 @@ fun UploadPicsScreen(
                                 } else {
                                     val myStream = imageUri?.let { myResolver.openInputStream(it) }
                                     val myFile = File.createTempFile("image.jpg", null, context.cacheDir)
+
                                     if (myStream != null) {
                                         myFile.copyInputStreamToFile(myStream)
                                         myStream.close()
                                     }
+
                                     viewModel.uploadImage(
                                         rollTitle = appState.rollToEdit.title,
                                         description = description,
                                         year = year,
                                         hashtags = hashtags.filter { it.state == TagState.SELECTED }.map { it.value }.toString().drop(1).dropLast(1),
-                                        file = myFile
+                                        file = myFile,
+                                        goToAuthScreen = goToAuthScreen
                                     )
+
                                     description = ""
                                 }
                             }

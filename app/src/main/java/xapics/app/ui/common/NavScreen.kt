@@ -133,8 +133,9 @@ fun NavScreen(
                 PicScreen(
                     viewModel = viewModel,
                     appState = appState,
-                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
-                ) { navController.navigate(NavList.AuthScreen.name) }
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
+                )
             }
             composable(route = NavList.SearchScreen.name) {
                 SearchScreen(
@@ -147,19 +148,22 @@ fun NavScreen(
                 EditFilmsScreen(
                     viewModel = viewModel,
                     appState = appState,
-                    snackbarHostState = snackbarHostState
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                 )
             }
             composable(route = NavList.EditRollsScreen.name) {
                 EditRollsScreen(
                     viewModel = viewModel,
-                    appState = appState
-                ) { navController.navigate(NavList.EditFilmsScreen.name) }
+                    appState = appState,
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
+                    goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) }
+                )
             }
             composable(route = NavList.UploadPicsScreen.name) {
                 UploadPicsScreen(
                     viewModel = viewModel,
-                    appState = appState
+                    appState = appState,
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                 )
             }
             composable(route = NavList.AuthScreen.name) {

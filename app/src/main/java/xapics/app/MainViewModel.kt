@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
 import xapics.app.OnPicsListScreenRefresh.SEARCH
@@ -342,18 +340,16 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun postFilm(isNewFilm: Boolean, film: Film, ) {
+    fun postFilm(isNewFilm: Boolean, film: Film, goToAuthScreen: () -> Unit) {
         updateLoadingState(true)
         viewModelScope.launch {
             try {
-                api.postFilm(
+                val result = repository.postFilm(
                     isNewFilm = isNewFilm,
-                    filmName = film.filmName,
-                    iso = film.iso ?: 0,
-                    type = film.type,
+                    film = film,
+                    getFilmsList = ::getFilmsList
                 )
-                getFilmsList()
-//                getAllTags()
+                if (result is AuthResult.Unauthorized) goToAuthScreen()
                 updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "postFilm: ", e)
@@ -387,19 +383,15 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    fun postRoll(isNewRoll: Boolean, roll: Roll, ) {
+    fun postRoll(isNewRoll: Boolean, roll: Roll, goToAuthScreen: () -> Unit, ) {
         viewModelScope.launch {
             try {
-                api.postRoll(
-                    isNewRoll,
-                    roll.title,
-                    roll.film,
-                    roll.xpro,
-                    roll.expired,
-                    roll.nonXa
+                val result = repository.postRoll(
+                    isNewRoll = isNewRoll,
+                    roll = roll,
+                    getRollsList = ::getRollsList
                 )
-//                if(!isNewRoll) getRollsList()
-                getRollsList()
+                if (result is AuthResult.Unauthorized) goToAuthScreen()
             } catch (e: Exception) {
                 Log.e(TAG, "postRoll(): ", e)
                 showConnectionError(SHOW)
@@ -496,16 +488,17 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy( rollsList = list) }
     }
 
-    private suspend fun tryUploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File): Boolean { // TODO merge with v uploadImage() ?
+    private suspend fun tryUploadImage(
+        rollTitle: String,
+        description: String,
+        year: String,
+        hashtags: String,
+        file: File,
+        goToAuthScreen: () -> Unit
+    ): Boolean { // TODO merge with v uploadImage() ?
         return try {
-            api.uploadImage(
-                MultipartBody.Part.createFormData("roll", rollTitle),
-                MultipartBody.Part.createFormData("description", description),
-                MultipartBody.Part.createFormData("year", year),
-                MultipartBody.Part.createFormData("hashtags", hashtags),
-                MultipartBody.Part.createFormData("image", file.name, file.asRequestBody())
-            )
-            file.delete()
+            val result = repository.uploadImage(rollTitle, description, year, hashtags, file, ::getAllTags)
+            if (result is AuthResult.Unauthorized) goToAuthScreen()
             true
         } catch (e: IOException) {
             e.printStackTrace()
@@ -519,14 +512,13 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun uploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File) {
+    fun uploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File, goToAuthScreen: () -> Unit) {
         updateLoadingState(true)
         Log.d(TAG, "uploadImage: ($hashtags)")
         viewModelScope.launch {
-            val success = tryUploadImage(rollTitle, description, year, hashtags, file)
+            val success = tryUploadImage(rollTitle, description, year, hashtags, file, goToAuthScreen)
             if (success) {
                 search("roll = $rollTitle")
-                getAllTags()
             } else {
                 showConnectionError(SHOW)
             }

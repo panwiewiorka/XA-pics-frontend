@@ -10,12 +10,12 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
-import xapics.app.Thumb
 import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.Pic
 import xapics.app.Roll
 import xapics.app.TheString
+import xapics.app.Thumb
 import xapics.app.auth.AuthRequest
 import xapics.app.auth.TokenResponse
 
@@ -88,6 +88,7 @@ interface PicsApi {
     @FormUrlEncoded
     @POST("films")
     suspend fun postFilm(
+        @Header("Authorization") token: String,
         @Field("isNewFilm") isNewFilm: Boolean,
         @Field("filmName") filmName: String,
         @Field("iso") iso: Int,
@@ -103,7 +104,8 @@ interface PicsApi {
     @FormUrlEncoded
     @POST("rolls")
     suspend fun postRoll(
-        @Field("isNewRoll") isNewFilm: Boolean,
+        @Header("Authorization") token: String,
+        @Field("isNewRoll") isNewRoll: Boolean,
         @Field("title") title: String,
         @Field("film") film: String,
         @Field("xpro") xpro: Boolean,
@@ -122,6 +124,7 @@ interface PicsApi {
     @POST("file")
     @Multipart
     suspend fun uploadImage(
+        @Header("Authorization") token: String,
         @Part roll: MultipartBody.Part,
         @Part description: MultipartBody.Part,
         @Part year: MultipartBody.Part,

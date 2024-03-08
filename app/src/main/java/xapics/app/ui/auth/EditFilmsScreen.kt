@@ -19,7 +19,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +39,7 @@ import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.FilmType.BW
 import xapics.app.FilmType.NEGATIVE
+import xapics.app.FilmType.NULL
 import xapics.app.FilmType.SLIDE
 import xapics.app.MainViewModel
 import xapics.app.ShowHide
@@ -49,7 +49,7 @@ import xapics.app.ShowHide
 fun EditFilmsScreen(
     viewModel: MainViewModel,
     appState: AppState,
-    snackbarHostState: SnackbarHostState
+    goToAuthScreen: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -104,8 +104,9 @@ fun EditFilmsScreen(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.align(Alignment.End).padding(end = 16.dp),
             ) {
+                val fieldsAreNotEmpty = appState.filmToEdit.filmName.isNotEmpty() && appState.filmToEdit.iso != null && appState.filmToEdit.type != NULL
                 Button(
-                    enabled = !appState.isLoading,
+                    enabled = !appState.isLoading && fieldsAreNotEmpty,
                     onClick = {
                         val tempFilmsList = appState.filmsList?.toMutableList() ?: mutableListOf()
                         val filmIndex = tempFilmsList.indexOfFirst {
@@ -120,14 +121,10 @@ fun EditFilmsScreen(
                         }
 
                         viewModel.updateFilmsListState(savingFilmsList)
-                        viewModel.postFilm(filmIndex == -1, appState.filmToEdit)
-
-//                    CoroutineScope(Dispatchers.Default).launch {
-//                        snackbarHostState.showSnackbar(message = "${it.filmName} saved", withDismissAction = true, duration = SnackbarDuration.Short)
-//                    }
+                        viewModel.postFilm(filmIndex == -1, appState.filmToEdit, goToAuthScreen)
                     }
                 ) {
-                    Text("Save ${it.filmName}")
+                    Text("Save ${it.filmName.trim()}")
                 }
 
                 if (appState.isLoading) CircularProgressIndicator()
