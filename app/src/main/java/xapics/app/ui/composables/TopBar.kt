@@ -47,34 +47,28 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
+import xapics.app.AppState
+import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.ShowHide
-import xapics.app.ShowHide.*
-import xapics.app.Tag
+import xapics.app.ShowHide.HIDE
+import xapics.app.ShowHide.SHOW
 import xapics.app.TagState
-import xapics.app.ui.nonScaledSp
+import xapics.app.ui.common.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
+    viewModel: MainViewModel,
+    appState: AppState,
     popBackStack: () -> Unit,
-    loadStateSnapshot: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
-    search: (String) -> Unit,
-    showPicsList: (ShowHide) -> Unit,
-    searchField: ShowHide,
-    showSearch: (ShowHide) -> Unit,
-    logOut: () -> Unit,
-    topBarCaption: String,
     page: String?,
     previousPage: String?,
     @StringRes pageName: Int,
-    userName: String?,
-    tags: List<Tag>,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -82,10 +76,10 @@ fun TopBar(
     ) {
         val focusRequester = remember { FocusRequester() }
         val text = when (page) {
-            "PicsListScreen" -> topBarCaption
-            "PicScreen" -> topBarCaption
-            "AuthScreen" -> topBarCaption
-            "ProfileScreen" -> userName ?: ""
+            "PicsListScreen" -> appState.topBarCaption
+            "PicScreen" -> appState.topBarCaption
+            "AuthScreen" -> appState.topBarCaption
+            "ProfileScreen" -> appState.userName ?: ""
             else -> stringResource(id = pageName)
         }
         val searchText = ""
@@ -100,13 +94,13 @@ fun TopBar(
                 .replace(',', ' ')
                 .replace('=', ' ')
 
-            val filters = tags.filter { it.state == TagState.SELECTED }
+            val filters = appState.tags.filter { it.state == TagState.SELECTED }
                 .map { "${it.type} = ${it.value}" }
                 .toString().drop(1).dropLast(1)
 
             when {
                 page == "SearchScreen" && filters.isNotBlank() -> {
-                    search(
+                    viewModel.search(
                         (if (formattedQuery.isBlank()) ""
                         else "search = $formattedQuery, ")
                                 + filters
@@ -114,12 +108,12 @@ fun TopBar(
                     goToPicsListScreen()
                 }
                 formattedQuery.isNotBlank() -> {
-                    search("search = $formattedQuery")
+                    viewModel.search("search = $formattedQuery")
                     if (page != "PicsListScreen") goToPicsListScreen()
                 }
                 else -> {}
             }
-            showSearch(HIDE)
+            viewModel.showSearch(HIDE)
         }
 
         @Composable
@@ -130,9 +124,21 @@ fun TopBar(
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-                    if (page == "PicsListScreen" || page == "PicScreen") loadStateSnapshot()
+                    when(page) {
+                        "PicScreen" -> viewModel.loadStateSnapshot()
+                        "PicsListScreen" -> {
+                            viewModel.loadStateSnapshot()
+                            viewModel.showPicsList(HIDE)
+                        }
+                        "AdminScreen" -> {
+                            viewModel.getRollsList()
+                            viewModel.getAllTags()
+                        }
+                    }
                     popBackStack()
-                    if (page == "PicsListScreen") showPicsList(HIDE)
+//                    if (page == "PicsListScreen" || page == "PicScreen") loadStateSnapshot()
+//                    popBackStack()
+//                    if (page == "PicsListScreen") showPicsList(HIDE)
                 }) {
                     Icon(Icons.Outlined.ArrowBack, "go Back")
                 }
@@ -168,7 +174,7 @@ fun TopBar(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (searchField.isShown) {
+                    if (appState.searchField.isShown) {
                         SearchField()
                     } else {
                         Text(
@@ -183,7 +189,7 @@ fun TopBar(
                         )
                     }
 
-                    if (page != "SearchScreen" && searchField.isShown) {
+                    if (page != "SearchScreen" && appState.searchField.isShown) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -192,7 +198,7 @@ fun TopBar(
                     }
 
                     IconButton(onClick = {
-                        if (searchField.isShown) filteredSearch() else showSearch(SHOW)
+                        if (appState.searchField.isShown) filteredSearch() else viewModel.showSearch(SHOW)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -204,7 +210,7 @@ fun TopBar(
                         .height(28.dp)
                         .border(
                             1.dp,
-                            if (searchField.isShown) MaterialTheme.colorScheme.outline else Color.Transparent,
+                            if (appState.searchField.isShown) MaterialTheme.colorScheme.outline else Color.Transparent,
                             CircleShape
                         )
                 ) {}
@@ -216,7 +222,7 @@ fun TopBar(
             if(page == "AdminScreen" || page == "ProfileScreen") {
                 IconButton(onClick = {
                     popBackStack()
-                    logOut() // TODO when logOut() finished -> goToAuthScreen()
+                    viewModel.logOut() // TODO when logOut() finished -> goToAuthScreen()
                     goToAuthScreen()
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
@@ -225,7 +231,7 @@ fun TopBar(
                 IconButton(
                     enabled = page != "AuthScreen",
                     onClick = {
-                        when (userName) {
+                        when (appState.userName) {
                             null -> goToAuthScreen()
                             "admin" -> goToAdminScreen()
                             else -> goToProfileScreen()
@@ -250,6 +256,6 @@ fun TopBar(
         ProfileOrLogOutButton()
     }
     LaunchedEffect(page) {
-        if (searchField.isShown) showSearch(HIDE)
+        if (appState.searchField.isShown) viewModel.showSearch(HIDE)
     }
 }

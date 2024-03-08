@@ -1,11 +1,10 @@
-package xapics.app.ui
+package xapics.app.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.AppState
 import xapics.app.MainViewModel
-import xapics.app.ShowHide.*
-import xapics.app.data.PicsApi.Companion.BASE_URL
+import xapics.app.ShowHide.HIDE
+import xapics.app.Tag
+import xapics.app.TagState
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.PicTag
@@ -51,6 +51,7 @@ fun HomeScreen(
                     viewModel.showConnectionError(HIDE)
                 }
             }
+            appState.isLoading -> CircularProgressIndicator()
             else -> {
                 appState.pic?.let {
 
@@ -61,7 +62,7 @@ fun HomeScreen(
                     ) {
                         val height = (maxWidth.value / 1.5).dp
                         AsyncPic(
-                            url = BASE_URL + it.imageUrl,
+                            url = it.imageUrl,
                             description = "random pic: ${it.description}",
                             modifier = Modifier
                                 .height(height)
@@ -83,7 +84,7 @@ fun HomeScreen(
                         RollCard(
                             width = 150.dp,
                             isLoading = appState.isLoading,
-                            imageUrl = BASE_URL + imageUrl,
+                            imageUrl = imageUrl,
                             rollTitle = rollTitle,
                         ) {
                             viewModel.search("roll = $rollTitle")
@@ -94,24 +95,23 @@ fun HomeScreen(
 
                 Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-                Column(
-                    modifier = Modifier.fillMaxWidth()
+                FlowRow(
+                    modifier = Modifier.padding(horizontal = 12.dp)
                 ) {
-                    FlowRow(
-                        modifier = Modifier.padding(horizontal = 12.dp)
-                    ) {
-                        appState.tags.forEach {
-                            PicTag(it, viewModel::getTagColorAndName) {
-                                viewModel.search("${it.type} = ${it.value}")
-                                goToPicsListScreen()
-                            }
+                    val tags = appState.tags.map {
+                        Tag(
+                            it.type,
+                            it.value,
+                            TagState.ENABLED
+                        )
+                    }
+                    tags.forEach {
+                        PicTag(it, viewModel::getTagColorAndName) {
+                            viewModel.search("${it.type} = ${it.value}")
+                            goToPicsListScreen()
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                if (appState.isLoading) CircularProgressIndicator()
             }
         }
     }

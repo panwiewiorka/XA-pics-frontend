@@ -1,7 +1,8 @@
-package xapics.app.ui
+package xapics.app.ui.common
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -87,15 +88,16 @@ fun PicsListScreen(
                                 key = { appState.picsList[it].id },
                             ) {
                                 BoxWithConstraints {
-                                    val height = ((maxWidth - 64.dp).value / 1.5).dp
+                                    val height = ((maxWidth - 64.dp).value / 1.5).dp // TODO replace with vv .aspectRatio(3f / 2f, true/false) ?
                                     val pic = appState.picsList[it]
 
                                     AsyncPic(
-                                        url = BASE_URL + pic.imageUrl,
+                                        url = pic.imageUrl,
                                         description = pic.description,
                                         modifier = Modifier
                                             .padding(horizontal = 32.dp)
                                             .padding(bottom = 16.dp)
+//                                            .aspectRatio(3f / 2f, true)
                                             .height(height)
                                             .clip(RoundedCornerShape(2.dp))
                                     ) {

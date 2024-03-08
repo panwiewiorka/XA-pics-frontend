@@ -15,17 +15,21 @@ import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
+import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
+import xapics.app.OnPicsListScreenRefresh.SEARCH
+import xapics.app.ShowHide.SHOW
+import xapics.app.TagState.DISABLED
+import xapics.app.TagState.ENABLED
+import xapics.app.TagState.SELECTED
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.data.PicsApi
-import xapics.app.TagState.*
-import xapics.app.ShowHide.*
-import xapics.app.OnPicsListScreenRefresh.*
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
 import xapics.app.ui.theme.GrayMedium
 import xapics.app.ui.theme.RollAttribute
+import xapics.app.ui.theme.RollTag
 import xapics.app.ui.theme.YearTag
 import java.io.File
 import java.io.IOException
@@ -244,7 +248,7 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    private fun clearPicsList() {
+    fun clearPicsList() {
         _appState.update { it.copy(
             picsList = null,
             picIndex = null,
@@ -253,12 +257,13 @@ class MainViewModel @Inject constructor (
 
     fun getTagColorAndName(tag: Tag): Pair<Color, String> {
         return when(tag.type) {
+            "filmName" -> Pair(FilmTag, tag.value)
             "filmType" -> Pair(GrayMedium, tag.value.lowercase())
+            "iso" -> Pair(GrayMedium, "iso ${tag.value}")
+            "roll" -> Pair(RollTag, tag.value)
             "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
             "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
             "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
-            "iso" -> Pair(GrayMedium, "iso ${tag.value}")
-            "filmName" -> Pair(FilmTag, tag.value)
             "year" -> Pair(YearTag, tag.value)
             "hashtag" -> Pair(DefaultTag, tag.value)
             "collection" -> Pair(CollectionTag, tag.value)
@@ -330,8 +335,6 @@ class MainViewModel @Inject constructor (
                     filmsList = api.getFilmsList(),
                     isLoading = false
                 ) }
-//                Log.d(TAG, state.value.filmsList.toString())
-
             } catch (e: Exception) {
                 Log.e(TAG, "getFilmsList: ", e)
                 updateLoadingState(false)
@@ -340,16 +343,21 @@ class MainViewModel @Inject constructor (
     }
 
     fun postFilm(isNewFilm: Boolean, film: Film, ) {
+        updateLoadingState(true)
         viewModelScope.launch {
             try {
                 api.postFilm(
-                    isNewFilm,
-                    film.filmName,
-                    film.iso ?: 0,
-                    film.type,
+                    isNewFilm = isNewFilm,
+                    filmName = film.filmName,
+                    iso = film.iso ?: 0,
+                    type = film.type,
                 )
+                getFilmsList()
+//                getAllTags()
+                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "postFilm: ", e)
+                showConnectionError(SHOW)
                 updateLoadingState(false)
             }
         }
@@ -390,8 +398,11 @@ class MainViewModel @Inject constructor (
                     roll.expired,
                     roll.nonXa
                 )
+//                if(!isNewRoll) getRollsList()
+                getRollsList()
             } catch (e: Exception) {
                 Log.e(TAG, "postRoll(): ", e)
+                showConnectionError(SHOW)
                 updateLoadingState(false)
             }
         }
@@ -471,12 +482,11 @@ class MainViewModel @Inject constructor (
         expired: Boolean? = null,
         nonXa: Boolean? = null,
     ) {
-        Log.d(TAG, "editRollField: film = $film")
         val roll = Roll(
             title ?: appState.value.rollToEdit!!.title,
             film ?: appState.value.rollToEdit!!.film,
-            xpro ?: appState.value.rollToEdit!!.xpro,
             expired ?: appState.value.rollToEdit!!.expired,
+            xpro ?: appState.value.rollToEdit!!.xpro,
             nonXa ?: appState.value.rollToEdit!!.nonXa,
         )
         _appState.update { it.copy(rollToEdit = roll) }
@@ -486,25 +496,14 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy( rollsList = list) }
     }
 
-    private suspend fun tryUploadImage(rollTitle: String, file: File): Boolean { // TODO merge with v uploadImage() ?
+    private suspend fun tryUploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File): Boolean { // TODO merge with v uploadImage() ?
         return try {
             api.uploadImage(
-                MultipartBody.Part
-                    .createFormData(
-                        "metadataPath",
-                        rollTitle
-                    ),
-//                MultipartBody.Part
-//                    .createFormData(
-//                        "metadataName",
-//                        ""
-//                    ),
-                MultipartBody.Part
-                    .createFormData(
-                        "image",
-                        file.name,
-                        file.asRequestBody()
-                    )
+                MultipartBody.Part.createFormData("roll", rollTitle),
+                MultipartBody.Part.createFormData("description", description),
+                MultipartBody.Part.createFormData("year", year),
+                MultipartBody.Part.createFormData("hashtags", hashtags),
+                MultipartBody.Part.createFormData("image", file.name, file.asRequestBody())
             )
             file.delete()
             true
@@ -520,24 +519,33 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun uploadImage(rollTitle: String, file: File) {
+    fun uploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File) {
+        updateLoadingState(true)
+        Log.d(TAG, "uploadImage: ($hashtags)")
         viewModelScope.launch {
-            tryUploadImage(rollTitle, file)
+            val success = tryUploadImage(rollTitle, description, year, hashtags, file)
+            if (success) {
+                search("roll = $rollTitle")
+                getAllTags()
+            } else {
+                showConnectionError(SHOW)
+            }
+            updateLoadingState(false)
         }
     }
 
     fun getRandomPic() {
         viewModelScope.launch {
             try {
-                updateLoadingState(true)
+//                updateLoadingState(true)
                 _appState.update { it.copy(
                     pic = api.getRandomPic(),
-                    isLoading = false
+//                    isLoading = false
                 )}
 
             } catch (e: Exception) {
                 Log.e(TAG, "getRandomPic: ", e)
-                updateLoadingState(false)
+//                updateLoadingState(false)
             }
         }
     }
@@ -550,7 +558,7 @@ class MainViewModel @Inject constructor (
                 val tags = api.getAllTags().string
                     .split(", ")
                     .map { it.split(" = ") }
-                    .map { Tag(it[0], it[1]) }
+                    .map { Tag(it[0], it[1]) }.filterNot { it.value == "" }
 
                 _appState.update { it.copy(
                     tags = tags,

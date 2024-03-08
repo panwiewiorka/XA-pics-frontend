@@ -1,11 +1,10 @@
-package xapics.app.ui
+package xapics.app.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -17,7 +16,6 @@ import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.TagState
 import xapics.app.ui.composables.PicTag
-import xapics.app.ui.composables.PicTagsList
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

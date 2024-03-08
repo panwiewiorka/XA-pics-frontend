@@ -1,49 +1,62 @@
 package xapics.app.ui.auth
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import xapics.app.MainViewModel
-import xapics.app.Thumb
 
 @Composable
 fun AdminScreen(
     viewModel: MainViewModel,
-    goToAuthScreen: () -> Unit,
     goToEditFilmsScreen: () -> Unit,
-    goToUploadScreen: () -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToEditRollsScreen: () -> Unit,
+    goToUploadPicsScreen: () -> Unit,
 ){
-
-    Row(
-        horizontalArrangement = Arrangement.SpaceAround,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
     ) {
-        Button(
-            onClick = {
-                viewModel.getFilmsList()
-                goToEditFilmsScreen()
-            },
+        Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Edit films")
-        }
-        Button(
-            onClick = {
-//                viewModel.getFilmsList()
-                viewModel.getRollsList()
-                goToUploadScreen()
-            },
-        ) {
-            Text("Edit rolls / upload photos")
+            TextButton(
+                onClick = {
+                    viewModel.getFilmsList()
+                    goToEditFilmsScreen()
+                },
+                modifier = Modifier.offset((-32).dp, 0.dp)
+            ) {
+                Text("Edit films", fontSize = 18.sp,)
+            }
+
+            TextButton(
+                onClick = {
+                    viewModel.getRollsList()
+                    goToEditRollsScreen()
+                },
+            ) {
+                Text("Edit rolls", fontSize = 18.sp)
+            }
+
+            TextButton(
+                onClick = {
+                    viewModel.getRollsList()
+                    goToUploadPicsScreen()
+                },
+                modifier = Modifier.offset(32.dp, 0.dp)
+            ) {
+                Text("Upload pics", fontSize = 18.sp)
+            }
         }
     }
 }

@@ -5,7 +5,8 @@
     <string name="pic_screen"> </string>
     <string name="search_screen">Search</string>
     <string name="edit_films_screen">Edit films</string>
-    <string name="upload_screen">Upload photo</string>
+    <string name="edit_rolls_screen">Edit rolls</string>
+    <string name="upload_pics_screen">Upload pics</string>
     <string name="auth_screen"> </string>
     <string name="admin_screen">Admin console</string>
     <string name="profile_screen">Collections</string>

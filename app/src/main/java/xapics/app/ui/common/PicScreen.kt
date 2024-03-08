@@ -1,4 +1,4 @@
-package xapics.app.ui
+package xapics.app.ui.common
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -40,9 +40,8 @@ import androidx.compose.ui.unit.dp
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.ShowHide.*
+import xapics.app.ShowHide.HIDE
 import xapics.app.Tag
-import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.CollectionsDropDownMenu
 import xapics.app.ui.composables.ConnectionErrorButton
@@ -51,7 +50,10 @@ import xapics.app.ui.composables.PicTag
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class,)
 @Composable
 fun PicScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, goToAuthScreen: () -> Unit,
+    viewModel: MainViewModel,
+    appState: AppState,
+    goToPicsListScreen: () -> Unit,
+    goToAuthScreen: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -161,7 +163,7 @@ fun PicScreen(
                         ) {
                             val height = (maxWidth.value / 1.5).dp
                             AsyncPic(
-                                url = BASE_URL + pic.imageUrl,
+                                url = pic.imageUrl,
                                 description = pic.description,
                                 modifier = Modifier
                                     .height(height)
@@ -241,7 +243,7 @@ fun PicScreen(
                                 val tags = state.pic.tags
                                     .split(", ")
                                     .map { it.split(" = ") }
-                                    .map { Tag(it[0], it[1]) }
+                                    .map { Tag(it[0], it[1]) }.filterNot { it.value == "" }
 
                                 tags.forEach {
                                     PicTag(it, viewModel::getTagColorAndName) {

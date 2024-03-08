@@ -25,6 +25,7 @@ val BG = Color(0xFF222222)
 val AlphaBlack = Color(0x55000000)
 
 val FilmTag = Color(0x77FF5549)
+val RollTag = Color(0x774955FF)
 val YearTag = Color(0x77559977)
 val CollectionTag = Color(0x77BBBB77)
 val RollAttribute = Color(0x77BB00FF)

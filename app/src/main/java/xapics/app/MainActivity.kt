@@ -7,11 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import coil.annotation.ExperimentalCoilApi
 import dagger.hilt.android.AndroidEntryPoint
-import xapics.app.ui.NavScreen
+import xapics.app.ui.common.NavScreen
 import xapics.app.ui.theme.XAPicsTheme
 
 @AndroidEntryPoint

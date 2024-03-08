@@ -48,7 +48,6 @@ import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.Thumb
-import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.AlmostWhite
@@ -184,7 +183,7 @@ fun UserView(
                     RollCard(
                         width = 150.dp,
                         isLoading = false,
-                        imageUrl = BASE_URL + thumbUrl,
+                        imageUrl = thumbUrl,
                         rollTitle = rollTitle
                     ) {
                         getCollection(rollTitle)

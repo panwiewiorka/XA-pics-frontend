@@ -122,8 +122,10 @@ interface PicsApi {
     @POST("file")
     @Multipart
     suspend fun uploadImage(
-        @Part metadataPath: MultipartBody.Part,
-//        @Part metadataName: MultipartBody.Part,
+        @Part roll: MultipartBody.Part,
+        @Part description: MultipartBody.Part,
+        @Part year: MultipartBody.Part,
+        @Part hashtags: MultipartBody.Part,
         @Part image: MultipartBody.Part
     )
 
