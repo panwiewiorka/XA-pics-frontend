@@ -24,7 +24,6 @@ import xapics.app.AppState
 import xapics.app.OnPicsListScreenRefresh.*
 import xapics.app.MainViewModel
 import xapics.app.ShowHide.*
-import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 

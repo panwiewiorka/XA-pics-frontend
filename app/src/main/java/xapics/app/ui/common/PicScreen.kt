@@ -255,8 +255,8 @@ fun PicScreen(
 
                             state.picCollections.forEach {
                                 PicTag(Tag("collection", it), viewModel::getTagColorAndName) {
-                                    viewModel.getCollection(it)
                                     viewModel.saveStateSnapshot()
+                                    viewModel.getCollection(it)
                                     goToPicsListScreen()
                                 }
                             }
