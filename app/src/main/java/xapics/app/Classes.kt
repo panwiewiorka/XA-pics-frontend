@@ -29,7 +29,7 @@ data class Roll(
 //    val date: Date,
     val expired: Boolean = false,
     val xpro: Boolean = false,
-    val nonXa: Boolean = false,
+//    val nonXa: Boolean = false,
 )
 
 data class Thumb(

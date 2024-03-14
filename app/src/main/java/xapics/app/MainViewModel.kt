@@ -259,7 +259,7 @@ class MainViewModel @Inject constructor (
             "filmType" -> Pair(GrayMedium, tag.value.lowercase())
             "iso" -> Pair(GrayMedium, "iso ${tag.value}")
             "roll" -> Pair(RollTag, tag.value)
-            "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
+//            "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
             "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
             "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
             "year" -> Pair(YearTag, tag.value)
@@ -432,7 +432,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun updatePicState(picIndex: Int) {
-        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
+//        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
         _appState.update {
             it.copy(
                 pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
@@ -472,14 +472,14 @@ class MainViewModel @Inject constructor (
         film: String? = null,
         xpro: Boolean? = null,
         expired: Boolean? = null,
-        nonXa: Boolean? = null,
+//        nonXa: Boolean? = null,
     ) {
         val roll = Roll(
             title ?: appState.value.rollToEdit!!.title,
             film ?: appState.value.rollToEdit!!.film,
             expired ?: appState.value.rollToEdit!!.expired,
             xpro ?: appState.value.rollToEdit!!.xpro,
-            nonXa ?: appState.value.rollToEdit!!.nonXa,
+//            nonXa ?: appState.value.rollToEdit!!.nonXa,
         )
         _appState.update { it.copy(rollToEdit = roll) }
     }

@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
                 snackbarHost = { SnackbarHost(snackbarHostState) },
             ) {
                 XAPicsTheme {
-                    NavScreen(snackbarHostState = snackbarHostState)
+                    NavScreen()
                 }
             }
         }

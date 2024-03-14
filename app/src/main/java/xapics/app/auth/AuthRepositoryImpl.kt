@@ -197,7 +197,7 @@ class AuthRepositoryImpl(
                 film = roll.film,
                 xpro = roll.xpro,
                 expired = roll.expired,
-                nonXa = roll.nonXa,
+//                nonXa = roll.nonXa,
             )
 
             getRollsList()

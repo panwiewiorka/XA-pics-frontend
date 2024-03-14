@@ -3,7 +3,6 @@ package xapics.app.ui.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -35,7 +34,7 @@ fun AsyncPic(url: String, description: String, modifier: Modifier, onClick: (() 
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(BASE_URL + url)
+                .data(BASE_URL + "files/images/" + url)
                 .listener(
                     onError = { _, _ -> showRetryButton = true },
                     onSuccess = {_, _ -> showRetryButton = false}

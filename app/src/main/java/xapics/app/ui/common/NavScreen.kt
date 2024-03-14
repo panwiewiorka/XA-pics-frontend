@@ -2,19 +2,13 @@ package xapics.app.ui.common
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -57,7 +51,6 @@ val Int.nonScaledSp
 @Composable
 fun NavScreen(
     navController: NavHostController = rememberNavController(),
-    snackbarHostState: SnackbarHostState
 ) {
 
     val viewModel: MainViewModel = hiltViewModel()
@@ -67,9 +60,9 @@ fun NavScreen(
         backStackEntry?.destination?.route ?: NavList.HomeScreen.name
     )
 
-    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    var backPressHandled by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+//    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+//    var backPressHandled by remember { mutableStateOf(false) }
+//    val coroutineScope = rememberCoroutineScope()
 
     Scaffold (
         modifier = Modifier.pointerInput(appState.searchField) {
