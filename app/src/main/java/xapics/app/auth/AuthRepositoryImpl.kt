@@ -9,6 +9,8 @@ import xapics.app.Film
 import xapics.app.Pic
 import xapics.app.Roll
 import xapics.app.TAG
+import xapics.app.Tag
+import xapics.app.TagState
 import xapics.app.Thumb
 import xapics.app.data.PicsApi
 import java.io.File
@@ -201,6 +203,36 @@ class AuthRepositoryImpl(
             )
 
             getRollsList()
+
+            AuthResult.Authorized()
+        } catch (e: HttpException) {
+            Log.e(TAG, "postRoll: ", e)
+            if (e.code() == 401 || e.code() == 403) {
+                AuthResult.Unauthorized()
+            } else {
+                AuthResult.UnknownError()
+            }
+        }
+    }
+
+    override suspend fun editPic(
+        id: Int,
+        imageUrl: String,
+        year: String,
+        description: String,
+        hashtags: List<Tag>
+    ): AuthResult<Unit> {
+        return try {
+            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+
+            api.editPic(
+                token = "Bearer $token",
+                id = id,
+                imageUrl = imageUrl,
+                year = year,
+                description = description,
+                hashtags = hashtags.filter { it.state == TagState.SELECTED }.map { it.value }.toString().drop(1).dropLast(1)
+            )
 
             AuthResult.Authorized()
         } catch (e: HttpException) {

@@ -42,6 +42,7 @@ import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.Tag
+import xapics.app.toTagsList
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.CollectionsDropDownMenu
 import xapics.app.ui.composables.ConnectionErrorButton
@@ -240,10 +241,7 @@ fun PicScreen(
                             modifier = Modifier.padding(horizontal = 28.dp)
                         ) {
                             if(state.pic != null) {
-                                val tags = state.pic.tags
-                                    .split(", ")
-                                    .map { it.split(" = ") }
-                                    .map { Tag(it[0], it[1]) }.filterNot { it.value == "" }
+                                val tags = state.pic.tags.toTagsList()
 
                                 tags.forEach {
                                     PicTag(it, viewModel::getTagColorAndName) {

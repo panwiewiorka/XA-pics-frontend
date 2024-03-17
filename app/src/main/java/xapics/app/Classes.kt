@@ -26,10 +26,8 @@ data class Film(
 data class Roll(
     val title: String = "",
     val film: String = "",
-//    val date: Date,
     val expired: Boolean = false,
     val xpro: Boolean = false,
-//    val nonXa: Boolean = false,
 )
 
 data class Thumb(

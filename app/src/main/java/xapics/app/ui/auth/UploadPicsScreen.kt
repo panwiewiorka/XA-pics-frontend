@@ -52,7 +52,10 @@ import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.ShowHide
 import xapics.app.Tag
-import xapics.app.TagState
+import xapics.app.TagState.ENABLED
+import xapics.app.TagState.SELECTED
+import xapics.app.data.PicsApi.Companion.BASE_URL
+import xapics.app.toTagsList
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.PicTag
 import java.io.File
@@ -66,6 +69,7 @@ fun UploadPicsScreen(
     appState: AppState,
     goToAuthScreen: () -> Unit,
 ) {
+    var picUrl by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var year by rememberSaveable { mutableStateOf("") }
     var hashtags by rememberSaveable { mutableStateOf(appState.tags.filter{ it.type == "hashtag" }) }
@@ -75,6 +79,51 @@ fun UploadPicsScreen(
     val yearFocusRequester = remember { FocusRequester() }
     val alertFocusRequester = remember { FocusRequester() }
     val scrollState = rememberScrollState()
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val myResolver = context.contentResolver
+
+    fun File.copyInputStreamToFile(inputStream: InputStream) {
+        this.outputStream().use { fileOut ->
+            inputStream.copyTo(fileOut)
+        }
+    }
+
+    val pickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            picUrl = uri.toString()
+            imageUri = uri
+        }
+    )
+
+    if (appState.connectionError.isShown) {
+        Toast.makeText(
+            context,
+            "Error",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        viewModel.showConnectionError(ShowHide.HIDE)
+    }
+
+    /* for future "Delete Pic" feature
+    LaunchedEffect(appState.picsList?.size) {
+        appState.picsList?.let {
+            val pic = appState.picsList.last()
+            val picTags = pic.tags.toTagsList()
+            picUrl = pic.imageUrl
+            description = pic.description
+            year = picTags.firstOrNull { it.type == "year" }?.value ?: ""
+
+            val picHashtagValues = picTags.filter { it.type == "hashtag" }.map { it.value }
+            hashtags.forEach {
+                if (picHashtagValues.contains(it.value)) it.state = SELECTED else it.state = ENABLED
+            }
+        }
+    }
+     */
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -109,56 +158,56 @@ fun UploadPicsScreen(
                     FlowRow(
                         modifier = Modifier.padding(vertical = 16.dp)
                     ) {
-                        appState.picsList.forEach {
+                        appState.picsList.forEachIndexed { index, pic ->
                             AsyncPic(
-                                url = it.imageUrl,
-                                description = it.description,
+                                url = pic.imageUrl,
+                                description = pic.description,
                                 modifier = Modifier
                                     .width(width / 4)
                                     .height(width / 6)
-                            )
+                            ) {
+                                viewModel.updatePicState(index)
+
+                                val picTags = pic.tags.toTagsList()
+
+                                picUrl = BASE_URL + "files/images/" + pic.imageUrl
+                                description = pic.description
+                                year = picTags.firstOrNull { it.type == "year" }?.value ?: ""
+
+                                val picHashtagValues = picTags.filter { it.type == "hashtag" }.map { it.value }
+                                hashtags.forEach {
+                                    if (picHashtagValues.contains(it.value)) it.state = SELECTED else it.state = ENABLED
+                                }
+                            }
                         }
                     }
                 }
             }
 
-//            Spacer(modifier = Modifier.height(16.dp))
-
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 32.dp)
+                modifier = Modifier.padding(horizontal = 32.dp)
             ) {
-                var imageUri by remember {
-                    mutableStateOf<Uri?>(null)
-                }
-                val context = LocalContext.current
-                val myResolver = context.contentResolver
+                Text("Choose pic to edit")
 
-                fun File.copyInputStreamToFile(inputStream: InputStream) {
-                    this.outputStream().use { fileOut ->
-                        inputStream.copyTo(fileOut)
-                    }
-                }
-
-                val pickerLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.PickVisualMedia(),
-                    onResult = { uri -> imageUri = uri }
-                )
-
-                Button(
-                    onClick = {
-                        pickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Choose pic")
+                    Text("or", modifier = Modifier.padding(end = 6.dp))
+
+                    Button(
+                        onClick = {
+                            pickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                    ) {
+                        Text("Choose pic for upload")
+                    }
                 }
 
-                if (imageUri != null) {
-                    AsyncImage(model = imageUri, contentDescription = null)
+                if (picUrl.isNotEmpty()) {
+                    AsyncImage(model = picUrl, contentDescription = null)
 
                     OutlinedTextField(
                         value = description,
@@ -192,7 +241,7 @@ fun UploadPicsScreen(
                     FlowRow{
                         hashtags.forEachIndexed { index, tag ->
                             PicTag(tag, viewModel::getTagColorAndName) {
-                                hashtags[index].state = if (tag.state == TagState.SELECTED) TagState.ENABLED else TagState.SELECTED
+                                hashtags[index].state = if (tag.state == SELECTED) ENABLED else SELECTED
                                 val tempList = hashtags
                                 hashtags = emptyList()
                                 hashtags = tempList
@@ -204,50 +253,71 @@ fun UploadPicsScreen(
                         }
                     }
 
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.align(Alignment.End)
+                    Row (
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Button(
-                            enabled = !appState.isLoading,
-                            onClick = {
-                                if (description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()) {
-                                    Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    val myStream = imageUri?.let { myResolver.openInputStream(it) }
-                                    val myFile = File.createTempFile("image.jpg", null, context.cacheDir)
-
-                                    if (myStream != null) {
-                                        myFile.copyInputStreamToFile(myStream)
-                                        myStream.close()
-                                    }
-
-                                    viewModel.uploadImage(
-                                        rollTitle = appState.rollToEdit.title,
-                                        description = description,
-                                        year = year,
-                                        hashtags = hashtags.filter { it.state == TagState.SELECTED }.map { it.value }.toString().drop(1).dropLast(1),
-                                        file = myFile,
-                                        goToAuthScreen = goToAuthScreen
-                                    )
-
-                                    description = ""
-                                }
-                            }
+                        Box(
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Text("Upload pic")
+                            Button(
+                                enabled = !appState.isLoading && picUrl.contains(".jpg"),
+                                onClick = {
+                                    if (description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()) {
+                                        Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        viewModel.editPic(
+                                            appState.pic!!,
+                                            year,
+                                            description,
+                                            hashtags,
+                                            goToAuthScreen
+                                        )
+
+//                                        description = ""
+                                    }
+                                }
+                            ) {
+                                Text("Save pic")
+                            }
+
+                            if (appState.isLoading && picUrl.contains(".jpg")) CircularProgressIndicator()
                         }
 
-                        if (appState.isLoading) CircularProgressIndicator()
+                        Box(
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Button(
+                                enabled = !appState.isLoading && picUrl.contains("content://"),
+                                onClick = {
+                                    if (description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()) {
+                                        Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        val myStream = imageUri?.let { myResolver.openInputStream(it) }
+                                        val myFile = File.createTempFile("image.jpg", null, context.cacheDir)
 
-                        if (appState.connectionError.isShown) {
-                            Toast.makeText(
-                                context,
-                                "Error",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                        if (myStream != null) {
+                                            myFile.copyInputStreamToFile(myStream)
+                                            myStream.close()
+                                        }
 
-                            viewModel.showConnectionError(ShowHide.HIDE)
+                                        viewModel.uploadImage(
+                                            rollTitle = appState.rollToEdit.title,
+                                            description = description,
+                                            year = year,
+                                            hashtags = hashtags.filter { it.state == SELECTED }.map { it.value }.toString().drop(1).dropLast(1), // TODO move into repository
+                                            file = myFile,
+                                            goToAuthScreen = goToAuthScreen
+                                        )
+
+                                        description = ""
+                                    }
+                                }
+                            ) {
+                                Text("Upload pic")
+                            }
+
+                            if (appState.isLoading && picUrl.contains("content://")) CircularProgressIndicator()
                         }
                     }
                 }
@@ -274,7 +344,7 @@ fun UploadPicsScreen(
                 Button(
                     enabled = tags.isNotEmpty(),
                     onClick = {
-                        val newHashtags = tags.split(',').map { Tag("hashtag", it.trim(), TagState.SELECTED) }
+                        val newHashtags = tags.split(',').map { Tag("hashtag", it.trim(), SELECTED) }
                         hashtags += newHashtags
                         showAddHashtagField = false
                     }

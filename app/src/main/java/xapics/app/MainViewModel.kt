@@ -36,6 +36,13 @@ import javax.inject.Inject
 
 const val TAG = "mytag"
 
+fun String.toTagsList(): List<Tag> {
+    return this.split(", ")
+        .map { it.split(" = ") }
+        .map { Tag(it[0], it[1]) }
+        .filterNot { it.value == "" }
+}
+
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val api: PicsApi,
@@ -77,10 +84,6 @@ class MainViewModel @Inject constructor (
                     username = user,
                     password = pass
                 )
-//                _appState.update { it.copy(
-//                    userId = 0,
-//                    userCollections = null,
-//                ) }
                 resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
@@ -274,11 +277,7 @@ class MainViewModel @Inject constructor (
         if (!query.contains(" = ")) {
             caption = query
         } else {
-            val tags = query
-                .split(", ")
-                .map { it.split(" = ") }
-                .map { Tag(it[0], it[1]) }
-
+            val tags = query.toTagsList()
             val searchIndex = tags.indexOfFirst{it.type == "search"}
             val isSearchQuery = searchIndex != -1
             val isFilteredList = tags.size > 1
@@ -488,6 +487,31 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy( rollsList = list) }
     }
 
+    fun editPic(
+        pic: Pic,
+        year: String,
+        description: String,
+        hashtags: List<Tag>,
+        goToAuthScreen: ()-> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val result = repository.editPic(
+                    pic.id,
+                    pic.imageUrl,
+                    year,
+                    description,
+                    hashtags
+                )
+                if (result is AuthResult.Unauthorized) goToAuthScreen()
+            } catch (e: Exception) {
+                Log.e(TAG, "editPic(): ", e)
+                showConnectionError(SHOW)
+                updateLoadingState(false)
+            }
+        }
+    }
+
     private suspend fun tryUploadImage(
         rollTitle: String,
         description: String,
@@ -547,10 +571,7 @@ class MainViewModel @Inject constructor (
             try {
                 updateLoadingState(true)
 
-                val tags = api.getAllTags().string
-                    .split(", ")
-                    .map { it.split(" = ") }
-                    .map { Tag(it[0], it[1]) }.filterNot { it.value == "" }
+                val tags = api.getAllTags().string.toTagsList()
 
                 _appState.update { it.copy(
                     tags = tags,
@@ -581,26 +602,22 @@ class MainViewModel @Inject constructor (
                     "${it.type} = ${it.value}"
                 }.toString().drop(1).dropLast(1)
 
-                Log.d(TAG, "getFilteredTags: $query")
-
-                val filteredTags = (if (query.isEmpty()) api.getAllTags().string else api.getFilteredTags(query).string)
-                    .split(", ")
-                    .map { it.split(" = ") }
-                    .map { Tag(it[0], it[1]) }
-
-                Log.d(TAG, "getFilteredTags AZZ: $filteredTags")
+                val filteredTags = (if (query.isEmpty()) {
+                    api.getAllTags().string
+                } else {
+                    api.getFilteredTags(query).string
+                }
+                        ).toTagsList()
 
                 val refreshedTags = appState.value.tags.toMutableList()
                 refreshedTags.forEach { tag ->
                     val isClickedTag = clickedTag.type == tag.type && clickedTag.value == tag.value
                     val shouldBeEnabled = filteredTags.any { it.type == tag.type && it.value == tag.value }
-//                    val shouldBeEnabled = filteredTags.firstOrNull { it.type == tag.type && it.value == tag.value } != null
 
                     when {
                         isClickedTag -> if (clickedTag.state == SELECTED) tag.state = ENABLED else tag.state = SELECTED
                         shouldBeEnabled -> if (tag.state != SELECTED) tag.state = ENABLED
                         else -> if (selectedTags.none { it.type == tag.type }) tag.state = DISABLED
-//                        else -> if (tag.type != clickedTag.type) tag.state = DISABLED
                     }
                 }
 

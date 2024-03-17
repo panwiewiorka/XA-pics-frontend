@@ -110,7 +110,6 @@ interface PicsApi {
         @Field("film") film: String,
         @Field("xpro") xpro: Boolean,
         @Field("expired") expired: Boolean,
-//        @Field("nonXa") nonXa: Boolean,
     )
 
     @GET("tags")
@@ -121,7 +120,18 @@ interface PicsApi {
         @Query("query") query: String
     ): TheString
 
-    @POST("file")
+    @FormUrlEncoded
+    @POST("pic")
+    suspend fun editPic(
+        @Header("Authorization") token: String,
+        @Field("id") id: Int,
+        @Field("imageUrl") imageUrl: String,
+        @Field("year") year: String,
+        @Field("description") description: String,
+        @Field("hashtags") hashtags: String,
+    )
+
+    @POST("upload")
     @Multipart
     suspend fun uploadImage(
         @Header("Authorization") token: String,
