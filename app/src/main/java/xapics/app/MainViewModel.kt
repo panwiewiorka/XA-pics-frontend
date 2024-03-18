@@ -1,5 +1,6 @@
 package xapics.app
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -21,7 +22,9 @@ import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
+import xapics.app.auth.backup.Downloader
 import xapics.app.data.PicsApi
+import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
@@ -31,7 +34,6 @@ import xapics.app.ui.theme.RollTag
 import xapics.app.ui.theme.YearTag
 import java.io.File
 import java.io.IOException
-import java.util.Locale
 import javax.inject.Inject
 
 const val TAG = "mytag"
@@ -46,7 +48,8 @@ fun String.toTagsList(): List<Tag> {
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val api: PicsApi,
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val downloader: Downloader
 ): ViewModel() {
 
     private val _appState = MutableStateFlow(AppState())
@@ -259,10 +262,9 @@ class MainViewModel @Inject constructor (
     fun getTagColorAndName(tag: Tag): Pair<Color, String> {
         return when(tag.type) {
             "filmName" -> Pair(FilmTag, tag.value)
-            "filmType" -> Pair(GrayMedium, tag.value.lowercase())
+            "filmType" -> Pair(GrayMedium, if (tag.value == "BW") "black and white" else tag.value.lowercase())
             "iso" -> Pair(GrayMedium, "iso ${tag.value}")
             "roll" -> Pair(RollTag, tag.value)
-//            "nonXa" -> Pair(RollAttribute, if(tag.value == "false") "XA" else "non-XA")
             "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
             "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
             "year" -> Pair(YearTag, tag.value)
@@ -289,7 +291,12 @@ class MainViewModel @Inject constructor (
                 else -> { // single category
                     val theTag = tags[0].value
                     when (tags[0].type) {
-                        "filmType" -> "${theTag.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }} films"
+                        "filmType" -> when (theTag) {
+                            "BW" -> "Black and white films"
+                            "NEGATIVE" -> "Negative films"
+                            "SLIDE" -> "Slide films"
+                            else -> ""
+                        }
                         "filmName" -> "film: $theTag"
                         "hashtag" -> "#$theTag"
                         else -> getTagColorAndName(tags[0]).second
@@ -666,5 +673,23 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             picsListColumn = show
         ) }
+    }
+
+    fun downloadBackup(context: Context) {
+        downloader.downloadFile(context,BASE_URL + "backup/latest.zip")
+
+        /*
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+
+                updateLoadingState(false)
+            } catch (e: Exception) {
+                Log.e(TAG, "downloadBackup: ", e)
+                updateLoadingState(false)
+                showConnectionError(SHOW)
+            }
+        }
+         */
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -183,11 +182,15 @@ fun PicScreen(
                             .padding(start = 32.dp, end = 16.dp)
                             .fillMaxWidth()
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(text = "${appState.picIndex + 1} / ${appState.picsList.size}")
-                            Text(text = appState.pic.description, overflow = Ellipsis)
+                            Text(
+                                text = appState.pic.description,
+                                maxLines = 1,
+                                overflow = Ellipsis
+                            )
                         }
-                        Spacer(modifier = Modifier.weight(1f))
+//                        Spacer(modifier = Modifier.weight(1f))
 
                         Box {
                             CollectionsDropDownMenu(

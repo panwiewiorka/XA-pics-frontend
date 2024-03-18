@@ -4,7 +4,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -36,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.MainViewModel
 import xapics.app.R
-import xapics.app.ShowHide.*
+import xapics.app.ShowHide.HIDE
 import xapics.app.TAG
 import xapics.app.auth.AuthResult
 
@@ -204,7 +212,7 @@ fun AuthScreen(
             }
 
             Box(
-                contentAlignment = Alignment.TopCenter,
+                contentAlignment = Alignment.Center,
                 modifier = Modifier.height(68.dp)
             ) {
                 Button(

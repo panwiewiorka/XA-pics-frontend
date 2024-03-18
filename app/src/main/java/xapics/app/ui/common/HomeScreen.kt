@@ -1,5 +1,6 @@
 package xapics.app.ui.common
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -51,11 +52,14 @@ fun HomeScreen(
                     viewModel.showConnectionError(HIDE)
                 }
             }
-            appState.isLoading -> CircularProgressIndicator()
             else -> {
                 val rolls = appState.rollThumbnails?.size ?: 0
 
-                LazyVerticalGrid(columns = GridCells.Adaptive(150.dp)) { // TODO FixedSize?
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(150.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     item(
                         span = { GridItemSpan(maxLineSpan) }
                     ) {
@@ -73,7 +77,6 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .height(height)
                                         .fillMaxWidth()
-//                                .clip(RoundedCornerShape(2.dp))
                                 ) {
                                     viewModel.getRandomPic()
                                     // TODO goToPicScreen(), caption: Random pic, any collection?
@@ -123,6 +126,8 @@ fun HomeScreen(
                         }
                     }
                 }
+
+                if (appState.isLoading) CircularProgressIndicator()
             }
         }
     }

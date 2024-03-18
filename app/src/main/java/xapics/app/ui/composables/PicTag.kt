@@ -15,16 +15,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.Tag
-import xapics.app.TagState.*
-import xapics.app.ui.theme.CollectionTag
-import xapics.app.ui.theme.DefaultTag
-import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.GrayMedium
-import xapics.app.ui.theme.RollAttribute
-import xapics.app.ui.theme.YearTag
+import xapics.app.TagState.DISABLED
+import xapics.app.TagState.SELECTED
 
 @Composable
 fun PicTag(tag: Tag, getTagColorAndName: (Tag) -> Pair<Color, String>, onClick: () -> Unit) {
@@ -50,7 +46,9 @@ fun PicTag(tag: Tag, getTagColorAndName: (Tag) -> Pair<Color, String>, onClick: 
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             letterSpacing = 0.sp,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = Ellipsis
         )
     }
 }
