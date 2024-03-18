@@ -11,6 +11,8 @@
     -->
 
     <application
+
+
         android:name=".XAPicsApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

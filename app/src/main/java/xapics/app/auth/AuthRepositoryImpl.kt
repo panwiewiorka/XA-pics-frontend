@@ -96,7 +96,7 @@ class AuthRepositoryImpl(
             updateUserCollections(userCollections)
             AuthResult.Authorized()
         } catch (e: HttpException) {
-            Log.e(TAG, "getUserInfo: ", e)
+            Log.e(TAG, " repo getUserInfo: ", e)
             if (e.code() == 401) {
                 AuthResult.Unauthorized()
             } else {

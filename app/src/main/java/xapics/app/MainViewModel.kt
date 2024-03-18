@@ -125,7 +125,7 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             } catch (e: Exception) {
                 showConnectionError(SHOW)
-                Log.e(TAG, "getUserInfo(): ", e)
+                Log.e(TAG, "viewModel getUserInfo(): ", e)
                 updateLoadingState(false)
             }
         }
