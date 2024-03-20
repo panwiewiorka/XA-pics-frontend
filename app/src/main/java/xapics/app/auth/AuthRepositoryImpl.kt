@@ -20,6 +20,8 @@ class AuthRepositoryImpl(
     private val prefs: SharedPreferences
 ): AuthRepository {
 
+    /** AUTH */
+
     override suspend fun signUp(username: String, password: String): AuthResult<Unit> {
         return try {
             api.signUp(
@@ -80,13 +82,6 @@ class AuthRepositoryImpl(
         }
     }
 
-    override fun logOut(): AuthResult<Unit> {
-        prefs.edit()
-            .putString("jwt", null)
-            .apply()
-        return AuthResult.Unauthorized()
-    }
-
     override suspend fun getUserInfo(updateUserName: (String?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
         return try {
             val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
@@ -104,6 +99,16 @@ class AuthRepositoryImpl(
             }
         }
     }
+
+    override fun logOut(): AuthResult<Unit> {
+        prefs.edit()
+            .putString("jwt", null)
+            .apply()
+        return AuthResult.Unauthorized()
+    }
+
+
+    /** COLLECTIONS */
 
     override suspend fun editCollection(collection: String, picId: Int): AuthResult<Unit> {
         return try {
@@ -163,6 +168,9 @@ class AuthRepositoryImpl(
             }
         }
     }
+
+
+    /** ADMIN */
 
     override suspend fun postFilm(isNewFilm: Boolean, film: Film, getFilmsList: () -> Unit): AuthResult<Unit> {
         return try {

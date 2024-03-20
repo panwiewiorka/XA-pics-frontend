@@ -21,9 +21,10 @@ import androidx.compose.ui.unit.sp
 import xapics.app.Tag
 import xapics.app.TagState.DISABLED
 import xapics.app.TagState.SELECTED
+import xapics.app.getTagColorAndName
 
 @Composable
-fun PicTag(tag: Tag, getTagColorAndName: (Tag) -> Pair<Color, String>, onClick: () -> Unit) {
+fun PicTag(tag: Tag, onClick: () -> Unit) {
 
     val (color, text) = getTagColorAndName(tag)
 

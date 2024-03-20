@@ -95,10 +95,10 @@ fun EditRollsScreen(
                 FilmSelector(
                     selectFilmToEdit = viewModel::selectFilmToEdit,
                     filmsList = appState.filmsList,
-                    true,
-                    false,
-                    viewModel::editRollField,
-                    goToEditFilmsScreen
+                    onRollsPage = true,
+                    shouldOpenMenu = false,
+                    editRollField = viewModel::editRollField,
+                    goToEditFilmsScreen = goToEditFilmsScreen
                 )
 
                 Text(appState.rollToEdit.film, fontSize = 18.sp)
@@ -113,8 +113,6 @@ fun EditRollsScreen(
                     TextAndSwitch("Expired", appState.rollToEdit.expired, focusManager::clearFocus) { viewModel.editRollField(expired = !appState.rollToEdit.expired) }
 
                     TextAndSwitch("Cross-process", appState.rollToEdit.xpro, focusManager::clearFocus) { viewModel.editRollField(xpro = !appState.rollToEdit.xpro) }
-
-//                    TextAndSwitch("Filmed not on XA", appState.rollToEdit.nonXa, focusManager::clearFocus) { viewModel.editRollField(nonXa = !appState.rollToEdit.nonXa) }
                 }
 
                 if (!appState.picsList.isNullOrEmpty()) {

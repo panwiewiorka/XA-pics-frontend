@@ -247,7 +247,7 @@ fun PicScreen(
                                 val tags = state.pic.tags.toTagsList()
 
                                 tags.forEach {
-                                    PicTag(it, viewModel::getTagColorAndName) {
+                                    PicTag(it) {
                                         viewModel.search("${it.type} = ${it.value}")
                                         goToPicsListScreen()
                                     }
@@ -255,7 +255,7 @@ fun PicScreen(
                             }
 
                             state.picCollections.forEach {
-                                PicTag(Tag("collection", it), viewModel::getTagColorAndName) {
+                                PicTag(Tag("collection", it)) {
                                     viewModel.saveStateSnapshot()
                                     viewModel.getCollection(it)
                                     goToPicsListScreen()

@@ -20,7 +20,7 @@ import xapics.app.ui.composables.PicTag
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, // TODO replace with only essentials
+    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -56,7 +56,7 @@ fun SearchScreen(
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
             appState.tags.forEach {
-                PicTag(it, viewModel::getTagColorAndName) {
+                PicTag(it) {
                     viewModel.getFilteredTags(it)
                 }
             }

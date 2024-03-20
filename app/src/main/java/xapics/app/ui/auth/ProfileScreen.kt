@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
@@ -57,17 +57,14 @@ import xapics.app.ui.theme.myTextFieldColors
 @Composable
 fun ProfileScreen(
     viewModel: MainViewModel,
-    isLoading: Boolean,
-    userName: String?,
-    userCollections: List<Thumb>?,
-    connectionError: Boolean,
+    appState: AppState,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
 ) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        if (userName != null) viewModel.getUserInfo(goToAuthScreen)
+        if (appState.userName != null) viewModel.getUserInfo(goToAuthScreen)
     }
 
     Box(
@@ -75,18 +72,18 @@ fun ProfileScreen(
         contentAlignment = Alignment.Center
     ) {
         when {
-            connectionError -> {
+            appState.connectionError.isShown -> {
                 ConnectionErrorButton {
                     viewModel.showConnectionError(HIDE)
                     viewModel.getUserInfo(goToAuthScreen)
                 }
             }
-            isLoading -> {
-                CircularProgressIndicator()
-            }
+//            appState.isLoading -> {
+//                CircularProgressIndicator()
+//            }
             else -> {
                 UserView(
-                    userCollections,
+                    appState.userCollections,
                     viewModel::getCollection,
                     goToPicsListScreen,
                     viewModel::renameOrDeleteCollection,

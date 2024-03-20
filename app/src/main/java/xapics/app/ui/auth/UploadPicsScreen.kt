@@ -240,7 +240,7 @@ fun UploadPicsScreen(
 
                     FlowRow{
                         hashtags.forEachIndexed { index, tag ->
-                            PicTag(tag, viewModel::getTagColorAndName) {
+                            PicTag(tag) {
                                 hashtags[index].state = if (tag.state == SELECTED) ENABLED else SELECTED
                                 val tempList = hashtags
                                 hashtags = emptyList()
@@ -248,7 +248,7 @@ fun UploadPicsScreen(
                             }
                         }
 
-                        PicTag(tag = Tag("hashtag", "    + + +    "), getTagColorAndName = viewModel::getTagColorAndName) {
+                        PicTag(tag = Tag("hashtag", "    + + +    ")) {
                             showAddHashtagField = true
                         }
                     }

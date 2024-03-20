@@ -179,10 +179,7 @@ fun NavScreen(
             composable(route = NavList.ProfileScreen.name) {
                 ProfileScreen(
                     viewModel = viewModel,
-                    isLoading = appState.isLoading,
-                    userName = appState.userName,
-                    userCollections = appState.userCollections,
-                    connectionError = appState.connectionError.isShown,
+                    appState = appState,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )

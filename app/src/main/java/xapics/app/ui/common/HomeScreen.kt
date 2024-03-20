@@ -118,7 +118,7 @@ fun HomeScreen(
                                 )
                             }
                             tags.forEach {
-                                PicTag(it, viewModel::getTagColorAndName) {
+                                PicTag(it) {
                                     viewModel.search("${it.type} = ${it.value}")
                                     goToPicsListScreen()
                                 }

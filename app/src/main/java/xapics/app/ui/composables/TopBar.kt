@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.R
@@ -58,7 +59,7 @@ import xapics.app.ui.common.nonScaledSp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
-    viewModel: MainViewModel,
+    viewModel: MainViewModel = hiltViewModel(),
     appState: AppState,
     popBackStack: () -> Unit,
     goToAuthScreen: () -> Unit,

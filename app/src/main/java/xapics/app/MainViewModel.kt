@@ -24,7 +24,6 @@ import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.auth.backup.Downloader
 import xapics.app.data.PicsApi
-import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
@@ -44,6 +43,22 @@ fun String.toTagsList(): List<Tag> {
         .map { Tag(it[0], it[1]) }
         .filterNot { it.value == "" }
 }
+
+fun getTagColorAndName(tag: Tag): Pair<Color, String> {
+    return when(tag.type) {
+        "filmName" -> Pair(FilmTag, tag.value)
+        "filmType" -> Pair(GrayMedium, if (tag.value == "BW") "black and white" else tag.value.lowercase())
+        "iso" -> Pair(GrayMedium, "iso ${tag.value}")
+        "roll" -> Pair(RollTag, tag.value)
+        "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
+        "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
+        "year" -> Pair(YearTag, tag.value)
+        "hashtag" -> Pair(DefaultTag, tag.value)
+        "collection" -> Pair(CollectionTag, tag.value)
+        else -> Pair(Color.Transparent, tag.value)
+    }
+}
+
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
@@ -72,9 +87,7 @@ class MainViewModel @Inject constructor (
     }
 
 
-    private fun updateLoadingState(loading: Boolean) {
-        _appState.update { it.copy(isLoading = loading) }
-    }
+    /*** AUTH-RELATED */
 
     fun signUpOrIn(user: String, pass: String, signUp: Boolean) {
         updateLoadingState(true)
@@ -111,13 +124,6 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun logOut() {
-        repository.logOut()
-        _appState.update { it.copy(
-            userName = null
-        ) }
-    }
-
     fun getUserInfo(goToAuthScreen: () -> Unit) {
         viewModelScope.launch {
             try {
@@ -145,6 +151,16 @@ class MainViewModel @Inject constructor (
             userCollections = userCollections,
         ) }
     }
+
+    fun logOut() {
+        repository.logOut()
+        _appState.update { it.copy(
+            userName = null
+        ) }
+    }
+
+
+    /*** COLLECTIONS */
 
     fun editCollectionOrLogIn(collection: String, picId: Int, goToAuthScreen: () -> Unit) {
         viewModelScope.launch {
@@ -233,6 +249,13 @@ class MainViewModel @Inject constructor (
         }
     }
 
+    private fun updatePicsList(picsList: List<Pic>? = null) {
+        _appState.update { it.copy(
+            picsList = picsList ?: emptyList(),
+            picIndex = 1,
+        )}
+    }
+
     fun updateCollectionToSaveTo(collection: String) {
         val isNewCollection = appState.value.userCollections?.firstOrNull { it.title == collection } == null
         _appState.update { it.copy(
@@ -243,72 +266,6 @@ class MainViewModel @Inject constructor (
                 userCollections = appState.value.userCollections?.plus(Thumb(collection, appState.value.pic!!.imageUrl)),
             )}
         }
-    }
-
-    private fun updatePicsList(picsList: List<Pic>? = null) { // TODO partly replace with vv clearPicsList()
-        _appState.update { it.copy(
-            picsList = picsList ?: emptyList(),
-            picIndex = 1,
-        )}
-    }
-
-    fun clearPicsList() {
-        _appState.update { it.copy(
-            picsList = null,
-            picIndex = null,
-        )}
-    }
-
-    fun getTagColorAndName(tag: Tag): Pair<Color, String> {
-        return when(tag.type) {
-            "filmName" -> Pair(FilmTag, tag.value)
-            "filmType" -> Pair(GrayMedium, if (tag.value == "BW") "black and white" else tag.value.lowercase())
-            "iso" -> Pair(GrayMedium, "iso ${tag.value}")
-            "roll" -> Pair(RollTag, tag.value)
-            "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
-            "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
-            "year" -> Pair(YearTag, tag.value)
-            "hashtag" -> Pair(DefaultTag, tag.value)
-            "collection" -> Pair(CollectionTag, tag.value)
-            else -> Pair(Color.Transparent, tag.value)
-        }
-    }
-
-    fun updateTopBarCaption(query: String) {
-        val caption: String
-        if (!query.contains(" = ")) {
-            caption = query
-        } else {
-            val tags = query.toTagsList()
-            val searchIndex = tags.indexOfFirst{it.type == "search"}
-            val isSearchQuery = searchIndex != -1
-            val isFilteredList = tags.size > 1
-
-            caption = when {
-                tags.isEmpty() -> "??? $query"
-                isSearchQuery -> "\"${tags[searchIndex].value}\""
-                isFilteredList -> "Filtered pics"
-                else -> { // single category
-                    val theTag = tags[0].value
-                    when (tags[0].type) {
-                        "filmType" -> when (theTag) {
-                            "BW" -> "Black and white films"
-                            "NEGATIVE" -> "Negative films"
-                            "SLIDE" -> "Slide films"
-                            else -> ""
-                        }
-                        "filmName" -> "film: $theTag"
-                        "hashtag" -> "#$theTag"
-                        else -> getTagColorAndName(tags[0]).second
-                    }
-                }
-            }
-        }
-
-
-        _appState.update { it.copy(
-            topBarCaption = caption
-        )}
     }
 
     private fun getPicCollections(picId: Int) {
@@ -331,19 +288,44 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    fun getFilmsList() {
+
+    /*** ADMIN CONSOLE */
+
+    fun downloadBackup(context: Context) {
+        downloader.downloadFile(context, PicsApi.BASE_URL + "backup/latest.zip")
+
+        /*
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                _appState.update { it.copy(
-                    filmsList = api.getFilmsList(),
-                    isLoading = false
-                ) }
-            } catch (e: Exception) {
-                Log.e(TAG, "getFilmsList: ", e)
+
                 updateLoadingState(false)
+            } catch (e: Exception) {
+                Log.e(TAG, "downloadBackup: ", e)
+                updateLoadingState(false)
+                showConnectionError(SHOW)
             }
         }
+         */
+    }
+
+    /** FILMS */
+
+    fun selectFilmToEdit(film: Film?) {
+        _appState.update { it.copy( filmToEdit = film) }
+    }
+
+    fun editFilmField(
+        filmName: String? = null,
+        iso: Int? = null,
+        type: FilmType? = null,
+    ) {
+        val film = Film(
+            filmName ?: appState.value.filmToEdit!!.filmName,
+            iso ?: appState.value.filmToEdit!!.iso,
+            type ?: appState.value.filmToEdit!!.type,
+        )
+        _appState.update { it.copy(filmToEdit = film) }
     }
 
     fun postFilm(isNewFilm: Boolean, film: Film, goToAuthScreen: () -> Unit) {
@@ -365,28 +347,30 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun getRollsList() {
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
-                _appState.update { it.copy(
-                    filmsList = api.getFilmsList(),
-                    rollsList = api.getRollsList(),
-                    rollThumbnails = api.getRollThumbnails(),
-                    isLoading = false
-                )}
-            } catch (e: Exception) {
-                showConnectionError(SHOW)
-                Log.e(TAG, "getRollsList(): ", e)
-                updateLoadingState(false)
-            }
-        }
+    fun updateFilmsListState(list: List<Film>) {
+        _appState.update { it.copy( filmsList = list) }
     }
 
-    fun showConnectionError(showOrHide: ShowHide){
-        _appState.update { it.copy(
-            connectionError = showOrHide
-        )}
+    /** ROLLS */
+
+    fun selectRollToEdit(roll: Roll?) {
+        _appState.update { it.copy( rollToEdit = roll) }
+    }
+
+    fun editRollField(
+        title: String? = null,
+        film: String? = null,
+        xpro: Boolean? = null,
+        expired: Boolean? = null,
+    ) {
+        val roll = Roll(
+            title ?: appState.value.rollToEdit!!.title,
+            film ?: appState.value.rollToEdit!!.film,
+            expired ?: appState.value.rollToEdit!!.expired,
+            xpro ?: appState.value.rollToEdit!!.xpro,
+//            nonXa ?: appState.value.rollToEdit!!.nonXa,
+        )
+        _appState.update { it.copy(rollToEdit = roll) }
     }
 
     fun postRoll(isNewRoll: Boolean, roll: Roll, goToAuthScreen: () -> Unit, ) {
@@ -404,90 +388,6 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             }
         }
-    }
-
-    fun search(query: String) {
-        clearPicsList()
-        updateLoadingState(true)
-        updateTopBarCaption(query)
-        viewModelScope.launch {
-            try {
-                _appState.update { it.copy(
-                    picsList = api.search(query),
-                    picIndex = 1,
-                    isLoading = false
-                )}
-                saveStateSnapshot() // TODO check whether it waits for api ^^
-            } catch (e: Exception) {
-                Log.e(TAG, "search: ", e)
-                onPicsListScreenRefresh = Pair(SEARCH, query)
-                showConnectionError(SHOW)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun showSearch(showOrHide: ShowHide) {
-        _appState.update { it.copy(searchField = showOrHide) }
-    }
-
-    fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
-        _appState.update { it.copy(
-            getBackAfterLoggingIn = value ?: appState.value.getBackAfterLoggingIn
-        ) }
-    }
-
-    fun updatePicState(picIndex: Int) {
-//        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
-        _appState.update {
-            it.copy(
-                pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
-                picIndex = picIndex
-            )
-        }
-        appState.value.picsList?.get(picIndex)?.id?.let { getPicCollections(it) }
-    }
-
-    fun selectFilmToEdit(film: Film?) {
-        _appState.update { it.copy( filmToEdit = film) }
-    }
-
-    fun editFilmField(
-        filmName: String? = null,
-        iso: Int? = null,
-        type: FilmType? = null,
-    ) {
-        val film = Film(
-            filmName ?: appState.value.filmToEdit!!.filmName,
-            iso ?: appState.value.filmToEdit!!.iso,
-            type ?: appState.value.filmToEdit!!.type,
-        )
-        _appState.update { it.copy(filmToEdit = film) }
-    }
-
-    fun updateFilmsListState(list: List<Film>) {
-        _appState.update { it.copy( filmsList = list) }
-    }
-
-    fun selectRollToEdit(roll: Roll?) {
-        _appState.update { it.copy( rollToEdit = roll) }
-    }
-
-    fun editRollField(
-        title: String? = null,
-        film: String? = null,
-        xpro: Boolean? = null,
-        expired: Boolean? = null,
-//        nonXa: Boolean? = null,
-    ) {
-        val roll = Roll(
-            title ?: appState.value.rollToEdit!!.title,
-            film ?: appState.value.rollToEdit!!.film,
-            expired ?: appState.value.rollToEdit!!.expired,
-            xpro ?: appState.value.rollToEdit!!.xpro,
-//            nonXa ?: appState.value.rollToEdit!!.nonXa,
-        )
-        _appState.update { it.copy(rollToEdit = roll) }
     }
 
     fun updateRollsListState(list: List<Roll>) {
@@ -518,6 +418,8 @@ class MainViewModel @Inject constructor (
             }
         }
     }
+
+    /** IMAGES */
 
     private suspend fun tryUploadImage(
         rollTitle: String,
@@ -555,6 +457,74 @@ class MainViewModel @Inject constructor (
             }
             updateLoadingState(false)
         }
+    }
+
+
+    /*** MAIN WORKFLOW */
+
+    fun getFilmsList() {
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+                _appState.update { it.copy(
+                    filmsList = api.getFilmsList(),
+                    isLoading = false
+                ) }
+            } catch (e: Exception) {
+                Log.e(TAG, "getFilmsList: ", e)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun getRollsList() {
+        viewModelScope.launch {
+            try {
+                updateLoadingState(true)
+                _appState.update { it.copy(
+                    filmsList = api.getFilmsList(),
+                    rollsList = api.getRollsList(),
+                    rollThumbnails = api.getRollThumbnails(),
+                    isLoading = false
+                )}
+            } catch (e: Exception) {
+                showConnectionError(SHOW)
+                Log.e(TAG, "getRollsList(): ", e)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun search(query: String) {
+        clearPicsList()
+        updateLoadingState(true)
+        updateTopBarCaption(query)
+        viewModelScope.launch {
+            try {
+                _appState.update { it.copy(
+                    picsList = api.search(query),
+                    picIndex = 1,
+                    isLoading = false
+                )}
+                saveStateSnapshot() // TODO check whether it waits for api ^^
+            } catch (e: Exception) {
+                Log.e(TAG, "search: ", e)
+                onPicsListScreenRefresh = Pair(SEARCH, query)
+                showConnectionError(SHOW)
+                updateLoadingState(false)
+            }
+        }
+    }
+
+    fun updatePicState(picIndex: Int) {
+//        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
+        _appState.update {
+            it.copy(
+                pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
+                picIndex = picIndex
+            )
+        }
+        appState.value.picsList?.get(picIndex)?.id?.let { getPicCollections(it) }
     }
 
     fun getRandomPic() {
@@ -640,6 +610,8 @@ class MainViewModel @Inject constructor (
         }
     }
 
+    /** BACKSTACK */
+
     fun saveStateSnapshot() {
         stateHistory.add(
             StateSnapshot(
@@ -669,27 +641,76 @@ class MainViewModel @Inject constructor (
         stateHistory.last().picIndex = appState.value.picIndex
     }
 
+
+    /*** STATE UPDATE UTILITIES */
+
+    private fun updateLoadingState(loading: Boolean) {
+        _appState.update { it.copy(isLoading = loading) }
+    }
+
+    fun showConnectionError(showOrHide: ShowHide){
+        _appState.update { it.copy(
+            connectionError = showOrHide
+        )}
+    }
+
+    fun showSearch(showOrHide: ShowHide) {
+        _appState.update { it.copy(searchField = showOrHide) }
+    }
+
     fun showPicsList(show: ShowHide) {
         _appState.update { it.copy(
             picsListColumn = show
         ) }
     }
 
-    fun downloadBackup(context: Context) {
-        downloader.downloadFile(context,BASE_URL + "backup/latest.zip")
+    fun updateTopBarCaption(query: String) {
+        val caption: String
 
-        /*
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
+        if (!query.contains(" = ")) {
+            caption = query
+        } else {
+            val tags = query.toTagsList()
+            val searchIndex = tags.indexOfFirst{it.type == "search"}
+            val isSearchQuery = searchIndex != -1
+            val isFilteredList = tags.size > 1
 
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                Log.e(TAG, "downloadBackup: ", e)
-                updateLoadingState(false)
-                showConnectionError(SHOW)
+            caption = when {
+                tags.isEmpty() -> "??? $query"
+                isSearchQuery -> "\"${tags[searchIndex].value}\""
+                isFilteredList -> "Filtered pics"
+                else -> { // single category
+                    val theTag = tags[0].value
+                    when (tags[0].type) {
+                        "filmType" -> when (theTag) {
+                            "BW" -> "Black and white films"
+                            "NEGATIVE" -> "Negative films"
+                            "SLIDE" -> "Slide films"
+                            else -> ""
+                        }
+                        "filmName" -> "film: $theTag"
+                        "hashtag" -> "#$theTag"
+                        else -> getTagColorAndName(tags[0]).second
+                    }
+                }
             }
         }
-         */
+
+        _appState.update { it.copy(
+            topBarCaption = caption
+        )}
+    }
+
+    fun clearPicsList() {
+        _appState.update { it.copy(
+            picsList = null,
+            picIndex = null,
+        )}
+    }
+
+    fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
+        _appState.update { it.copy(
+            getBackAfterLoggingIn = value ?: appState.value.getBackAfterLoggingIn
+        ) }
     }
 }
