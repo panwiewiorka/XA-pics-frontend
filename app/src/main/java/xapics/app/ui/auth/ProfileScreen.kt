@@ -178,7 +178,6 @@ fun UserView(
 
                 Box {
                     RollCard(
-                        width = 150.dp,
                         isLoading = false,
                         imageUrl = thumbUrl,
                         rollTitle = rollTitle

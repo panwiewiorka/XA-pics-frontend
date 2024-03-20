@@ -9,14 +9,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
@@ -158,15 +156,13 @@ fun PicScreen(
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS
                     ) {index ->
                         val pic = appState.picsList[index]
-                        BoxWithConstraints(
+                        Box(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            val height = (maxWidth.value / 1.5).dp
                             AsyncPic(
                                 url = pic.imageUrl,
                                 description = pic.description,
                                 modifier = Modifier
-                                    .height(height)
                                     .fillMaxWidth()
                             )
                         }
@@ -190,7 +186,6 @@ fun PicScreen(
                                 overflow = Ellipsis
                             )
                         }
-//                        Spacer(modifier = Modifier.weight(1f))
 
                         Box {
                             CollectionsDropDownMenu(

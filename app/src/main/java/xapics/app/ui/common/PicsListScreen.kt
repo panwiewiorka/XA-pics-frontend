@@ -1,10 +1,7 @@
 package xapics.app.ui.common
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -21,9 +18,10 @@ import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.AppState
-import xapics.app.OnPicsListScreenRefresh.*
 import xapics.app.MainViewModel
-import xapics.app.ShowHide.*
+import xapics.app.OnPicsListScreenRefresh.SEARCH
+import xapics.app.ShowHide.HIDE
+import xapics.app.ShowHide.SHOW
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
 
@@ -86,8 +84,7 @@ fun PicsListScreen(
                                 count = appState.picsList.size,
                                 key = { appState.picsList[it].id },
                             ) {
-                                BoxWithConstraints {
-                                    val height = ((maxWidth - 64.dp).value / 1.5).dp // TODO replace with vv .aspectRatio(3f / 2f, true/false) ?
+                                Box {
                                     val pic = appState.picsList[it]
 
                                     AsyncPic(
@@ -96,8 +93,6 @@ fun PicsListScreen(
                                         modifier = Modifier
                                             .padding(horizontal = 32.dp)
                                             .padding(bottom = 16.dp)
-//                                            .aspectRatio(3f / 2f, true)
-                                            .height(height)
                                             .clip(RoundedCornerShape(2.dp))
                                     ) {
                                         viewModel.updatePicState(it)

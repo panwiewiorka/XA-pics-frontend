@@ -2,12 +2,11 @@ package xapics.app.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -65,17 +64,15 @@ fun HomeScreen(
                     ) {
                         appState.pic?.let {
 
-                            BoxWithConstraints(
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 0.dp, bottom = 32.dp)
                             ) {
-                                val height = (maxWidth.value / 1.5).dp
                                 AsyncPic(
                                     url = it.imageUrl,
                                     description = "random pic: ${it.description}",
                                     modifier = Modifier
-                                        .height(height)
                                         .fillMaxWidth()
                                 ) {
                                     viewModel.getRandomPic()
@@ -88,7 +85,6 @@ fun HomeScreen(
                         val imageUrl = appState.rollThumbnails!![it].thumbUrl
                         val rollTitle = appState.rollThumbnails[it].title
                         RollCard(
-                            width = 150.dp,
                             isLoading = appState.isLoading,
                             imageUrl = imageUrl,
                             rollTitle = rollTitle,

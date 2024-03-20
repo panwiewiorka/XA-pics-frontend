@@ -3,6 +3,7 @@ package xapics.app.ui.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -31,6 +32,7 @@ fun AsyncPic(url: String, description: String, modifier: Modifier, onClick: (() 
         contentAlignment = Alignment.Center,
         modifier = modifier
             .background(MaterialTheme.colorScheme.tertiary)
+            .aspectRatio(3f / 2f, false)
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -44,7 +46,6 @@ fun AsyncPic(url: String, description: String, modifier: Modifier, onClick: (() 
             contentDescription = description,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-//                .aspectRatio(3f / 2f, true)
                 .fillMaxSize()
                 .clickable(enabled = onClick != null) { onClick!!() },
         )
