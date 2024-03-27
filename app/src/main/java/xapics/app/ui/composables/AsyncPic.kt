@@ -1,7 +1,9 @@
 package xapics.app.ui.composables
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +25,7 @@ import coil.request.ImageRequest
 import xapics.app.data.PicsApi.Companion.BASE_URL
 
 @Composable
-fun AsyncPic(url: String, description: String, modifier: Modifier, onClick: (() -> Unit)? = null) {
+fun AsyncPic(url: String, description: String, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     var showRetryButton by remember {
         mutableStateOf(false)
     }
@@ -47,7 +49,11 @@ fun AsyncPic(url: String, description: String, modifier: Modifier, onClick: (() 
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
-                .clickable(enabled = onClick != null) { onClick!!() },
+                .clickable(
+                    indication = LocalIndication.current,
+                    interactionSource = MutableInteractionSource(),
+                    enabled = onClick != null
+                ) { onClick!!() },
         )
 
         if (showRetryButton) {

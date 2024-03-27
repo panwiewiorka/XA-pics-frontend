@@ -3,7 +3,6 @@ package xapics.app.ui.composables
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -17,18 +16,19 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, onClick: () -> Unit) {
+fun RollCard(isLoading: Boolean, imageUrl: String, rollTitle: String, isPortrait: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(12.dp)
+            modifier = modifier
+//                .padding(12.dp)
         ) {
             AsyncPic(
                 url = imageUrl,
                 description = "Click to open $rollTitle roll",
                 modifier = Modifier
                     .border(1.dp, MaterialTheme.colorScheme.tertiary, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp)),
+                    .clip(RoundedCornerShape(16.dp))
+                    .then(if (isPortrait) Modifier else Modifier.weight(1f)),
             ) {
                 onClick()
             }

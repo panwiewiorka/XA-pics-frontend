@@ -142,13 +142,23 @@ interface PicsApi {
         @Part image: MultipartBody.Part
     )
 
-//    @GET("backup")
+//    @GET("db-backup")
 //    suspend fun getBackup(
 //        @Header("Authorization") token: String,
 //    ): TheString
 
+    @POST("db-backup")
+    suspend fun makeBackup(
+        @Header("Authorization") token: String,
+    )
+
+    @POST("db-restore")
+    suspend fun restoreDB(
+        @Header("Authorization") token: String,
+    )
+
     companion object {
-//        const val BASE_URL = "https://xapics.fijbar.com/v1/"
-        const val BASE_URL = "http://192.168.0.87:8080/v1/"
+        const val BASE_URL = "https://xapics.fijbar.com/v1/"
+//        const val BASE_URL = "http://192.168.0.87:8080/v1/"
     }
 }

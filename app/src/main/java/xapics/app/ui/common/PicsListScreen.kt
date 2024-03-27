@@ -1,9 +1,14 @@
 package xapics.app.ui.common
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,8 +27,11 @@ import xapics.app.MainViewModel
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.ShowHide.HIDE
 import xapics.app.ShowHide.SHOW
+import xapics.app.ui.WindowInfo.WindowType.Compact
+import xapics.app.ui.WindowInfo.WindowType.Medium
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.ConnectionErrorButton
+import xapics.app.ui.windowInfo
 
 @Composable
 fun PicsListScreen(
@@ -65,39 +73,90 @@ fun PicsListScreen(
         }
         !appState.picsListColumn.isShown -> { }
         else -> {
-            Box(
+            BoxWithConstraints(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
             ) {
-                val scrollState = rememberLazyListState()
-
                 when {
                     appState.picsList == null -> {} // TODO what?
                     appState.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
                     appState.picsList.size == 1 -> {} // going to PicScreen
                     else -> {
-                        LazyColumn(
-                            state = scrollState,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(
-                                count = appState.picsList.size,
-                                key = { appState.picsList[it].id },
+                        @Composable
+                        fun picItem(index: Int, modifier: Modifier = Modifier) {
+                            val pic = appState.picsList[index]
+                            AsyncPic(
+                                url = pic.imageUrl,
+                                description = pic.description,
+                                modifier = modifier.clip(RoundedCornerShape(2.dp))
                             ) {
-                                Box {
-                                    val pic = appState.picsList[it]
+                                viewModel.updatePicState(index)
+                                viewModel.saveStateSnapshot()
+                                goToPicScreen()
+                            }
+                        }
 
-                                    AsyncPic(
-                                        url = pic.imageUrl,
-                                        description = pic.description,
-                                        modifier = Modifier
-                                            .padding(horizontal = 32.dp)
-                                            .padding(bottom = 16.dp)
-                                            .clip(RoundedCornerShape(2.dp))
+                        val scrollState = rememberLazyListState()
+                        val windowInfo = windowInfo()
+                        val isPortrait = windowInfo.isPortraitOrientation
+                        val isCompact = windowInfo.windowType == Compact
+                        val lowestDimension = if (isPortrait) maxWidth else maxHeight
+                        val gridCellSize = if (windowInfo.windowType == Medium) lowestDimension / 2 else lowestDimension / 3
+
+                        when {
+                            isCompact && isPortrait -> { // TODO LazyVerticalGrid with one column/row instead of LazyColumn/LazyRow?
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    state = scrollState,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    items(
+                                        count = appState.picsList.size,
+                                        key = { appState.picsList[it].id },
                                     ) {
-                                        viewModel.updatePicState(it)
-                                        viewModel.saveStateSnapshot()
-                                        goToPicScreen()
+                                        picItem(it, Modifier.padding(horizontal = 32.dp).padding(vertical = 4.dp))
+                                    }
+                                }
+                            }
+                            isCompact -> {
+                                LazyRow(
+                                    state = scrollState,
+                                    modifier = Modifier
+                                        .padding(bottom = 32.dp)
+                                        .fillMaxSize()
+                                ) {
+                                    items(
+                                        count = appState.picsList.size,
+                                        key = { appState.picsList[it].id },
+                                    ) {
+                                        picItem(it, Modifier.padding(16.dp))
+                                    }
+                                }
+                            }
+                            isPortrait -> {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(gridCellSize),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        count = appState.picsList.size,
+                                        key = { appState.picsList[it].id },
+                                    ) {
+                                        picItem(it, Modifier.padding(horizontal = 16.dp).padding(vertical = 12.dp))
+                                    }
+                                }
+                            }
+                            else -> {
+                                LazyHorizontalGrid(
+                                    rows = GridCells.Adaptive(gridCellSize),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        count = appState.picsList.size,
+                                        key = { appState.picsList[it].id },
+                                    ) {
+                                        picItem(it, Modifier.padding(horizontal = 16.dp).padding(vertical = 12.dp))
                                     }
                                 }
                             }

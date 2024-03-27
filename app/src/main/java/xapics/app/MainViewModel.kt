@@ -3,6 +3,7 @@ package xapics.app
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -610,7 +611,7 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    /** BACKSTACK */
+    /** BACKSTACK / NAVIGATION */
 
     fun saveStateSnapshot() {
         stateHistory.add(
@@ -641,8 +642,14 @@ class MainViewModel @Inject constructor (
         stateHistory.last().picIndex = appState.value.picIndex
     }
 
+    fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
+        _appState.update { it.copy(
+            getBackAfterLoggingIn = value ?: appState.value.getBackAfterLoggingIn
+        ) }
+    }
 
-    /*** STATE UPDATE UTILITIES */
+
+    /*** VISUALS (state update) */
 
     private fun updateLoadingState(loading: Boolean) {
         _appState.update { it.copy(isLoading = loading) }
@@ -708,9 +715,15 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
+    fun changeFullScreenMode(fullscreen: Boolean? = null) {
         _appState.update { it.copy(
-            getBackAfterLoggingIn = value ?: appState.value.getBackAfterLoggingIn
+            isFullscreen = fullscreen ?: !appState.value.isFullscreen
+        )}
+    }
+
+    fun updatePicDetailsWidth(width: Dp) {
+        _appState.update { it.copy(
+            picDetailsWidth = width
         ) }
     }
 }

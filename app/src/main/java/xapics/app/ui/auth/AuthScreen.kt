@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -169,13 +169,14 @@ fun AuthScreen(
                 onValueChange = {
                     userField = it
                 },
-                modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(text = "Username") },
                 maxLines = 1,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
                     onNext = { focusRequester.requestFocus() }
-                )
+                ),
+                modifier = Modifier
+                    .width(280.dp)
             )
 
             OutlinedTextField(
@@ -183,9 +184,6 @@ fun AuthScreen(
                 onValueChange = {
                     passField = it
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
                 placeholder = { Text(text = "Password") },
                 trailingIcon = {
                     val icon = if (passVisible) R.drawable.outline_visibility_off_24 else R.drawable.outline_visibility_24
@@ -203,6 +201,9 @@ fun AuthScreen(
                     }
                 ),
                 maxLines = 1,
+                modifier = Modifier
+                    .width(280.dp)
+                    .focusRequester(focusRequester)
             )
 
             val (buttonText, questionText, changeModeText) = if (signupMode) {

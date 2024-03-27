@@ -3,12 +3,12 @@ package xapics.app.ui.auth
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -168,8 +168,9 @@ fun UserView(
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.FixedSize(176.dp),
-            modifier = Modifier.fillMaxWidth()
+            columns = GridCells.Adaptive(150.dp),
+            horizontalArrangement = Arrangement.Center,
+//            modifier = Modifier.border(2.dp, Color.Red)
         ) {
             items(userCollections.size) {
                 val rollTitle = userCollections[it].title
@@ -180,7 +181,9 @@ fun UserView(
                     RollCard(
                         isLoading = false,
                         imageUrl = thumbUrl,
-                        rollTitle = rollTitle
+                        rollTitle = rollTitle,
+                        isPortrait = true,
+                        modifier = Modifier.padding(12.dp)
                     ) {
                         getCollection(rollTitle)
                         goToPicsListScreen()
