@@ -13,6 +13,7 @@ data class Pic(
     val id: Int,
     val imageUrl: String,
     val description: String,
+    val keywords: String,
     val tags: String
 //    val collections: String? = null,
 )

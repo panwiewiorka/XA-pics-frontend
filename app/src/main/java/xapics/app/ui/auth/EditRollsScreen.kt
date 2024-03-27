@@ -39,6 +39,7 @@ import xapics.app.AppState
 import xapics.app.MainViewModel
 import xapics.app.Roll
 import xapics.app.ShowHide
+import xapics.app.capitalize
 import xapics.app.ui.composables.AsyncPic
 
 
@@ -78,7 +79,7 @@ fun EditRollsScreen(
         appState.rollToEdit?.let {
             OutlinedTextField(
                 value = appState.rollToEdit.title,
-                onValueChange = { viewModel.editRollField(title = it) },
+                onValueChange = { viewModel.editRollField(title = it.capitalize()) },
                 label = { Text("Roll name") },
                 singleLine = true,
                 keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()}),

@@ -43,6 +43,7 @@ import xapics.app.FilmType.NULL
 import xapics.app.FilmType.SLIDE
 import xapics.app.MainViewModel
 import xapics.app.ShowHide
+import xapics.app.capitalize
 
 
 @Composable
@@ -81,7 +82,7 @@ fun EditFilmsScreen(
         appState.filmToEdit?.let {
             OutlinedTextField(
                 value = appState.filmToEdit.filmName,
-                onValueChange = { viewModel.editFilmField(filmName = it) },
+                onValueChange = { viewModel.editFilmField(filmName = it.capitalize()) },
                 label = { Text("Film name") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),

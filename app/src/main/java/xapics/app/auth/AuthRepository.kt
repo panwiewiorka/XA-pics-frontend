@@ -19,6 +19,6 @@ interface AuthRepository {
     suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<Unit>
     suspend fun postFilm(isNewFilm: Boolean, film: Film, getFilmsList: () -> Unit): AuthResult<Unit>
     suspend fun postRoll(isNewRoll: Boolean, roll: Roll, getRollsList: () -> Unit): AuthResult<Unit>
-    suspend fun editPic(id: Int, imageUrl: String, year: String, description: String, hashtags: List<Tag>): AuthResult<Unit>
-    suspend fun uploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File, getAllTags: () -> Unit): AuthResult<Unit>
+    suspend fun editPic(id: Int, imageUrl: String, year: String, description: String, keywords: String, hashtags: List<Tag>): AuthResult<Unit>
+    suspend fun uploadImage(rollTitle: String, description: String, keywords: String, year: String, hashtags: String, file: File, getAllTags: () -> Unit): AuthResult<Unit>
 }

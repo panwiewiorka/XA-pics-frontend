@@ -54,13 +54,13 @@ import xapics.app.ShowHide
 import xapics.app.Tag
 import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
+import xapics.app.capitalize
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.toTagsList
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.PicTag
 import java.io.File
 import java.io.InputStream
-import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -71,11 +71,13 @@ fun UploadPicsScreen(
 ) {
     var picUrl by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
+    var keywords by rememberSaveable { mutableStateOf("") }
     var year by rememberSaveable { mutableStateOf("") }
     var hashtags by rememberSaveable { mutableStateOf(appState.tags.filter{ it.type == "hashtag" }) }
     var showAddHashtagField by rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    val keywordsFocusRequester = remember { FocusRequester() }
     val yearFocusRequester = remember { FocusRequester() }
     val alertFocusRequester = remember { FocusRequester() }
     val scrollState = rememberScrollState()
@@ -172,6 +174,7 @@ fun UploadPicsScreen(
 
                                 picUrl = BASE_URL + "files/images/" + pic.imageUrl
                                 description = pic.description
+                                keywords = pic.keywords
                                 year = picTags.firstOrNull { it.type == "year" }?.value ?: ""
 
                                 val picHashtagValues = picTags.filter { it.type == "hashtag" }.map { it.value }
@@ -211,12 +214,23 @@ fun UploadPicsScreen(
 
                     OutlinedTextField(
                         value = description,
-                        onValueChange = {
-                            description = if (it.length != 1) it else it.replaceFirstChar { char -> char.titlecase(
-                                Locale.ROOT) }
-                        },
+                        onValueChange = { description = it.capitalize() },
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(text = "Description") },
+                        maxLines = 1,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(
+                            onNext = { keywordsFocusRequester.requestFocus() }
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = keywords,
+                        onValueChange = { keywords = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(keywordsFocusRequester),
+                        label = { Text(text = "Search keywords") },
                         maxLines = 1,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(
@@ -253,6 +267,8 @@ fun UploadPicsScreen(
                         }
                     }
 
+                    val fieldsAreEmpty = description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()
+
                     Row (
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
@@ -263,18 +279,20 @@ fun UploadPicsScreen(
                             Button(
                                 enabled = !appState.isLoading && picUrl.contains(".jpg"),
                                 onClick = {
-                                    if (description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()) {
+                                    if (fieldsAreEmpty) {
                                         Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
                                     } else {
                                         viewModel.editPic(
                                             appState.pic!!,
                                             year,
                                             description,
+                                            keywords,
                                             hashtags,
                                             goToAuthScreen
                                         )
 
 //                                        description = ""
+//                                        keywords = ""
                                     }
                                 }
                             ) {
@@ -290,7 +308,7 @@ fun UploadPicsScreen(
                             Button(
                                 enabled = !appState.isLoading && picUrl.contains("content://"),
                                 onClick = {
-                                    if (description.isEmpty() || year.isEmpty() || appState.rollToEdit.title.isEmpty()) {
+                                    if (fieldsAreEmpty) {
                                         Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
                                     } else {
                                         val myStream = imageUri?.let { myResolver.openInputStream(it) }
@@ -304,6 +322,7 @@ fun UploadPicsScreen(
                                         viewModel.uploadImage(
                                             rollTitle = appState.rollToEdit.title,
                                             description = description,
+                                            keywords = keywords,
                                             year = year,
                                             hashtags = hashtags.filter { it.state == SELECTED }.map { it.value }.toString().drop(1).dropLast(1), // TODO move into repository
                                             file = myFile,
@@ -311,6 +330,7 @@ fun UploadPicsScreen(
                                         )
 
                                         description = ""
+                                        keywords = ""
                                     }
                                 }
                             ) {

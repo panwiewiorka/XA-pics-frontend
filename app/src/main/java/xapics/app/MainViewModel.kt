@@ -2,7 +2,6 @@ package xapics.app
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,40 +24,9 @@ import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthResult
 import xapics.app.auth.backup.Downloader
 import xapics.app.data.PicsApi
-import xapics.app.ui.theme.CollectionTag
-import xapics.app.ui.theme.DefaultTag
-import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.GrayMedium
-import xapics.app.ui.theme.RollAttribute
-import xapics.app.ui.theme.RollTag
-import xapics.app.ui.theme.YearTag
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
-
-const val TAG = "mytag"
-
-fun String.toTagsList(): List<Tag> {
-    return this.split(", ")
-        .map { it.split(" = ") }
-        .map { Tag(it[0], it[1]) }
-        .filterNot { it.value == "" }
-}
-
-fun getTagColorAndName(tag: Tag): Pair<Color, String> {
-    return when(tag.type) {
-        "filmName" -> Pair(FilmTag, tag.value)
-        "filmType" -> Pair(GrayMedium, if (tag.value == "BW") "black and white" else tag.value.lowercase())
-        "iso" -> Pair(GrayMedium, "iso ${tag.value}")
-        "roll" -> Pair(RollTag, tag.value)
-        "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")
-        "xpro" -> Pair(RollAttribute, if(tag.value == "false") "no cross-process" else "cross-process")
-        "year" -> Pair(YearTag, tag.value)
-        "hashtag" -> Pair(DefaultTag, tag.value)
-        "collection" -> Pair(CollectionTag, tag.value)
-        else -> Pair(Color.Transparent, tag.value)
-    }
-}
 
 
 @HiltViewModel
@@ -399,6 +367,7 @@ class MainViewModel @Inject constructor (
         pic: Pic,
         year: String,
         description: String,
+        keywords: String,
         hashtags: List<Tag>,
         goToAuthScreen: ()-> Unit
     ) {
@@ -409,6 +378,7 @@ class MainViewModel @Inject constructor (
                     pic.imageUrl,
                     year,
                     description,
+                    keywords,
                     hashtags
                 )
                 if (result is AuthResult.Unauthorized) goToAuthScreen()
@@ -425,13 +395,14 @@ class MainViewModel @Inject constructor (
     private suspend fun tryUploadImage(
         rollTitle: String,
         description: String,
+        keywords: String,
         year: String,
         hashtags: String,
         file: File,
         goToAuthScreen: () -> Unit
     ): Boolean { // TODO merge with v uploadImage() ?
         return try {
-            val result = repository.uploadImage(rollTitle, description, year, hashtags, file, ::getAllTags)
+            val result = repository.uploadImage(rollTitle, description, keywords, year, hashtags, file, ::getAllTags)
             if (result is AuthResult.Unauthorized) goToAuthScreen()
             true
         } catch (e: IOException) {
@@ -446,11 +417,11 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun uploadImage(rollTitle: String, description: String, year: String, hashtags: String, file: File, goToAuthScreen: () -> Unit) {
+    fun uploadImage(rollTitle: String, description: String, keywords: String, year: String, hashtags: String, file: File, goToAuthScreen: () -> Unit) {
         updateLoadingState(true)
         Log.d(TAG, "uploadImage: ($hashtags)")
         viewModelScope.launch {
-            val success = tryUploadImage(rollTitle, description, year, hashtags, file, goToAuthScreen)
+            val success = tryUploadImage(rollTitle, description, keywords, year, hashtags, file, goToAuthScreen)
             if (success) {
                 search("roll = $rollTitle")
             } else {

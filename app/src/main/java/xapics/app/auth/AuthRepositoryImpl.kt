@@ -228,6 +228,7 @@ class AuthRepositoryImpl(
         imageUrl: String,
         year: String,
         description: String,
+        keywords: String,
         hashtags: List<Tag>
     ): AuthResult<Unit> {
         return try {
@@ -239,6 +240,7 @@ class AuthRepositoryImpl(
                 imageUrl = imageUrl,
                 year = year,
                 description = description,
+                keywords = keywords,
                 hashtags = hashtags.filter { it.state == TagState.SELECTED }.map { it.value }.toString().drop(1).dropLast(1)
             )
 
@@ -256,6 +258,7 @@ class AuthRepositoryImpl(
     override suspend fun uploadImage(
         rollTitle: String,
         description: String,
+        keywords: String,
         year: String,
         hashtags: String,
         file: File,
@@ -268,6 +271,7 @@ class AuthRepositoryImpl(
                 token = "Bearer $token",
                 MultipartBody.Part.createFormData("roll", rollTitle),
                 MultipartBody.Part.createFormData("description", description),
+                MultipartBody.Part.createFormData("keywords", keywords),
                 MultipartBody.Part.createFormData("year", year),
                 MultipartBody.Part.createFormData("hashtags", hashtags),
                 MultipartBody.Part.createFormData("image", file.name, file.asRequestBody())

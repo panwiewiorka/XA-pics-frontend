@@ -128,6 +128,7 @@ interface PicsApi {
         @Field("imageUrl") imageUrl: String,
         @Field("year") year: String,
         @Field("description") description: String,
+        @Field("keywords") keywords: String,
         @Field("hashtags") hashtags: String,
     )
 
@@ -137,6 +138,7 @@ interface PicsApi {
         @Header("Authorization") token: String,
         @Part roll: MultipartBody.Part,
         @Part description: MultipartBody.Part,
+        @Part keywords: MultipartBody.Part,
         @Part year: MultipartBody.Part,
         @Part hashtags: MultipartBody.Part,
         @Part image: MultipartBody.Part
