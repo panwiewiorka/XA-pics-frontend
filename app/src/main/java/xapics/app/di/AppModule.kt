@@ -13,6 +13,8 @@ import xapics.app.auth.AuthRepository
 import xapics.app.auth.AuthRepositoryImpl
 import xapics.app.auth.backup.AndroidDownloader
 import xapics.app.auth.backup.Downloader
+import xapics.app.data.EncryptedSharedPrefs
+import xapics.app.data.EncryptedSharedPrefsImpl
 import xapics.app.data.PicsApi
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import javax.inject.Singleton
@@ -39,8 +41,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: PicsApi, prefs: SharedPreferences): AuthRepository {
-        return AuthRepositoryImpl(api, prefs)
+    fun provideEncryptedSharedPref(impl: EncryptedSharedPrefsImpl): EncryptedSharedPrefs {
+        return impl
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(api: PicsApi, cryptoPrefs: EncryptedSharedPrefs): AuthRepository {
+        return AuthRepositoryImpl(api, cryptoPrefs)
     }
 
     @Provides

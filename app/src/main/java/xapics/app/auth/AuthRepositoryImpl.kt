@@ -1,6 +1,5 @@
 package xapics.app.auth
 
-import android.content.SharedPreferences
 import android.util.Log
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -12,12 +11,14 @@ import xapics.app.TAG
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.Thumb
+import xapics.app.data.EncryptedSharedPrefs
 import xapics.app.data.PicsApi
 import java.io.File
 
 class AuthRepositoryImpl(
     private val api: PicsApi,
-    private val prefs: SharedPreferences
+//    private val prefs: SharedPreferences,
+    private val cryptoPrefs: EncryptedSharedPrefs
 ): AuthRepository {
 
     /** AUTH */
@@ -45,12 +46,10 @@ class AuthRepositoryImpl(
             val response = api.signIn(
                 request = AuthRequest(username, password)
             )
-            prefs.edit()
-                .putString("jwt", response.token)
-                .apply()
+            cryptoPrefs.putString("jwt", response.token)
+
             val respondedUserName = response.userId
-            Log.d(TAG, "signIn: userName = $respondedUserName")
-            Log.d(TAG, "signIn: token = ${response.token}")
+            Log.d(TAG, "signIn: userName = $respondedUserName, token = ${response.token}")
             AuthResult.Authorized(respondedUserName) as AuthResult<Unit>
         } catch (e: HttpException) {
             Log.e(TAG, "signIn: ", e)
@@ -66,11 +65,9 @@ class AuthRepositoryImpl(
 
     override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
             val userName = api.getUserName("Bearer $token").string
-//            api.authenticate("Bearer $token")
             updateUserName(userName)
-//            updateUserId(userId.toIntOrNull())
             AuthResult.Authorized(userName) as AuthResult<Unit>
         } catch (e: HttpException) {
             Log.e(TAG, "authenticate: ", e)
@@ -84,10 +81,8 @@ class AuthRepositoryImpl(
 
     override suspend fun getUserInfo(updateUserName: (String?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
-//            val userId = api.getUserId("Bearer $token")
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
             val userCollections = api.getUserCollections("Bearer $token")
-//            updateUserId(userId.toIntOrNull())
             updateUserCollections(userCollections)
             AuthResult.Authorized()
         } catch (e: HttpException) {
@@ -101,9 +96,7 @@ class AuthRepositoryImpl(
     }
 
     override fun logOut(): AuthResult<Unit> {
-        prefs.edit()
-            .putString("jwt", null)
-            .apply()
+        cryptoPrefs.putString("jwt", null)
         return AuthResult.Unauthorized()
     }
 
@@ -112,7 +105,7 @@ class AuthRepositoryImpl(
 
     override suspend fun editCollection(collection: String, picId: Int): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null)
+            val token = cryptoPrefs.getString("jwt", null)
             api.editCollection("Bearer $token", collection, picId)
             AuthResult.Authorized()
         } catch (e: HttpException) {
@@ -126,7 +119,7 @@ class AuthRepositoryImpl(
 
     override suspend fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null)
+            val token = cryptoPrefs.getString("jwt", null)
             api.renameOrDeleteCollection("Bearer $token", collectionTitle, renamedTitle)
             AuthResult.Authorized()
         } catch (e: HttpException) {
@@ -140,7 +133,7 @@ class AuthRepositoryImpl(
 
     override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null)
+            val token = cryptoPrefs.getString("jwt", null)
             val picsList = api.getCollection("Bearer $token", collection).reversed()
             updatePicsList(picsList)
             AuthResult.Authorized()
@@ -155,7 +148,7 @@ class AuthRepositoryImpl(
 
     override suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null)
+            val token = cryptoPrefs.getString("jwt", null)
             val collectionsList = api.getPicCollections ("Bearer $token", picId)
             Log.d(TAG, "getPicCollections: collectionsList = $collectionsList")
             updatePicCollections(collectionsList)
@@ -174,7 +167,7 @@ class AuthRepositoryImpl(
 
     override suspend fun postFilm(isNewFilm: Boolean, film: Film, getFilmsList: () -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 
             api.postFilm(
                 token = "Bearer $token",
@@ -198,7 +191,7 @@ class AuthRepositoryImpl(
 
     override suspend fun postRoll(isNewRoll: Boolean, roll: Roll, getRollsList: () -> Unit): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 
             api.postRoll(
                 token = "Bearer $token",
@@ -232,7 +225,7 @@ class AuthRepositoryImpl(
         hashtags: List<Tag>
     ): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 
             api.editPic(
                 token = "Bearer $token",
@@ -265,7 +258,7 @@ class AuthRepositoryImpl(
         getAllTags: () -> Unit
     ): AuthResult<Unit> {
         return try {
-            val token = prefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
+            val token = cryptoPrefs.getString("jwt", null) ?: return AuthResult.Unauthorized()
 
             api.uploadImage(
                 token = "Bearer $token",
