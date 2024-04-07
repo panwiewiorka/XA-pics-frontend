@@ -22,8 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
-import xapics.app.AppState
-import xapics.app.MainViewModel
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.ShowHide.HIDE
 import xapics.app.ShowHide.SHOW

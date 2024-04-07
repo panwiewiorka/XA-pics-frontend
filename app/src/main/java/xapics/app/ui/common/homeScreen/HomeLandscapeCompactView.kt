@@ -25,8 +25,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.AppState
-import xapics.app.MainViewModel
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.ui.composables.AsyncPic

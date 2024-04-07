@@ -19,8 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.AppState
-import xapics.app.MainViewModel
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.RollCard
 

@@ -48,8 +48,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import xapics.app.AppState
-import xapics.app.MainViewModel
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ShowHide
 import xapics.app.Tag
 import xapics.app.TagState.ENABLED

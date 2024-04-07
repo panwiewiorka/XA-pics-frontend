@@ -1,4 +1,4 @@
-package xapics.app
+package xapics.app.ui
 
 import android.content.Context
 import android.util.Log
@@ -14,16 +14,27 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import xapics.app.Film
+import xapics.app.FilmType
 import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
 import xapics.app.OnPicsListScreenRefresh.SEARCH
+import xapics.app.Pic
+import xapics.app.Roll
+import xapics.app.ShowHide
 import xapics.app.ShowHide.SHOW
+import xapics.app.StateSnapshot
+import xapics.app.TAG
+import xapics.app.Tag
 import xapics.app.TagState.DISABLED
 import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
-import xapics.app.auth.AuthRepository
-import xapics.app.auth.AuthResult
-import xapics.app.auth.backup.Downloader
+import xapics.app.Thumb
 import xapics.app.data.PicsApi
+import xapics.app.data.auth.AuthRepository
+import xapics.app.data.auth.AuthResult
+import xapics.app.data.auth.backup.Downloader
+import xapics.app.getTagColorAndName
+import xapics.app.toTagsList
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject

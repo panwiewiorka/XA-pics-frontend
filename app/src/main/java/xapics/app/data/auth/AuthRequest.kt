@@ -1,4 +1,4 @@
-package xapics.app.auth
+package xapics.app.data.auth
 
 data class AuthRequest(
     val username: String,

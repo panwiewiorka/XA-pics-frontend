@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import xapics.app.AppState
-import xapics.app.MainViewModel
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.Tag
 import xapics.app.toTagsList
 import xapics.app.ui.composables.PicTag

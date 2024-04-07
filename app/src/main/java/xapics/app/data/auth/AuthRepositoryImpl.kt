@@ -1,4 +1,4 @@
-package xapics.app.auth
+package xapics.app.data.auth
 
 import android.util.Log
 import okhttp3.MultipartBody
@@ -48,9 +48,8 @@ class AuthRepositoryImpl(
             )
             cryptoPrefs.putString("jwt", response.token)
 
-            val respondedUserName = response.userId
-            Log.d(TAG, "signIn: userName = $respondedUserName, token = ${response.token}")
-            AuthResult.Authorized(respondedUserName) as AuthResult<Unit>
+            AuthResult.Authorized(response.userId) as AuthResult<Unit>
+
         } catch (e: HttpException) {
             Log.e(TAG, "signIn: ", e)
             (

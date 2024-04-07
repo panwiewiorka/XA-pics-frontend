@@ -1,4 +1,4 @@
-package xapics.app.auth
+package xapics.app.data.auth
 
 import xapics.app.Film
 import xapics.app.Pic

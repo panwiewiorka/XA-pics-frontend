@@ -34,14 +34,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import xapics.app.AppState
+import xapics.app.ui.AppState
 import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.FilmType.BW
 import xapics.app.FilmType.NEGATIVE
 import xapics.app.FilmType.NULL
 import xapics.app.FilmType.SLIDE
-import xapics.app.MainViewModel
+import xapics.app.ui.MainViewModel
 import xapics.app.ShowHide
 import xapics.app.capitalize
 

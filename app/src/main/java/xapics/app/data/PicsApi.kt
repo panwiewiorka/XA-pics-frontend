@@ -16,8 +16,8 @@ import xapics.app.Pic
 import xapics.app.Roll
 import xapics.app.TheString
 import xapics.app.Thumb
-import xapics.app.auth.AuthRequest
-import xapics.app.auth.TokenResponse
+import xapics.app.data.auth.AuthRequest
+import xapics.app.data.auth.TokenResponse
 
 interface PicsApi {
 

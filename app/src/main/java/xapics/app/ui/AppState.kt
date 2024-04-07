@@ -1,7 +1,13 @@
-package xapics.app
+package xapics.app.ui
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import xapics.app.Film
+import xapics.app.Pic
+import xapics.app.Roll
+import xapics.app.ShowHide
+import xapics.app.Tag
+import xapics.app.Thumb
 
 
 data class AppState(

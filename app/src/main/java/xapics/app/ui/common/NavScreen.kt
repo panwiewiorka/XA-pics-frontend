@@ -23,7 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import xapics.app.MainViewModel
+import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.ui.auth.AdminScreen

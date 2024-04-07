@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import xapics.app.MainViewModel
+import xapics.app.ui.MainViewModel
 
 @Composable
 fun AdminScreen(

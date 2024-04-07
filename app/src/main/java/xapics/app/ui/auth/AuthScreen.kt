@@ -42,11 +42,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import xapics.app.MainViewModel
+import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.TAG
-import xapics.app.auth.AuthResult
+import xapics.app.data.auth.AuthResult
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
