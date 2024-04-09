@@ -59,14 +59,14 @@ fun PicDetails(
                         appState.picCollections,
                         appState.collectionToSaveTo,
                         appState.pic.id,
-                        viewModel::editCollectionOrLogIn,
+                        viewModel::editCollection,
                         viewModel::updateCollectionToSaveTo,
                     ) { goToAuthScreen() }
                 }
 
                 IconButton(
                     onClick = {
-                        viewModel.editCollectionOrLogIn(
+                        viewModel.editCollection(
                             appState.collectionToSaveTo,
                             appState.pic.id,
                             goToAuthScreen

@@ -22,11 +22,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.ShowHide.HIDE
 import xapics.app.ShowHide.SHOW
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.WindowInfo.WindowType.Compact
 import xapics.app.ui.WindowInfo.WindowType.Medium
 import xapics.app.ui.composables.AsyncPic
@@ -35,7 +35,12 @@ import xapics.app.ui.windowInfo
 
 @Composable
 fun PicsListScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicScreen: () -> Unit, popBackStack: () -> Unit, previousPage: String?
+    viewModel: MainViewModel,
+    appState: AppState,
+    goToPicScreen: () -> Unit,
+    goToAuthScreen: () -> Unit,
+    popBackStack: () -> Unit,
+    previousPage: String?
 ) {
     val context = LocalContext.current
 
@@ -66,7 +71,7 @@ fun PicsListScreen(
                 if (toDo.first == SEARCH) {
                     viewModel.search(toDo.second)
                 } else {
-                    viewModel.getCollection(toDo.second)
+                    viewModel.getCollection(toDo.second, goToAuthScreen)
                 }
                 viewModel.showConnectionError(HIDE)
             }

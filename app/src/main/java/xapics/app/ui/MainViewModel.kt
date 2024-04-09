@@ -43,7 +43,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val api: PicsApi,
-    private val repository: AuthRepository,
+    val repository: AuthRepository,
     private val downloader: Downloader
 ): ViewModel() {
 
@@ -94,7 +94,11 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                val result = repository.authenticate(::updateUserName)
+                var result = repository.authenticate(::updateUserName)
+                if (result is AuthResult.Unauthorized) {
+                    repository.refreshTokens()
+                    result = repository.authenticate(::updateUserName)
+                }
                 resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
@@ -108,9 +112,16 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                val result = repository.getUserInfo(::updateUserName, ::updateUserCollections)
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-//                resultChannel.send(result)
+                var result = repository.getUserInfo(::updateUserName, ::updateUserCollections)
+                if (result is AuthResult.Unauthorized) {
+                    result = repository.refreshTokens()
+                    if (result is AuthResult.Unauthorized) {
+                        goToAuthScreen()
+                        resultChannel.send(result)
+                    } else {
+                        repository.getUserInfo(::updateUserName, ::updateUserCollections)
+                    }
+                }
                 updateLoadingState(false)
             } catch (e: Exception) {
                 showConnectionError(SHOW)
@@ -133,7 +144,10 @@ class MainViewModel @Inject constructor (
     }
 
     fun logOut() {
-        repository.logOut()
+        viewModelScope.launch {
+            repository.logOut()
+            resultChannel.send(AuthResult.Unauthorized())
+        }
         _appState.update { it.copy(
             userName = null
         ) }
@@ -142,11 +156,11 @@ class MainViewModel @Inject constructor (
 
     /*** COLLECTIONS */
 
-    fun editCollectionOrLogIn(collection: String, picId: Int, goToAuthScreen: () -> Unit) {
+    fun editCollection(collection: String, picId: Int, goToAuthScreen: () -> Unit) {
         viewModelScope.launch {
             try {
 //                updateLoadingState(true)
-                val result = repository.editCollection(
+                var result = repository.editCollection(
                     collection = collection,
                     picId = picId
                 )
@@ -156,9 +170,15 @@ class MainViewModel @Inject constructor (
                         getPicCollections(picId) // TODO locally (check success first). Same everywhere ^v
                     }
                     is AuthResult.Unauthorized -> {
-                        rememberToGetBackAfterLoggingIn(true)
-                        goToAuthScreen()
-                        Log.d(TAG, "401 unauthorized")
+                        result = repository.refreshTokens()
+                        if (result is AuthResult.Unauthorized) {
+                            rememberToGetBackAfterLoggingIn(true)
+                            goToAuthScreen()
+                            resultChannel.send(result)
+                        } else {
+                            repository.editCollection(collection, picId)
+                            getPicCollections(picId)
+                        }
                     }
                     else -> {
                         Log.d(TAG, "Unknown error")
@@ -172,52 +192,73 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?) {
+    fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?, goToAuthScreen: () -> Unit) {
         // if renamedTitle == null -> delete collection
         viewModelScope.launch {
             try {
-                val result = repository.renameOrDeleteCollection(
+                fun run() {
+                    val userCollections = appState.value.userCollections?.toMutableList()
+                    val index = userCollections?.indexOfFirst { it.title == collectionTitle }
+                    if (renamedTitle != null) {
+                        Log.d(TAG, "Collection $collectionTitle renamed to $renamedTitle")
+                        if (index != null && index != -1) {
+                            userCollections[index] = Thumb(renamedTitle, userCollections[index].thumbUrl)
+                        }
+                    } else {
+                        Log.d(TAG, "Collection $collectionTitle deleted")
+                        if (index != null) {
+                            userCollections.removeAt(index)
+                        }
+                    }
+                    _appState.update { it.copy(
+                        userCollections = userCollections
+                    ) }
+                }
+
+                var result = repository.renameOrDeleteCollection(
                     collectionTitle = collectionTitle,
                     renamedTitle = renamedTitle
                 )
                 when (result) {
                     is AuthResult.Authorized -> {
-                        val userCollections = appState.value.userCollections?.toMutableList()
-                        val index = userCollections?.indexOfFirst { it.title == collectionTitle }
-                        if (renamedTitle != null) {
-                            Log.d(TAG, "Collection $collectionTitle renamed to $renamedTitle")
-                            if (index != null && index != -1) {
-                                userCollections[index] = Thumb(renamedTitle, userCollections[index].thumbUrl)
-                            }
-                        } else {
-                            Log.d(TAG, "Collection $collectionTitle deleted")
-                            if (index != null) {
-                                userCollections.removeAt(index)
-                            }
-                        }
-                        _appState.update { it.copy(
-                            userCollections = userCollections
-                        ) }
+                        run()
                     }
                     is AuthResult.Conflicted -> TODO()
-                    is AuthResult.Unauthorized -> Log.d(TAG, "401 unauthorized")
+                    is AuthResult.Unauthorized -> {
+                        result = repository.refreshTokens()
+                        if (result is AuthResult.Unauthorized) {
+                            goToAuthScreen()
+                            resultChannel.send(result)
+                        } else {
+                            repository.renameOrDeleteCollection(collectionTitle, renamedTitle)
+                            run()
+                        }
+                    }
                     is AuthResult.UnknownError -> Log.d(TAG, "Unknown error")
                     is AuthResult.ConnectionError -> Log.d(TAG, "Connection error")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "renameOrDeleteCollection: ", e)
             }
-
         }
     }
 
-    fun getCollection(collection: String) {
+    fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
         clearPicsList()
         updateLoadingState(true)
         updateTopBarCaption(collection)
         viewModelScope.launch {
             try {
-                repository.getCollection(collection, ::updatePicsList)
+                var result = repository.getCollection(collection, ::updatePicsList)
+                if (result is AuthResult.Unauthorized) {
+                    result = repository.refreshTokens()
+                    if (result is AuthResult.Unauthorized) {
+                        goToAuthScreen()
+                        resultChannel.send(result)
+                    } else {
+                        repository.getCollection(collection, ::updatePicsList)
+                    }
+                }
                 updateLoadingState(false)
                 saveStateSnapshot()
             } catch (e: Exception) {

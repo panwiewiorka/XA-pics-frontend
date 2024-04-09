@@ -11,15 +11,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
 import xapics.app.Tag
 import xapics.app.toTagsList
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.PicTag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PicTags(viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit) {
+fun PicTags(
+    viewModel: MainViewModel,
+    appState: AppState,
+    goToPicsListScreen: () -> Unit,
+    goToAuthScreen: () -> Unit,
+) {
     AnimatedContent(
         targetState = appState,
         transitionSpec = {
@@ -44,7 +49,7 @@ fun PicTags(viewModel: MainViewModel, appState: AppState, goToPicsListScreen: ()
             state.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
                     viewModel.saveStateSnapshot()
-                    viewModel.getCollection(it)
+                    viewModel.getCollection(it, goToAuthScreen)
                     goToPicsListScreen()
                 }
             }

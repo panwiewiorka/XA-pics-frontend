@@ -100,7 +100,7 @@ fun PicPortraitView(
                 ) {
                     PicDetails(viewModel, appState, goToAuthScreen)
 
-                    PicTags(viewModel, appState, goToPicsListScreen)
+                    PicTags(viewModel, appState, goToPicsListScreen, goToAuthScreen)
                 }
             }
         }

@@ -31,6 +31,11 @@ interface PicsApi {
         @Body request: AuthRequest
     ): TokenResponse
 
+    @GET("refresh-tokens")
+    suspend fun refreshTokens(
+        @Header("Authorization") refreshToken: String
+    ): TokenResponse
+
     @GET("authenticate")
     suspend fun authenticate(
         @Header("Authorization") token: String

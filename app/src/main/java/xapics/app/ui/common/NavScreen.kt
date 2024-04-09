@@ -23,9 +23,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.auth.AdminScreen
 import xapics.app.ui.auth.AuthScreen
 import xapics.app.ui.auth.EditFilmsScreen
@@ -157,6 +157,7 @@ fun NavScreen(
                     viewModel = viewModel,
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     popBackStack = { navController.popBackStack() },
                     previousPage = navController.previousBackStackEntry?.destination?.route,
                 )

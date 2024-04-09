@@ -19,10 +19,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,12 +48,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.ShowHide.SHOW
 import xapics.app.TagState
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.common.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -141,7 +141,7 @@ fun TopBar(
 //                    popBackStack()
 //                    if (page == "PicsListScreen") showPicsList(HIDE)
                 }) {
-                    Icon(Icons.Outlined.ArrowBack, "go Back")
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
                 }
             }
         }
@@ -223,7 +223,7 @@ fun TopBar(
             if(page == "AdminScreen" || page == "ProfileScreen") {
                 IconButton(onClick = {
                     popBackStack()
-                    viewModel.logOut() // TODO when logOut() finished -> goToAuthScreen()
+                    viewModel.logOut()
                     goToAuthScreen()
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")

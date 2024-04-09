@@ -42,11 +42,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
+import xapics.app.ui.MainViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -74,7 +74,6 @@ fun AuthScreen(
         viewModel.authResults.collect { result ->
             Log.d(TAG, "AuthScreen: result is $result")
             val resultUserName = result.data.toString()
-//            val resultId = result.data.toString().toIntOrNull()
             Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
             if (resultUserName != "null") {
                 when(result) {

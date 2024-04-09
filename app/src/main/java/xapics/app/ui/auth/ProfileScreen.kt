@@ -43,11 +43,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
 import xapics.app.R
 import xapics.app.ShowHide.HIDE
 import xapics.app.Thumb
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.composables.RollCard
 import xapics.app.ui.theme.AlmostWhite
@@ -64,7 +64,8 @@ fun ProfileScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        if (appState.userName != null) viewModel.getUserInfo(goToAuthScreen)
+//        if (appState.userName != null) viewModel.getUserInfo(goToAuthScreen)
+        if (appState.userName != null) viewModel.getUserInfo{}
     }
 
     Box(
@@ -86,6 +87,7 @@ fun ProfileScreen(
                     appState.userCollections,
                     viewModel::getCollection,
                     goToPicsListScreen,
+                    goToAuthScreen,
                     viewModel::renameOrDeleteCollection,
                     context
                 )
@@ -99,9 +101,10 @@ fun ProfileScreen(
 @Composable
 fun UserView(
     userCollections: List<Thumb>?,
-    getCollection: (String) -> Unit,
+    getCollection: (String, () -> Unit) -> Unit,
     goToPicsListScreen: () -> Unit,
-    renameOrDeleteCollection:(String, String?) -> Unit,
+    goToAuthScreen: () -> Unit,
+    renameOrDeleteCollection:(String, String?, () -> Unit) -> Unit,
     context: Context,
 ) {
     var showRenameDialog by rememberSaveable { mutableStateOf(false) }
@@ -137,7 +140,7 @@ fun UserView(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
                         onClick = {
-                            renameOrDeleteCollection(collectionTitle, null)
+                            renameOrDeleteCollection(collectionTitle, null, goToAuthScreen)
                             showDeleteDialog = false
                             showRenameDialog = false
                         }
@@ -185,7 +188,7 @@ fun UserView(
                         isPortrait = true,
                         modifier = Modifier.padding(12.dp)
                     ) {
-                        getCollection(rollTitle)
+                        getCollection(rollTitle, goToAuthScreen)
                         goToPicsListScreen()
                     }
                     val modifier = Modifier
@@ -260,7 +263,7 @@ fun UserView(
                         ).show()
                     }
                     else -> {
-                        renameOrDeleteCollection(collectionTitle, renamedTitle)
+                        renameOrDeleteCollection(collectionTitle, renamedTitle, goToAuthScreen)
                         showRenameDialog = false
                     }
                 }
