@@ -23,8 +23,6 @@ import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.OnPicsListScreenRefresh.SEARCH
-import xapics.app.ShowHide.HIDE
-import xapics.app.ShowHide.SHOW
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
 import xapics.app.ui.WindowInfo.WindowType.Compact
@@ -45,7 +43,7 @@ fun PicsListScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.showPicsList(SHOW)
+        viewModel.showPicsList(true)
     }
 
     LaunchedEffect(appState.picsList) {
@@ -65,7 +63,7 @@ fun PicsListScreen(
     }
 
     when {
-        appState.connectionError.isShown -> {
+        appState.showConnectionError -> {
             ConnectionErrorButton {
                 val toDo = viewModel.onPicsListScreenRefresh
                 if (toDo.first == SEARCH) {
@@ -73,10 +71,10 @@ fun PicsListScreen(
                 } else {
                     viewModel.getCollection(toDo.second, goToAuthScreen)
                 }
-                viewModel.showConnectionError(HIDE)
+                viewModel.showConnectionError(false)
             }
         }
-        !appState.picsListColumn.isShown -> { }
+        !appState.showPicsList -> { }
         else -> {
             BoxWithConstraints(
                 contentAlignment = Alignment.Center,
@@ -120,7 +118,10 @@ fun PicsListScreen(
                                         count = appState.picsList.size,
                                         key = { appState.picsList[it].id },
                                     ) {
-                                        picItem(it, Modifier.padding(horizontal = 32.dp).padding(vertical = 4.dp))
+                                        picItem(it,
+                                            Modifier
+                                                .padding(horizontal = 32.dp)
+                                                .padding(vertical = 4.dp))
                                     }
                                 }
                             }
@@ -148,7 +149,10 @@ fun PicsListScreen(
                                         count = appState.picsList.size,
                                         key = { appState.picsList[it].id },
                                     ) {
-                                        picItem(it, Modifier.padding(horizontal = 16.dp).padding(vertical = 12.dp))
+                                        picItem(it,
+                                            Modifier
+                                                .padding(horizontal = 16.dp)
+                                                .padding(vertical = 12.dp))
                                     }
                                 }
                             }
@@ -161,7 +165,10 @@ fun PicsListScreen(
                                         count = appState.picsList.size,
                                         key = { appState.picsList[it].id },
                                     ) {
-                                        picItem(it, Modifier.padding(horizontal = 16.dp).padding(vertical = 12.dp))
+                                        picItem(it,
+                                            Modifier
+                                                .padding(horizontal = 16.dp)
+                                                .padding(vertical = 12.dp))
                                     }
                                 }
                             }

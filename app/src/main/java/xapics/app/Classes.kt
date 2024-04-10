@@ -7,14 +7,15 @@ enum class TagState { DISABLED, ENABLED, SELECTED }
 
 enum class OnPicsListScreenRefresh { SEARCH, GET_COLLECTION }
 
-enum class ShowHide(val isShown: Boolean) { SHOW(true), HIDE(false) }
+//enum class ShowHide(val isShown: Boolean) { SHOW(true), HIDE(false) }
 
 data class Pic(
     val id: Int,
     val imageUrl: String,
     val description: String,
     val keywords: String,
-    val tags: String
+    val tags: String,
+//    val collections: List<String> = emptyList(),
 )
 
 data class Film(

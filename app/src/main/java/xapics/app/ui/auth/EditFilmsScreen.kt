@@ -34,16 +34,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import xapics.app.ui.AppState
 import xapics.app.Film
 import xapics.app.FilmType
 import xapics.app.FilmType.BW
 import xapics.app.FilmType.NEGATIVE
 import xapics.app.FilmType.NULL
 import xapics.app.FilmType.SLIDE
-import xapics.app.ui.MainViewModel
-import xapics.app.ShowHide
 import xapics.app.capitalize
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 
 
 @Composable
@@ -130,14 +129,14 @@ fun EditFilmsScreen(
 
                 if (appState.isLoading) CircularProgressIndicator()
 
-                if (appState.connectionError.isShown) {
+                if (appState.showConnectionError) {
                     Toast.makeText(
                         context,
                         "Error",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    viewModel.showConnectionError(ShowHide.HIDE)
+                    viewModel.showConnectionError(false)
                 }
             }
         }

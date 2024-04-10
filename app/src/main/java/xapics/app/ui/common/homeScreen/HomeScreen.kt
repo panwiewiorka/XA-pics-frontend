@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.ShowHide.HIDE
 import xapics.app.ui.WindowInfo.WindowType.Compact
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.windowInfo
@@ -26,7 +25,7 @@ fun HomeScreen(
             .padding(top = 4.dp)
     ) {
         when {
-            appState.connectionError.isShown -> {
+            appState.showConnectionError -> {
                 ConnectionErrorButton {
                     viewModel.authenticate()
                     viewModel.getUserInfo {} // TODO needed?
@@ -35,7 +34,7 @@ fun HomeScreen(
                     viewModel.getRandomPic()
                     viewModel.getAllTags()
 
-                    viewModel.showConnectionError(HIDE)
+                    viewModel.showConnectionError(false)
                 }
             }
             else -> {

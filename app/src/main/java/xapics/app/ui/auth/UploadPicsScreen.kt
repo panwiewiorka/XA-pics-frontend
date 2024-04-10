@@ -23,7 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,15 +48,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
-import xapics.app.ShowHide
 import xapics.app.Tag
 import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.capitalize
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.toTagsList
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.AsyncPic
 import xapics.app.ui.composables.PicTag
 import java.io.File
@@ -101,14 +99,14 @@ fun UploadPicsScreen(
         }
     )
 
-    if (appState.connectionError.isShown) {
+    if (appState.showConnectionError) {
         Toast.makeText(
             context,
             "Error",
             Toast.LENGTH_SHORT
         ).show()
 
-        viewModel.showConnectionError(ShowHide.HIDE)
+        viewModel.showConnectionError(false)
     }
 
     /* for future "Delete Pic" feature

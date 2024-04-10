@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import xapics.app.ShowHide.HIDE
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.ConnectionErrorButton
@@ -92,10 +91,10 @@ fun PicScreen(
         viewModel.updateStateSnapshot()
     }
 
-    if (appState.connectionError.isShown) {
+    if (appState.showConnectionError) {
         ConnectionErrorButton {
             appState.picIndex?.let { viewModel.updatePicState(it) }
-            viewModel.showConnectionError(HIDE)
+            viewModel.showConnectionError(false)
         }
     } else {
         Box(modifier = Modifier

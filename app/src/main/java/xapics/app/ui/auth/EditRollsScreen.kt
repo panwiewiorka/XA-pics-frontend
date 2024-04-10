@@ -35,11 +35,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import xapics.app.Roll
+import xapics.app.capitalize
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.Roll
-import xapics.app.ShowHide
-import xapics.app.capitalize
 import xapics.app.ui.composables.AsyncPic
 
 
@@ -162,14 +161,14 @@ fun EditRollsScreen(
 
                     if (appState.isLoading) CircularProgressIndicator()
 
-                    if (appState.connectionError.isShown) {
+                    if (appState.showConnectionError) {
                         Toast.makeText(
                             context,
                             "Error",
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        viewModel.showConnectionError(ShowHide.HIDE)
+                        viewModel.showConnectionError(false)
                     }
                 }
             }

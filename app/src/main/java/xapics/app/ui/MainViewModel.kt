@@ -20,8 +20,6 @@ import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
 import xapics.app.Roll
-import xapics.app.ShowHide
-import xapics.app.ShowHide.SHOW
 import xapics.app.StateSnapshot
 import xapics.app.TAG
 import xapics.app.Tag
@@ -43,7 +41,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val api: PicsApi,
-    val repository: AuthRepository,
+    private val repository: AuthRepository,
     private val downloader: Downloader
 ): ViewModel() {
 
@@ -124,7 +122,7 @@ class MainViewModel @Inject constructor (
                 }
                 updateLoadingState(false)
             } catch (e: Exception) {
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 Log.e(TAG, "viewModel getUserInfo(): ", e)
                 updateLoadingState(false)
             }
@@ -263,7 +261,7 @@ class MainViewModel @Inject constructor (
                 saveStateSnapshot()
             } catch (e: Exception) {
                 onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 updateLoadingState(false)
                 Log.e(TAG, "getCollection: ", e)
             }
@@ -297,7 +295,7 @@ class MainViewModel @Inject constructor (
 //                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.d(TAG, "getPicCollections: ", e)
-                showConnectionError(SHOW)
+                showConnectionError(true)
 //                updateLoadingState(false)
             }
         }
@@ -362,7 +360,7 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "postFilm: ", e)
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 updateLoadingState(false)
             }
         }
@@ -405,7 +403,7 @@ class MainViewModel @Inject constructor (
                 if (result is AuthResult.Unauthorized) goToAuthScreen()
             } catch (e: Exception) {
                 Log.e(TAG, "postRoll(): ", e)
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 updateLoadingState(false)
             }
         }
@@ -436,7 +434,7 @@ class MainViewModel @Inject constructor (
                 if (result is AuthResult.Unauthorized) goToAuthScreen()
             } catch (e: Exception) {
                 Log.e(TAG, "editPic(): ", e)
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 updateLoadingState(false)
             }
         }
@@ -477,7 +475,7 @@ class MainViewModel @Inject constructor (
             if (success) {
                 search("roll = $rollTitle")
             } else {
-                showConnectionError(SHOW)
+                showConnectionError(true)
             }
             updateLoadingState(false)
         }
@@ -512,7 +510,7 @@ class MainViewModel @Inject constructor (
                     isLoading = false
                 )}
             } catch (e: Exception) {
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 Log.e(TAG, "getRollsList(): ", e)
                 updateLoadingState(false)
             }
@@ -534,7 +532,7 @@ class MainViewModel @Inject constructor (
             } catch (e: Exception) {
                 Log.e(TAG, "search: ", e)
                 onPicsListScreenRefresh = Pair(SEARCH, query)
-                showConnectionError(SHOW)
+                showConnectionError(true)
                 updateLoadingState(false)
             }
         }
@@ -678,19 +676,19 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(isLoading = loading) }
     }
 
-    fun showConnectionError(showOrHide: ShowHide){
+    fun showConnectionError(show: Boolean){
         _appState.update { it.copy(
-            connectionError = showOrHide
+            showConnectionError = show
         )}
     }
 
-    fun showSearch(showOrHide: ShowHide) {
-        _appState.update { it.copy(searchField = showOrHide) }
+    fun showSearch(show: Boolean) {
+        _appState.update { it.copy(showSearch = show) }
     }
 
-    fun showPicsList(show: ShowHide) {
+    fun showPicsList(show: Boolean) {
         _appState.update { it.copy(
-            picsListColumn = show
+            showPicsList = show
         ) }
     }
 

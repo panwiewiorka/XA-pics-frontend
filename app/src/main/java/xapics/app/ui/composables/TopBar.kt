@@ -49,8 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import xapics.app.R
-import xapics.app.ShowHide.HIDE
-import xapics.app.ShowHide.SHOW
 import xapics.app.TagState
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
@@ -114,7 +112,7 @@ fun TopBar(
                 }
                 else -> {}
             }
-            viewModel.showSearch(HIDE)
+            viewModel.showSearch(false)
         }
 
         @Composable
@@ -129,7 +127,7 @@ fun TopBar(
                         "PicScreen" -> viewModel.loadStateSnapshot()
                         "PicsListScreen" -> {
                             viewModel.loadStateSnapshot()
-                            viewModel.showPicsList(HIDE)
+                            viewModel.showPicsList(false)
                         }
                         "AdminScreen" -> {
                             viewModel.getRollsList()
@@ -175,7 +173,7 @@ fun TopBar(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (appState.searchField.isShown) {
+                    if (appState.showSearch) {
                         SearchField()
                     } else {
                         Text(
@@ -190,7 +188,7 @@ fun TopBar(
                         )
                     }
 
-                    if (page != "SearchScreen" && appState.searchField.isShown) {
+                    if (page != "SearchScreen" && appState.showSearch) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -199,7 +197,7 @@ fun TopBar(
                     }
 
                     IconButton(onClick = {
-                        if (appState.searchField.isShown) filteredSearch() else viewModel.showSearch(SHOW)
+                        if (appState.showSearch) filteredSearch() else viewModel.showSearch(true)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -211,7 +209,7 @@ fun TopBar(
                         .height(28.dp)
                         .border(
                             1.dp,
-                            if (appState.searchField.isShown) MaterialTheme.colorScheme.outline else Color.Transparent,
+                            if (appState.showSearch) MaterialTheme.colorScheme.outline else Color.Transparent,
                             CircleShape
                         )
                 ) {}
@@ -257,6 +255,6 @@ fun TopBar(
         ProfileOrLogOutButton()
     }
     LaunchedEffect(page) {
-        if (appState.searchField.isShown) viewModel.showSearch(HIDE)
+        if (appState.showSearch) viewModel.showSearch(false)
     }
 }

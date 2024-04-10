@@ -46,7 +46,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xapics.app.R
-import xapics.app.ShowHide.HIDE
 import xapics.app.Thumb
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
@@ -77,9 +76,9 @@ fun ProfileScreen(
             contentAlignment = Alignment.Center
         ) {
             when {
-                appState.connectionError.isShown -> {
+                appState.showConnectionError -> {
                     ConnectionErrorButton {
-                        viewModel.showConnectionError(HIDE)
+                        viewModel.showConnectionError(false)
                         viewModel.getUserInfo(goToAuthScreen)
                     }
                 }

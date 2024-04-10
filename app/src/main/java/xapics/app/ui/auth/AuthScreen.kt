@@ -43,7 +43,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.R
-import xapics.app.ShowHide.HIDE
 import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.ui.MainViewModel
@@ -150,7 +149,7 @@ fun AuthScreen(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }) {
                 focusManager.clearFocus()
-                viewModel.showSearch(HIDE)
+                viewModel.showSearch(false)
             },
     ) {
         Column(

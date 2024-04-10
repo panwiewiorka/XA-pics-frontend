@@ -24,7 +24,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
-import xapics.app.ShowHide.HIDE
 import xapics.app.ui.MainViewModel
 import xapics.app.ui.auth.AdminScreen
 import xapics.app.ui.auth.AuthScreen
@@ -89,9 +88,9 @@ fun NavScreen(
     }
 
     Scaffold (
-        modifier = Modifier.pointerInput(appState.searchField) {
+        modifier = Modifier.pointerInput(appState.showSearch) {
             detectTapGestures(onTap = {
-                if (appState.searchField.isShown) viewModel.showSearch(HIDE)
+                if (appState.showSearch) viewModel.showSearch(false)
             })
         },
         topBar = {
@@ -134,7 +133,7 @@ fun NavScreen(
                 }
                 "PicsListScreen" -> {
                     viewModel.loadStateSnapshot()
-                    viewModel.showPicsList(HIDE)
+                    viewModel.showPicsList(false)
                 }
                 "PicScreen" -> {
                     viewModel.loadStateSnapshot()
