@@ -137,7 +137,7 @@ class MainViewModel @Inject constructor (
         ) }
     }
 
-    private fun updateUserCollections(userCollections: List<Thumb>?) {
+    fun updateUserCollections(userCollections: List<Thumb>?) {
         _appState.update { it.copy(
             userCollections = userCollections,
         ) }
@@ -748,5 +748,9 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             picDetailsWidth = width
         ) }
+    }
+
+    fun changeBlurContent(blur: Boolean) {
+        _appState.update { it.copy(blurContent = blur) }
     }
 }

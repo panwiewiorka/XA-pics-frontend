@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -346,7 +347,7 @@ fun UploadPicsScreen(
     }
 
     if (showAddHashtagField) {
-        AlertDialog(onDismissRequest = { showAddHashtagField = false }) {
+        BasicAlertDialog(onDismissRequest = { showAddHashtagField = false }) {
             var tags by rememberSaveable { mutableStateOf("") }
 
             Column(

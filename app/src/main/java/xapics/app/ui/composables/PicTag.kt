@@ -39,7 +39,7 @@ fun PicTag(tag: Tag, onClick: () -> Unit) {
             }
             .background(if (tag.state == SELECTED) color else Color.Transparent, CircleShape)
             .border(1.dp, if (tag.state == DISABLED) Color.Transparent else color, CircleShape)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 8.dp)
             .alpha(if (tag.state == DISABLED) 0.3f else 1f)
     ) {
         Text(

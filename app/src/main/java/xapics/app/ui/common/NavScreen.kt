@@ -113,7 +113,12 @@ fun NavScreen(
         },
         bottomBar = {
             if (!windowInfo().isPortraitOrientation && !appState.isFullscreen && backStackEntry?.destination?.route == "PicScreen") {
-                PicDetails(viewModel, appState) { navController.navigate(NavList.AuthScreen.name) }
+                PicDetails(
+                    viewModel,
+                    appState,
+                    { navController.navigate(NavList.AuthScreen.name) },
+                    { navController.navigate(NavList.PicsListScreen.name) }
+                )
             }
         },
     ) { innerPadding ->

@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TAG
 import xapics.app.Thumb
-import xapics.app.ui.theme.myTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,18 +48,19 @@ fun CollectionsDropDownMenu(
     picCollections: List<String>,
     collectionToSaveTo: String,
     picId: Int,
-    editCollectionOrLogIn: (String, Int, () -> Unit) -> Unit,
+    editCollection: (String, Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
+    changeBlurContent:(Boolean) -> Unit,
     goToAuthScreen: () -> Unit,
 ) {
     var collectionListOpened by rememberSaveable { mutableStateOf(false) }
     var newCollectionDialogOpened by rememberSaveable { mutableStateOf(false) }
-    var newCollectionTitle by rememberSaveable { mutableStateOf("") }
+    var titleField by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
 
     fun editCollectionAndCloseMenu(title: String) {
-        editCollectionOrLogIn(title, picId, goToAuthScreen)
+        editCollection(title, picId, goToAuthScreen)
         updateCollectionToSaveTo(title)
         collectionListOpened = false
     }
@@ -85,7 +85,7 @@ fun CollectionsDropDownMenu(
                 },
                 trailingIcon = {
                     IconButton(
-                        onClick = { editCollectionOrLogIn(favs, picId, goToAuthScreen) },
+                        onClick = { editCollection(favs, picId, goToAuthScreen) },
                     ) {
                         if (picCollections.contains(favs)) {
                             Icon(Icons.Filled.Favorite, "Remove from $favs")
@@ -105,7 +105,7 @@ fun CollectionsDropDownMenu(
                     DropdownMenuItem(
                         text = { Text(collectionTitle) },
                         trailingIcon = {
-                            IconButton(onClick = { editCollectionOrLogIn(collectionTitle, picId, goToAuthScreen) }) {
+                            IconButton(onClick = { editCollection(collectionTitle, picId, goToAuthScreen) }) {
                                 if (picCollections.contains(collectionTitle)) {
                                     Icon(Icons.Filled.Star, "Remove from $collectionTitle")
                                 } else {
@@ -143,29 +143,24 @@ fun CollectionsDropDownMenu(
     }
 
     if (newCollectionDialogOpened) {
-        newCollectionTitle = ""
-        AlertDialog(
+        changeBlurContent(true)
+        titleField = ""
+        BasicAlertDialog(
             onDismissRequest = {
                 newCollectionDialogOpened = false
                 collectionListOpened = false
+                changeBlurContent(false)
             }
         ) {
-            fun onNaming() = when {
-                newCollectionTitle == "" -> {
+            fun onNaming(newTitle: String) = when {
+                newTitle == "" -> {
                     Toast.makeText(
                         context,
                         "Empty name is not available",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                newCollectionTitle == " " -> {
-                    Toast.makeText(
-                        context,
-                        "Empty name is not available",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                userCollections?.firstOrNull { it.title == newCollectionTitle }?.title == newCollectionTitle -> {
+                userCollections?.firstOrNull { it.title.lowercase() == newTitle.lowercase() } != null -> {
                     Toast.makeText(
                         context,
                         "Collection already exists",
@@ -173,27 +168,25 @@ fun CollectionsDropDownMenu(
                     ).show()
                 }
                 else -> {
-                    editCollectionAndCloseMenu(newCollectionTitle)
+                    editCollectionAndCloseMenu(newTitle)
                     newCollectionDialogOpened = false
+                    changeBlurContent(false)
                 }
             }
 
             OutlinedTextField(
-                value = newCollectionTitle,
-                onValueChange = {newCollectionTitle = it},
+                value = titleField,
+                onValueChange = {titleField = it},
                 singleLine = true,
-                label = { Text(text = "Collection title") },
+                label = { Text("Collection title") },
                 trailingIcon = {
-                    IconButton(onClick = { onNaming() }) {
-                        Icon(painterResource(R.drawable.star_border), "Add to $newCollectionTitle collection")
+                    IconButton(onClick = { onNaming(titleField.trim()) }) {
+                        Icon(painterResource(R.drawable.star_border), "Add to $titleField collection")
                     }
                 },
-//                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-                keyboardActions = KeyboardActions(onAny = { onNaming() }),
-                colors = myTextFieldColors(),
-                modifier = Modifier
-//                    .background(Color(0x55000000), RoundedCornerShape(4.dp))
-                    .focusRequester(focusRequester)
+                keyboardActions = KeyboardActions(onAny = { onNaming(titleField.trim()) }),
+//                colors = myTextFieldColors(),
+                modifier = Modifier.focusRequester(focusRequester)
             )
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()

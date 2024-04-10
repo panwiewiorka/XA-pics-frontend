@@ -31,5 +31,6 @@ data class AppState(
     val connectionError: ShowHide = ShowHide.HIDE,
     val isFullscreen: Boolean = false,
     val picDetailsWidth: Dp = 0.dp,
+    val blurContent: Boolean = false,
     val isLoading: Boolean = false
 )

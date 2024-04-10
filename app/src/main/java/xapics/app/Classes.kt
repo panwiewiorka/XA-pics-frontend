@@ -15,7 +15,6 @@ data class Pic(
     val description: String,
     val keywords: String,
     val tags: String
-//    val collections: String? = null,
 )
 
 data class Film(

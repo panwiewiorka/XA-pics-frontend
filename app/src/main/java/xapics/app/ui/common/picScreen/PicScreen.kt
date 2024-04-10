@@ -1,14 +1,21 @@
 package xapics.app.ui.common.picScreen
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import xapics.app.ShowHide.HIDE
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.ShowHide.HIDE
 import xapics.app.ui.composables.ConnectionErrorButton
 import xapics.app.ui.windowInfo
 
@@ -27,6 +34,15 @@ fun PicScreen(
         initialPageOffsetFraction = 0f
     ) {
         appState.picsList?.size ?: 0
+    }
+
+    val blurAmount by animateDpAsState(
+        targetValue = if (appState.blurContent) 10.dp else 0.dp,
+        label = "user collections blur"
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.changeBlurContent(false)
     }
 
     /*
@@ -82,10 +98,14 @@ fun PicScreen(
             viewModel.showConnectionError(HIDE)
         }
     } else {
-        if (windowInfo().isPortraitOrientation) {
-            PicPortraitView(viewModel, appState, pagerState, goToPicsListScreen, goToAuthScreen)
-        } else {
-            PicLandscapeView(viewModel, appState, pagerState)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .blur(blurAmount)) {
+            if (windowInfo().isPortraitOrientation) {
+                PicPortraitView(viewModel, appState, pagerState, goToPicsListScreen, goToAuthScreen)
+            } else {
+                PicLandscapeView(viewModel, appState, pagerState)
+            }
         }
     }
 }
