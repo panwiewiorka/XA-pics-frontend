@@ -340,19 +340,19 @@ class MainViewModel @Inject constructor (
         type: FilmType? = null,
     ) {
         val film = Film(
-            filmName ?: appState.value.filmToEdit!!.filmName,
-            iso ?: appState.value.filmToEdit!!.iso,
-            type ?: appState.value.filmToEdit!!.type,
+            id = appState.value.filmToEdit?.id,
+            filmName = filmName ?: appState.value.filmToEdit!!.filmName,
+            iso = iso ?: appState.value.filmToEdit!!.iso,
+            type = type ?: appState.value.filmToEdit!!.type,
         )
         _appState.update { it.copy(filmToEdit = film) }
     }
 
-    fun postFilm(isNewFilm: Boolean, film: Film, goToAuthScreen: () -> Unit) {
+    fun postFilm(film: Film, goToAuthScreen: () -> Unit) {
         updateLoadingState(true)
         viewModelScope.launch {
             try {
                 val result = repository.postFilm(
-                    isNewFilm = isNewFilm,
                     film = film,
                     getFilmsList = ::getFilmsList
                 )
@@ -383,20 +383,19 @@ class MainViewModel @Inject constructor (
         expired: Boolean? = null,
     ) {
         val roll = Roll(
-            title ?: appState.value.rollToEdit!!.title,
-            film ?: appState.value.rollToEdit!!.film,
-            expired ?: appState.value.rollToEdit!!.expired,
-            xpro ?: appState.value.rollToEdit!!.xpro,
-//            nonXa ?: appState.value.rollToEdit!!.nonXa,
+            id = appState.value.rollToEdit?.id,
+            title = title ?: appState.value.rollToEdit!!.title,
+            film = film ?: appState.value.rollToEdit!!.film,
+            expired = expired ?: appState.value.rollToEdit!!.expired,
+            xpro = xpro ?: appState.value.rollToEdit!!.xpro,
         )
         _appState.update { it.copy(rollToEdit = roll) }
     }
 
-    fun postRoll(isNewRoll: Boolean, roll: Roll, goToAuthScreen: () -> Unit, ) {
+    fun postRoll(roll: Roll, goToAuthScreen: () -> Unit, ) {
         viewModelScope.launch {
             try {
                 val result = repository.postRoll(
-                    isNewRoll = isNewRoll,
                     roll = roll,
                     getRollsList = ::getRollsList
                 )
@@ -529,7 +528,7 @@ class MainViewModel @Inject constructor (
                     isLoading = false
                 )}
                 saveStateSnapshot() // TODO check whether it waits for api ^^
-            } catch (e: Exception) {
+            } catch (e: Exception) { // TODO if error 500 -> custom error message
                 Log.e(TAG, "search: ", e)
                 onPicsListScreenRefresh = Pair(SEARCH, query)
                 showConnectionError(true)
@@ -699,6 +698,7 @@ class MainViewModel @Inject constructor (
             caption = query
         } else {
             val tags = query.toTagsList()
+            Log.d(TAG, "updateTopBarCaption: $tags")
             val searchIndex = tags.indexOfFirst{it.type == "search"}
             val isSearchQuery = searchIndex != -1
             val isFilteredList = tags.size > 1

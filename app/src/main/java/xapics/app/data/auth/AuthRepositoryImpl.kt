@@ -185,13 +185,13 @@ class AuthRepositoryImpl(
 
     /** ADMIN */
 
-    override suspend fun postFilm(isNewFilm: Boolean, film: Film, getFilmsList: () -> Unit): AuthResult<Unit> {
+    override suspend fun postFilm(film: Film, getFilmsList: () -> Unit): AuthResult<Unit> {
         return try {
             val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
 
             api.postFilm(
                 token = "Bearer $token",
-                isNewFilm = isNewFilm,
+                id = film.id,
                 filmName = film.filmName.trim(),
                 iso = film.iso ?: 0,
                 type = film.type)
@@ -209,18 +209,17 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun postRoll(isNewRoll: Boolean, roll: Roll, getRollsList: () -> Unit): AuthResult<Unit> {
+    override suspend fun postRoll(roll: Roll, getRollsList: () -> Unit): AuthResult<Unit> {
         return try {
             val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
 
             api.postRoll(
                 token = "Bearer $token",
-                isNewRoll = isNewRoll,
+                id = roll.id,
                 title = roll.title.trim(),
                 film = roll.film,
                 xpro = roll.xpro,
                 expired = roll.expired,
-//                nonXa = roll.nonXa,
             )
 
             getRollsList()

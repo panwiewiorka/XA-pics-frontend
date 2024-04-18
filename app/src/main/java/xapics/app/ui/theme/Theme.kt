@@ -29,7 +29,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = AlmostWhite,
     surfaceVariant = GrayDark,
 
-    primaryContainer = Color.Cyan,
+    primaryContainer = Color.Black.copy(alpha = 0.4f),
     onPrimaryContainer = Color.Green,
     onSecondary = Color.Magenta,
     secondaryContainer = Color.Yellow,
@@ -52,7 +52,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = BG,
     surfaceVariant = GrayLighter,
 
-    primaryContainer = Color.Cyan,
+    primaryContainer = Color.White.copy(alpha = 0.4f),
     onPrimaryContainer = Color.Cyan,
     onSecondary = Color.Magenta,
     secondaryContainer = Color.Yellow,

@@ -62,124 +62,119 @@ fun PicsListScreen(
         }
     }
 
-    when {
-        appState.showConnectionError -> {
-            ConnectionErrorButton {
-                val toDo = viewModel.onPicsListScreenRefresh
-                if (toDo.first == SEARCH) {
-                    viewModel.search(toDo.second)
-                } else {
-                    viewModel.getCollection(toDo.second, goToAuthScreen)
+    BoxWithConstraints(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        when {
+            appState.showConnectionError -> {
+                ConnectionErrorButton {
+                    val toDo = viewModel.onPicsListScreenRefresh
+                    if (toDo.first == SEARCH) {
+                        viewModel.search(toDo.second)
+                    } else {
+                        viewModel.getCollection(toDo.second, goToAuthScreen)
+                    }
+                    viewModel.showConnectionError(false)
                 }
-                viewModel.showConnectionError(false)
             }
-        }
-        !appState.showPicsList -> { }
-        else -> {
-            BoxWithConstraints(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
+            !appState.showPicsList -> { }
+            appState.picsList == null -> {} // TODO what?
+            appState.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
+            appState.picsList.size == 1 -> {} // going to PicScreen
+            else -> {
+                @Composable
+                fun picItem(index: Int, modifier: Modifier = Modifier) {
+                    val pic = appState.picsList[index]
+                    AsyncPic(
+                        url = pic.imageUrl,
+                        description = pic.description,
+                        modifier = modifier.clip(RoundedCornerShape(2.dp))
+                    ) {
+                        viewModel.updatePicState(index)
+                        viewModel.saveStateSnapshot()
+                        goToPicScreen()
+                    }
+                }
+
+                val scrollState = rememberLazyListState()
+                val windowInfo = windowInfo()
+                val isPortrait = windowInfo.isPortraitOrientation
+                val isCompact = windowInfo.windowType == Compact
+                val lowestDimension = if (isPortrait) maxWidth else maxHeight
+                val gridCellSize = if (windowInfo.windowType == Medium) lowestDimension / 2 else lowestDimension / 3
+
                 when {
-                    appState.picsList == null -> {} // TODO what?
-                    appState.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
-                    appState.picsList.size == 1 -> {} // going to PicScreen
-                    else -> {
-                        @Composable
-                        fun picItem(index: Int, modifier: Modifier = Modifier) {
-                            val pic = appState.picsList[index]
-                            AsyncPic(
-                                url = pic.imageUrl,
-                                description = pic.description,
-                                modifier = modifier.clip(RoundedCornerShape(2.dp))
+                    isCompact && isPortrait -> { // TODO LazyVerticalGrid with one column/row instead of LazyColumn/LazyRow?
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            state = scrollState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            items(
+                                count = appState.picsList.size,
+                                key = { appState.picsList[it].id },
                             ) {
-                                viewModel.updatePicState(index)
-                                viewModel.saveStateSnapshot()
-                                goToPicScreen()
+                                picItem(it,
+                                    Modifier
+                                        .padding(horizontal = 32.dp)
+                                        .padding(vertical = 4.dp))
                             }
                         }
-
-                        val scrollState = rememberLazyListState()
-                        val windowInfo = windowInfo()
-                        val isPortrait = windowInfo.isPortraitOrientation
-                        val isCompact = windowInfo.windowType == Compact
-                        val lowestDimension = if (isPortrait) maxWidth else maxHeight
-                        val gridCellSize = if (windowInfo.windowType == Medium) lowestDimension / 2 else lowestDimension / 3
-
-                        when {
-                            isCompact && isPortrait -> { // TODO LazyVerticalGrid with one column/row instead of LazyColumn/LazyRow?
-                                LazyColumn(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    state = scrollState,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                ) {
-                                    items(
-                                        count = appState.picsList.size,
-                                        key = { appState.picsList[it].id },
-                                    ) {
-                                        picItem(it,
-                                            Modifier
-                                                .padding(horizontal = 32.dp)
-                                                .padding(vertical = 4.dp))
-                                    }
-                                }
+                    }
+                    isCompact -> {
+                        LazyRow(
+                            state = scrollState,
+                            modifier = Modifier
+                                .padding(bottom = 32.dp)
+                                .fillMaxSize()
+                        ) {
+                            items(
+                                count = appState.picsList.size,
+                                key = { appState.picsList[it].id },
+                            ) {
+                                picItem(it, Modifier.padding(16.dp))
                             }
-                            isCompact -> {
-                                LazyRow(
-                                    state = scrollState,
-                                    modifier = Modifier
-                                        .padding(bottom = 32.dp)
-                                        .fillMaxSize()
-                                ) {
-                                    items(
-                                        count = appState.picsList.size,
-                                        key = { appState.picsList[it].id },
-                                    ) {
-                                        picItem(it, Modifier.padding(16.dp))
-                                    }
-                                }
+                        }
+                    }
+                    isPortrait -> {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(gridCellSize),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(
+                                count = appState.picsList.size,
+                                key = { appState.picsList[it].id },
+                            ) {
+                                picItem(it,
+                                    Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .padding(vertical = 12.dp))
                             }
-                            isPortrait -> {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(gridCellSize),
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    items(
-                                        count = appState.picsList.size,
-                                        key = { appState.picsList[it].id },
-                                    ) {
-                                        picItem(it,
-                                            Modifier
-                                                .padding(horizontal = 16.dp)
-                                                .padding(vertical = 12.dp))
-                                    }
-                                }
-                            }
-                            else -> {
-                                LazyHorizontalGrid(
-                                    rows = GridCells.Adaptive(gridCellSize),
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    items(
-                                        count = appState.picsList.size,
-                                        key = { appState.picsList[it].id },
-                                    ) {
-                                        picItem(it,
-                                            Modifier
-                                                .padding(horizontal = 16.dp)
-                                                .padding(vertical = 12.dp))
-                                    }
-                                }
+                        }
+                    }
+                    else -> {
+                        LazyHorizontalGrid(
+                            rows = GridCells.Adaptive(gridCellSize),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(
+                                count = appState.picsList.size,
+                                key = { appState.picsList[it].id },
+                            ) {
+                                picItem(it,
+                                    Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .padding(vertical = 12.dp))
                             }
                         }
                     }
                 }
-
-                if(appState.isLoading) {
-                    CircularProgressIndicator()
-                }
             }
+        }
+        if(appState.isLoading) {
+            CircularProgressIndicator()
         }
     }
 }

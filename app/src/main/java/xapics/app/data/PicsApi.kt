@@ -94,7 +94,7 @@ interface PicsApi {
     @POST("films")
     suspend fun postFilm(
         @Header("Authorization") token: String,
-        @Field("isNewFilm") isNewFilm: Boolean,
+        @Field("id") id: Int?,
         @Field("filmName") filmName: String,
         @Field("iso") iso: Int,
         @Field("type") type: FilmType,
@@ -110,7 +110,7 @@ interface PicsApi {
     @POST("rolls")
     suspend fun postRoll(
         @Header("Authorization") token: String,
-        @Field("isNewRoll") isNewRoll: Boolean,
+        @Field("id") id: Int?,
         @Field("title") title: String,
         @Field("film") film: String,
         @Field("xpro") xpro: Boolean,
@@ -165,7 +165,7 @@ interface PicsApi {
     )
 
     companion object {
-//        const val BASE_URL = "https://xapics.fijbar.com/v1/"
-        const val BASE_URL = "http://192.168.0.87:8080/v1/"
+        const val BASE_URL = "https://xapics.fijbar.com/v1/"
+//        const val BASE_URL = "http://192.168.0.87:8080/v1/"
     }
 }

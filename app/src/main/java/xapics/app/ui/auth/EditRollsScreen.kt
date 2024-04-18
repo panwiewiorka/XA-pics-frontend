@@ -141,20 +141,20 @@ fun EditRollsScreen(
                     Button(
                         enabled = !appState.isLoading && appState.rollToEdit.title.isNotEmpty(),
                         onClick = {
-                            val tempRollsList = appState.rollsList?.toMutableList()
-                            val rollIndex = tempRollsList?.indexOfFirst {
-                                it.title == appState.rollToEdit.title
-                            }
-
-                            val savingRollsList = if (rollIndex == -1) {
-                                tempRollsList.plus (appState.rollToEdit)
-                            } else {
-                                tempRollsList?.set(rollIndex!!, appState.rollToEdit)
-                                tempRollsList
-                            }
-
-                            viewModel.updateRollsListState(savingRollsList ?: emptyList())
-                            viewModel.postRoll(rollIndex == -1, appState.rollToEdit, goToAuthScreen)
+//                            val tempRollsList = appState.rollsList?.toMutableList()
+//                            val rollIndex = tempRollsList?.indexOfFirst {
+//                                it.title == appState.rollToEdit.title
+//                            }
+//
+//                            val savingRollsList = if (rollIndex == -1) {
+//                                tempRollsList.plus (appState.rollToEdit)
+//                            } else {
+//                                tempRollsList?.set(rollIndex!!, appState.rollToEdit)
+//                                tempRollsList
+//                            }
+//
+//                            viewModel.updateRollsListState(savingRollsList ?: emptyList())
+                            viewModel.postRoll(appState.rollToEdit, goToAuthScreen)
                         }) {
                         Text("Save roll")
                     }

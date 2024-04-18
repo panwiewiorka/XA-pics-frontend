@@ -19,12 +19,14 @@ data class Pic(
 )
 
 data class Film(
+    val id: Int? = null,
     val filmName: String = "",
     val iso: Int? = null,
     val type: FilmType = FilmType.NULL,
 )
 
 data class Roll(
+    val id: Int? = null,
     val title: String = "",
     val film: String = "",
     val expired: Boolean = false,

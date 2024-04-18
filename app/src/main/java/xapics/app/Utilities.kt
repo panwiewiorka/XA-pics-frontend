@@ -13,7 +13,12 @@ import java.util.Locale
 const val TAG = "mytag"
 
 fun String.toTagsList(): List<Tag> {
-    return this.split(", ")
+    val list = this.split(", ").toMutableList()
+    for (i in list.indices.reversed()) {
+        if (i > 0 && !list[i].contains(" = ")) list[i - 1] += ", ${list[i]}"
+    }
+    return list
+        .filterNot { !it.contains(" = ") }
         .map { it.split(" = ") }
         .map { Tag(it[0], it[1]) }
         .filterNot { it.value == "" }

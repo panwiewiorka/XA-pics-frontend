@@ -108,20 +108,20 @@ fun EditFilmsScreen(
                 Button(
                     enabled = !appState.isLoading && fieldsAreNotEmpty,
                     onClick = {
-                        val tempFilmsList = appState.filmsList?.toMutableList() ?: mutableListOf()
-                        val filmIndex = tempFilmsList.indexOfFirst {
-                            it.filmName == appState.filmToEdit.filmName
-                        }
-
-                        val savingFilmsList = if (filmIndex == -1) {
-                            tempFilmsList.plus (appState.filmToEdit)
-                        } else {
-                            tempFilmsList[filmIndex] = appState.filmToEdit
-                            tempFilmsList
-                        }
-
-                        viewModel.updateFilmsListState(savingFilmsList)
-                        viewModel.postFilm(filmIndex == -1, appState.filmToEdit, goToAuthScreen)
+//                        val tempFilmsList = appState.filmsList?.toMutableList() ?: mutableListOf()
+//                        val filmIndex = tempFilmsList.indexOfFirst {
+//                            it.filmName == appState.filmToEdit.filmName
+//                        }
+//
+//                        val savingFilmsList = if (filmIndex == -1) {
+//                            tempFilmsList.plus (appState.filmToEdit)
+//                        } else {
+//                            tempFilmsList[filmIndex] = appState.filmToEdit
+//                            tempFilmsList
+//                        }
+//
+//                        viewModel.updateFilmsListState(savingFilmsList)
+                        viewModel.postFilm(appState.filmToEdit, goToAuthScreen)
                     }
                 ) {
                     Text("Save ${it.filmName.trim()}")
