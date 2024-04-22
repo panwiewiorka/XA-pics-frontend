@@ -2,9 +2,7 @@ package xapics.app.ui
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.Film
 import xapics.app.Pic
-import xapics.app.Roll
 import xapics.app.Tag
 import xapics.app.Thumb
 
@@ -19,12 +17,8 @@ data class AppState(
     val collectionToSaveTo: String = "Favourites",
     val userCollections: List<Thumb>? = null,
     val rollThumbnails: List<Thumb>? = null,
-    val filmsList: List<Film>? = null,
-    val rollsList: List<Roll>? = null,
     val pic: Pic? = null,
     val picIndex: Int? = null,
-    val filmToEdit: Film? = null,
-    val rollToEdit: Roll? = null,
     val showSearch: Boolean = false,
     val getBackAfterLoggingIn: Boolean = false,
     val showConnectionError: Boolean = false,

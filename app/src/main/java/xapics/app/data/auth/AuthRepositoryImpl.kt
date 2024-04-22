@@ -1,23 +1,15 @@
 package xapics.app.data.auth
 
 import android.util.Log
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
-import xapics.app.Film
 import xapics.app.Pic
-import xapics.app.Roll
 import xapics.app.TAG
-import xapics.app.Tag
-import xapics.app.TagState
 import xapics.app.Thumb
 import xapics.app.data.EncryptedSharedPrefs
 import xapics.app.data.PicsApi
-import java.io.File
 
 class AuthRepositoryImpl(
     private val api: PicsApi,
-//    private val prefs: SharedPreferences,
     private val cryptoPrefs: EncryptedSharedPrefs
 ): AuthRepository {
 
@@ -85,7 +77,7 @@ class AuthRepositoryImpl(
     override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
         return try {
             val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-            val userName = api.getUserName("Bearer $token").string
+            val userName = api.authenticate("Bearer $token").string
             updateUserName(userName)
             AuthResult.Authorized(userName) as AuthResult<Unit>
         } catch (e: HttpException) {
@@ -175,127 +167,6 @@ class AuthRepositoryImpl(
             AuthResult.Authorized()
         } catch (e: HttpException) {
             if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
-            }
-        }
-    }
-
-
-    /** ADMIN */
-
-    override suspend fun postFilm(film: Film, getFilmsList: () -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-
-            api.postFilm(
-                token = "Bearer $token",
-                id = film.id,
-                filmName = film.filmName.trim(),
-                iso = film.iso ?: 0,
-                type = film.type)
-
-            getFilmsList()
-
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            Log.e(TAG, "postFilm: ", e)
-            if (e.code() == 401 || e.code() == 403) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
-            }
-        }
-    }
-
-    override suspend fun postRoll(roll: Roll, getRollsList: () -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-
-            api.postRoll(
-                token = "Bearer $token",
-                id = roll.id,
-                title = roll.title.trim(),
-                film = roll.film,
-                xpro = roll.xpro,
-                expired = roll.expired,
-            )
-
-            getRollsList()
-
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            Log.e(TAG, "postRoll: ", e)
-            if (e.code() == 401 || e.code() == 403) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
-            }
-        }
-    }
-
-    override suspend fun editPic(
-        id: Int,
-        imageUrl: String,
-        year: String,
-        description: String,
-        keywords: String,
-        hashtags: List<Tag>
-    ): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-
-            api.editPic(
-                token = "Bearer $token",
-                id = id,
-                imageUrl = imageUrl,
-                year = year,
-                description = description,
-                keywords = keywords,
-                hashtags = hashtags.filter { it.state == TagState.SELECTED }.map { it.value }.toString().drop(1).dropLast(1)
-            )
-
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            Log.e(TAG, "postRoll: ", e)
-            if (e.code() == 401 || e.code() == 403) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
-            }
-        }
-    }
-
-    override suspend fun uploadImage(
-        rollTitle: String,
-        description: String,
-        keywords: String,
-        year: String,
-        hashtags: String,
-        file: File,
-        getAllTags: () -> Unit
-    ): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-
-            api.uploadImage(
-                token = "Bearer $token",
-                MultipartBody.Part.createFormData("roll", rollTitle),
-                MultipartBody.Part.createFormData("description", description),
-                MultipartBody.Part.createFormData("keywords", keywords),
-                MultipartBody.Part.createFormData("year", year),
-                MultipartBody.Part.createFormData("hashtags", hashtags),
-                MultipartBody.Part.createFormData("image", file.name, file.asRequestBody())
-            )
-
-            file.delete()
-            getAllTags()
-
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            Log.e(TAG, "uploadImage: ", e)
-            if (e.code() == 401 || e.code() == 403) {
                 AuthResult.Unauthorized()
             } else {
                 AuthResult.UnknownError()

@@ -1,6 +1,5 @@
 package xapics.app.ui
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.ViewModel
@@ -13,13 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import xapics.app.Film
-import xapics.app.FilmType
 import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
-import xapics.app.Roll
 import xapics.app.StateSnapshot
 import xapics.app.TAG
 import xapics.app.Tag
@@ -33,8 +28,6 @@ import xapics.app.data.auth.AuthResult
 import xapics.app.data.auth.backup.Downloader
 import xapics.app.getTagColorAndName
 import xapics.app.toTagsList
-import java.io.File
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -57,9 +50,8 @@ class MainViewModel @Inject constructor (
 
     init {
         authenticate()
-        getUserInfo {} // TODO needed?
-//        getPicsList(2020)
-        getRollsList()
+//        getUserInfo {} // TODO needed?
+        getRollThumbs()
         getRandomPic()
         getAllTags()
     }
@@ -279,7 +271,7 @@ class MainViewModel @Inject constructor (
         val isNewCollection = appState.value.userCollections?.firstOrNull { it.title == collection } == null
         _appState.update { it.copy(
             collectionToSaveTo = collection,
-            ) }
+        ) }
         if(isNewCollection) {
             _appState.update { it.copy(
                 userCollections = appState.value.userCollections?.plus(Thumb(collection, appState.value.pic!!.imageUrl)),
@@ -307,204 +299,13 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-
-    /*** ADMIN CONSOLE */
-
-    fun downloadBackup(context: Context) {
-        downloader.downloadFile(context, PicsApi.BASE_URL + "backup/latest.zip")
-
-        /*
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
-
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                Log.e(TAG, "downloadBackup: ", e)
-                updateLoadingState(false)
-                showConnectionError(SHOW)
-            }
-        }
-         */
-    }
-
-    /** FILMS */
-
-    fun selectFilmToEdit(film: Film?) {
-        _appState.update { it.copy( filmToEdit = film) }
-    }
-
-    fun editFilmField(
-        filmName: String? = null,
-        iso: Int? = null,
-        type: FilmType? = null,
-    ) {
-        val film = Film(
-            id = appState.value.filmToEdit?.id,
-            filmName = filmName ?: appState.value.filmToEdit!!.filmName,
-            iso = iso ?: appState.value.filmToEdit!!.iso,
-            type = type ?: appState.value.filmToEdit!!.type,
-        )
-        _appState.update { it.copy(filmToEdit = film) }
-    }
-
-    fun postFilm(film: Film, goToAuthScreen: () -> Unit) {
-        updateLoadingState(true)
-        viewModelScope.launch {
-            try {
-                val result = repository.postFilm(
-                    film = film,
-                    getFilmsList = ::getFilmsList
-                )
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                Log.e(TAG, "postFilm: ", e)
-                showConnectionError(true)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun updateFilmsListState(list: List<Film>) {
-        _appState.update { it.copy( filmsList = list) }
-    }
-
-    /** ROLLS */
-
-    fun selectRollToEdit(roll: Roll?) {
-        _appState.update { it.copy( rollToEdit = roll) }
-    }
-
-    fun editRollField(
-        title: String? = null,
-        film: String? = null,
-        xpro: Boolean? = null,
-        expired: Boolean? = null,
-    ) {
-        val roll = Roll(
-            id = appState.value.rollToEdit?.id,
-            title = title ?: appState.value.rollToEdit!!.title,
-            film = film ?: appState.value.rollToEdit!!.film,
-            expired = expired ?: appState.value.rollToEdit!!.expired,
-            xpro = xpro ?: appState.value.rollToEdit!!.xpro,
-        )
-        _appState.update { it.copy(rollToEdit = roll) }
-    }
-
-    fun postRoll(roll: Roll, goToAuthScreen: () -> Unit, ) {
-        viewModelScope.launch {
-            try {
-                val result = repository.postRoll(
-                    roll = roll,
-                    getRollsList = ::getRollsList
-                )
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-            } catch (e: Exception) {
-                Log.e(TAG, "postRoll(): ", e)
-                showConnectionError(true)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun updateRollsListState(list: List<Roll>) {
-        _appState.update { it.copy( rollsList = list) }
-    }
-
-    fun editPic(
-        pic: Pic,
-        year: String,
-        description: String,
-        keywords: String,
-        hashtags: List<Tag>,
-        goToAuthScreen: ()-> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                val result = repository.editPic(
-                    pic.id,
-                    pic.imageUrl,
-                    year,
-                    description,
-                    keywords,
-                    hashtags
-                )
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-            } catch (e: Exception) {
-                Log.e(TAG, "editPic(): ", e)
-                showConnectionError(true)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    /** IMAGES */
-
-    private suspend fun tryUploadImage(
-        rollTitle: String,
-        description: String,
-        keywords: String,
-        year: String,
-        hashtags: String,
-        file: File,
-        goToAuthScreen: () -> Unit
-    ): Boolean { // TODO merge with v uploadImage() ?
-        return try {
-            val result = repository.uploadImage(rollTitle, description, keywords, year, hashtags, file, ::getAllTags)
-            if (result is AuthResult.Unauthorized) goToAuthScreen()
-            true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        } catch (e: HttpException) {
-            e.printStackTrace()
-            false
-        } catch (e: Exception) {
-            Log.e(TAG, "tryUploadImage: ", e)
-            false
-        }
-    }
-
-    fun uploadImage(rollTitle: String, description: String, keywords: String, year: String, hashtags: String, file: File, goToAuthScreen: () -> Unit) {
-        updateLoadingState(true)
-        Log.d(TAG, "uploadImage: ($hashtags)")
-        viewModelScope.launch {
-            val success = tryUploadImage(rollTitle, description, keywords, year, hashtags, file, goToAuthScreen)
-            if (success) {
-                search("roll = $rollTitle")
-            } else {
-                showConnectionError(true)
-            }
-            updateLoadingState(false)
-        }
-    }
-
-
     /*** MAIN WORKFLOW */
 
-    fun getFilmsList() {
+    fun getRollThumbs() {
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
-                    filmsList = api.getFilmsList(),
-                    isLoading = false
-                ) }
-            } catch (e: Exception) {
-                Log.e(TAG, "getFilmsList: ", e)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun getRollsList() {
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
-                _appState.update { it.copy(
-                    filmsList = api.getFilmsList(),
-                    rollsList = api.getRollsList(),
                     rollThumbnails = api.getRollThumbnails(),
                     isLoading = false
                 )}
@@ -729,7 +530,7 @@ class MainViewModel @Inject constructor (
         )}
     }
 
-    fun clearPicsList() {
+    private fun clearPicsList() {
         _appState.update { it.copy(
             picsList = null,
             picIndex = null,

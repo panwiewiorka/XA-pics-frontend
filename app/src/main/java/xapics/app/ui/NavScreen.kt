@@ -1,4 +1,4 @@
-package xapics.app.ui.common
+package xapics.app.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -24,29 +24,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
-import xapics.app.ui.MainViewModel
-import xapics.app.ui.auth.AdminScreen
 import xapics.app.ui.auth.AuthScreen
-import xapics.app.ui.auth.EditFilmsScreen
-import xapics.app.ui.auth.EditRollsScreen
 import xapics.app.ui.auth.ProfileScreen
-import xapics.app.ui.auth.UploadPicsScreen
+import xapics.app.ui.common.PicsListScreen
+import xapics.app.ui.common.SearchScreen
 import xapics.app.ui.common.homeScreen.HomeScreen
 import xapics.app.ui.common.picScreen.PicDetails
 import xapics.app.ui.common.picScreen.PicScreen
 import xapics.app.ui.composables.TopBar
-import xapics.app.ui.windowInfo
 
 enum class NavList(@StringRes val title: Int) {
     HomeScreen(title = R.string.home_screen),
     PicsListScreen(title = R.string.pics_list_screen),
     PicScreen(title = R.string.pic_screen),
     SearchScreen(title = R.string.search_screen),
-    EditFilmsScreen(title = R.string.edit_films_screen),
-    EditRollsScreen(title = R.string.edit_rolls_screen),
-    UploadPicsScreen(title = R.string.upload_pics_screen),
     AuthScreen(title = R.string.auth_screen),
-    AdminScreen(title = R.string.admin_screen),
     ProfileScreen(title = R.string.profile_screen),
 }
 
@@ -100,7 +92,6 @@ fun NavScreen(
                     appState = appState,
                     popBackStack = { navController.popBackStack() },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                    goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
@@ -128,7 +119,7 @@ fun NavScreen(
         ) {
             when (backStackEntry?.destination?.route) {
                 "AdminScreen" -> {
-                    viewModel.getRollsList()
+                    viewModel.getRollThumbs()
                     viewModel.getAllTags()
                 }
                 "PicsListScreen" -> {
@@ -181,43 +172,12 @@ fun NavScreen(
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 )
             }
-            composable(route = NavList.EditFilmsScreen.name) {
-                EditFilmsScreen(
-                    viewModel = viewModel,
-                    appState = appState,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                )
-            }
-            composable(route = NavList.EditRollsScreen.name) {
-                EditRollsScreen(
-                    viewModel = viewModel,
-                    appState = appState,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                    goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) }
-                )
-            }
-            composable(route = NavList.UploadPicsScreen.name) {
-                UploadPicsScreen(
-                    viewModel = viewModel,
-                    appState = appState,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                )
-            }
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
                     viewModel = viewModel,
                     popBackStack = { navController.popBackStack() },
-                    goToAdminScreen = { navController.navigate(NavList.AdminScreen.name) },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     isLoading = appState.isLoading,
-                )
-            }
-            composable(route = NavList.AdminScreen.name) {
-                AdminScreen(
-                    viewModel = viewModel,
-                    goToEditFilmsScreen = { navController.navigate(NavList.EditFilmsScreen.name) },
-                    goToEditRollsScreen = { navController.navigate(NavList.EditRollsScreen.name) },
-                    goToUploadPicsScreen = { navController.navigate(NavList.UploadPicsScreen.name) }
                 )
             }
             composable(route = NavList.ProfileScreen.name) {

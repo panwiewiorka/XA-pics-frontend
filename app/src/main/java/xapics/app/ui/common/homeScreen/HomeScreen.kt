@@ -28,9 +28,8 @@ fun HomeScreen(
             appState.showConnectionError -> {
                 ConnectionErrorButton {
                     viewModel.authenticate()
-                    viewModel.getUserInfo {} // TODO needed?
-//                        getPicsList(2020)
-                    viewModel.getRollsList()
+//                    viewModel.getUserInfo {} // TODO needed?
+                    viewModel.getRollThumbs()
                     viewModel.getRandomPic()
                     viewModel.getAllTags()
 

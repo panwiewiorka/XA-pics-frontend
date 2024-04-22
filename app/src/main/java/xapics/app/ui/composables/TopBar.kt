@@ -19,10 +19,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +52,7 @@ import xapics.app.R
 import xapics.app.TagState
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.ui.common.nonScaledSp
+import xapics.app.ui.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,7 +61,6 @@ fun TopBar(
     appState: AppState,
     popBackStack: () -> Unit,
     goToAuthScreen: () -> Unit,
-    goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
@@ -129,17 +128,10 @@ fun TopBar(
                             viewModel.loadStateSnapshot()
                             viewModel.showPicsList(false)
                         }
-                        "AdminScreen" -> {
-                            viewModel.getRollsList()
-                            viewModel.getAllTags()
-                        }
                     }
                     popBackStack()
-//                    if (page == "PicsListScreen" || page == "PicScreen") loadStateSnapshot()
-//                    popBackStack()
-//                    if (page == "PicsListScreen") showPicsList(HIDE)
                 }) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
+                    Icon(Icons.Outlined.ArrowBack, "go Back")
                 }
             }
         }
@@ -218,7 +210,7 @@ fun TopBar(
 
         @Composable
         fun ProfileOrLogOutButton() {
-            if(page == "AdminScreen" || page == "ProfileScreen") {
+            if(page == "ProfileScreen") {
                 IconButton(onClick = {
                     popBackStack()
                     viewModel.logOut()
@@ -232,7 +224,6 @@ fun TopBar(
                     onClick = {
                         when (appState.userName) {
                             null -> goToAuthScreen()
-                            "admin" -> goToAdminScreen()
                             else -> goToProfileScreen()
                         }
                     }

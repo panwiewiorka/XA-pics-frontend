@@ -1,6 +1,5 @@
 package xapics.app.ui.auth
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -43,7 +42,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.R
-import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.ui.MainViewModel
 
@@ -52,7 +50,6 @@ import xapics.app.ui.MainViewModel
 fun AuthScreen(
     viewModel: MainViewModel,
     popBackStack: () -> Unit,
-    goToAdminScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     isLoading: Boolean,
 ) {
@@ -60,26 +57,17 @@ fun AuthScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) {
-        viewModel.updateTopBarCaption("Log in")
-//        viewModel.authenticate()
-        Log.d(TAG, "AuthScreen is shown")
-    }
-
     LaunchedEffect(viewModel, context) {
-//        viewModel.authenticate()
-        Log.d(TAG, "AuthScreen: Launched Effect started")
-
         viewModel.authResults.collect { result ->
-            Log.d(TAG, "AuthScreen: result is $result")
+//            Log.d(TAG, "AuthScreen: result is $result")
             val resultUserName = result.data.toString()
-            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
+//            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
             if (resultUserName != "null") {
                 when(result) {
                     is AuthResult.Authorized -> {
                         val stateUserName = viewModel.appState.value.userName
                         if(resultUserName != stateUserName) viewModel.updateUserName(resultUserName)
-                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
+//                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
                         when {
                             viewModel.appState.value.getBackAfterLoggingIn -> {
                                 viewModel.rememberToGetBackAfterLoggingIn(false)
@@ -91,10 +79,6 @@ fun AuthScreen(
                                     "username = null",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                            }
-                            viewModel.appState.value.userName == "admin" -> {
-                                popBackStack()
-                                goToAdminScreen()
                             }
                             else -> {
                                 popBackStack()

@@ -1,13 +1,10 @@
 package xapics.app
 
 
-enum class FilmType { SLIDE, NEGATIVE, BW, NULL }
-
 enum class TagState { DISABLED, ENABLED, SELECTED }
 
 enum class OnPicsListScreenRefresh { SEARCH, GET_COLLECTION }
 
-//enum class ShowHide(val isShown: Boolean) { SHOW(true), HIDE(false) }
 
 data class Pic(
     val id: Int,
@@ -16,21 +13,6 @@ data class Pic(
     val keywords: String,
     val tags: String,
 //    val collections: List<String> = emptyList(),
-)
-
-data class Film(
-    val id: Int? = null,
-    val filmName: String = "",
-    val iso: Int? = null,
-    val type: FilmType = FilmType.NULL,
-)
-
-data class Roll(
-    val id: Int? = null,
-    val title: String = "",
-    val film: String = "",
-    val expired: Boolean = false,
-    val xpro: Boolean = false,
 )
 
 data class Thumb(
