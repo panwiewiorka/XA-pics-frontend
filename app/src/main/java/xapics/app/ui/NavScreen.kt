@@ -91,7 +91,7 @@ fun NavScreen(
                     viewModel = viewModel,
                     appState = appState,
                     popBackStack = { navController.popBackStack() },
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(NavList.HomeScreen.name) } },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },

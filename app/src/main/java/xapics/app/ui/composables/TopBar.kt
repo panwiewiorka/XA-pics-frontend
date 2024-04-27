@@ -212,7 +212,7 @@ fun TopBar(
         fun ProfileOrLogOutButton() {
             if(page == "ProfileScreen") {
                 IconButton(onClick = {
-                    popBackStack()
+//                    popBackStack()
                     viewModel.logOut()
                     goToAuthScreen()
                 }) {

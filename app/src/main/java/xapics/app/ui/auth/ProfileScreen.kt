@@ -21,7 +21,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -120,44 +120,6 @@ fun UserView(
         label = "user collections blur"
     )
 
-    @Composable
-    fun DeleteDialog() {
-        BasicAlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 36.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Delete \"$collectionTitle\"?")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row {
-                    Button(onClick = { showDeleteDialog = false }) {
-                        Text(text = "Cancel")
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        ),
-                        onClick = {
-                            renameOrDeleteCollection(collectionTitle, null, goToAuthScreen)
-                            showDeleteDialog = false
-                            showRenameDialog = false
-                        }
-                    ) {
-                        Text(text = "Delete")
-                    }
-                }
-            }
-        }
-    }
-
     if(userCollections.isNullOrEmpty()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
@@ -239,7 +201,7 @@ fun UserView(
     }
     
     if (showRenameDialog) {
-        BasicAlertDialog(
+        AlertDialog(
             onDismissRequest = { showRenameDialog = false },
             modifier = if (!showDeleteDialog) Modifier else Modifier.alpha(0f)
         ) {
@@ -289,8 +251,6 @@ fun UserView(
                                    },
                     keyboardActions = KeyboardActions(onAny = { onRename() }),
                     colors = myTextFieldColors(),
-                    modifier = Modifier
-//                        .background(Color(0x55000000))
                 )
 
                 Text(text = "or", color = AlmostWhite)
@@ -307,5 +267,52 @@ fun UserView(
             }
         }
     }
-    if (showDeleteDialog) DeleteDialog()
+    if (showDeleteDialog) DeleteDialog(
+        text = "Delete \"$collectionTitle\"?",
+        onDismiss = { showDeleteDialog = false }
+    ) {
+        renameOrDeleteCollection(collectionTitle, null, goToAuthScreen)
+        showDeleteDialog = false
+        showRenameDialog = false
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeleteDialog(
+    text: String,
+    onDismiss: () -> Unit,
+    onClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 36.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = text)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row {
+                Button(onClick = onDismiss) {
+                    Text(text = "Cancel")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    onClick = onClick
+                ) {
+                    Text(text = "Delete")
+                }
+            }
+        }
+    }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -146,6 +147,8 @@ fun AuthScreen(
             var passField by rememberSaveable { mutableStateOf("") }
             var passVisible by rememberSaveable { mutableStateOf(false) }
 
+            Spacer(modifier = Modifier.weight(1f))
+
             OutlinedTextField(
                 value = userField,
                 onValueChange = {
@@ -225,6 +228,8 @@ fun AuthScreen(
                     signupMode = !signupMode
                 })
             }
+
+            Spacer(modifier = Modifier.weight(2f))
         }
     }
 }

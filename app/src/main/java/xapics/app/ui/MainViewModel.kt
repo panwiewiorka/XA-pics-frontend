@@ -134,13 +134,11 @@ class MainViewModel @Inject constructor (
     }
 
     fun logOut() {
-        viewModelScope.launch {
-            repository.logOut()
-            resultChannel.send(AuthResult.Unauthorized())
-        }
         _appState.update { it.copy(
             userName = null
         ) }
+        repository.logOut()
+        updateTopBarCaption("Log in")
     }
 
 

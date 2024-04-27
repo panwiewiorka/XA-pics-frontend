@@ -89,7 +89,7 @@ interface PicsApi {
 
 
     companion object {
-        const val BASE_URL = "https://xapics.fijbar.com/v1/"
-//        const val BASE_URL = "http://192.168.0.87:8080/v1/"
+//        const val BASE_URL = "https://xapics.fijbar.com/v1/"
+        const val BASE_URL = "http://192.168.0.87:8080/v1/"
     }
 }
