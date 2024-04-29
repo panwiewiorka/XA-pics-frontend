@@ -58,6 +58,10 @@ fun AuthScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
+    LaunchedEffect(Unit) {
+        viewModel.updateTopBarCaption("Log in")
+    }
+
     LaunchedEffect(viewModel, context) {
         viewModel.authResults.collect { result ->
 //            Log.d(TAG, "AuthScreen: result is $result")

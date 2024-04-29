@@ -113,20 +113,15 @@ fun NavScreen(
         },
     ) { innerPadding ->
         BackHandler(
-            enabled = backStackEntry?.destination?.route == "PicsListScreen"
-                    || backStackEntry?.destination?.route == "PicScreen"
-                    || backStackEntry?.destination?.route == "AdminScreen"
+            enabled = backStackEntry?.destination?.route == NavList.PicsListScreen.name
+                    || backStackEntry?.destination?.route == NavList.PicScreen.name
         ) {
             when (backStackEntry?.destination?.route) {
-                "AdminScreen" -> {
-                    viewModel.getRollThumbs()
-                    viewModel.getAllTags()
-                }
-                "PicsListScreen" -> {
+                NavList.PicsListScreen.name -> {
                     viewModel.loadStateSnapshot()
                     viewModel.showPicsList(false)
                 }
-                "PicScreen" -> {
+                NavList.PicScreen.name -> {
                     viewModel.loadStateSnapshot()
                     viewModel.changeFullScreenMode(false)
                 }

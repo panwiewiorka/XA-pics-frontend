@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import xapics.app.R
 import xapics.app.TagState
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
+import xapics.app.ui.NavList
 import xapics.app.ui.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -74,18 +76,20 @@ fun TopBar(
     ) {
         val focusRequester = remember { FocusRequester() }
         val text = when (page) {
-            "PicsListScreen" -> appState.topBarCaption
-            "PicScreen" -> appState.topBarCaption
-            "AuthScreen" -> appState.topBarCaption
-            "ProfileScreen" -> appState.userName ?: ""
+            NavList.PicsListScreen.name -> appState.topBarCaption
+            NavList.PicScreen.name -> appState.topBarCaption
+            NavList.AuthScreen.name -> appState.topBarCaption
+            NavList.ProfileScreen.name -> appState.userName ?: ""
             else -> stringResource(id = pageName)
         }
         val searchText = ""
-        var query by remember { mutableStateOf( TextFieldValue (
-            text = searchText,
-            selection = TextRange(searchText.length)
-        )
+        var query by remember { mutableStateOf (
+            TextFieldValue (
+                text = searchText,
+                selection = TextRange(searchText.length)
+            )
         ) }
+        val coroutineScope = rememberCoroutineScope()
 
         fun filteredSearch() {
             val formattedQuery = query.text
@@ -97,7 +101,7 @@ fun TopBar(
                 .toString().drop(1).dropLast(1)
 
             when {
-                page == "SearchScreen" && filters.isNotBlank() -> {
+                page == NavList.SearchScreen.name && filters.isNotBlank() -> {
                     viewModel.search(
                         (if (formattedQuery.isBlank()) ""
                         else "search = $formattedQuery, ")
@@ -107,7 +111,7 @@ fun TopBar(
                 }
                 formattedQuery.isNotBlank() -> {
                     viewModel.search("search = $formattedQuery")
-                    if (page != "PicsListScreen") goToPicsListScreen()
+                    goToPicsListScreen()
                 }
                 else -> {}
             }
@@ -116,17 +120,20 @@ fun TopBar(
 
         @Composable
         fun HomeOrBackButton() {
-            if (page == "HomeScreen") {
+            if (page == NavList.HomeScreen.name) {
                 IconButton(enabled = false, onClick = {  }) {
                     Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
                 IconButton(enabled = true, onClick = {
                     when(page) {
-                        "PicScreen" -> viewModel.loadStateSnapshot()
-                        "PicsListScreen" -> {
-                            viewModel.loadStateSnapshot()
+                        NavList.PicScreen.name -> viewModel.loadStateSnapshot()
+                        NavList.PicsListScreen.name -> {
+                            val previousQuery = viewModel.loadStateSnapshot().drop(1).dropLast(1)
                             viewModel.showPicsList(false)
+                            if (previousPage == NavList.PicsListScreen.name) {
+                                query = TextFieldValue(previousQuery, TextRange(previousQuery.length))
+                            }
                         }
                     }
                     popBackStack()
@@ -176,11 +183,11 @@ fun TopBar(
                             modifier = Modifier
                                 .basicMarquee()
                                 .weight(1f)
-                                .clickable(enabled = page == "PicScreen") { goToPicsListScreen() }
+                                .clickable(enabled = page == NavList.PicScreen.name && appState.picsList?.size!! > 1) { goToPicsListScreen() }
                         )
                     }
 
-                    if (page != "SearchScreen" && appState.showSearch) {
+                    if (page != NavList.SearchScreen.name && appState.showSearch) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -210,9 +217,8 @@ fun TopBar(
 
         @Composable
         fun ProfileOrLogOutButton() {
-            if(page == "ProfileScreen") {
+            if(page == NavList.ProfileScreen.name) {
                 IconButton(onClick = {
-//                    popBackStack()
                     viewModel.logOut()
                     goToAuthScreen()
                 }) {
@@ -220,7 +226,7 @@ fun TopBar(
                 }
             } else {
                 IconButton(
-                    enabled = page != "AuthScreen",
+                    enabled = page != NavList.AuthScreen.name,
                     onClick = {
                         when (appState.userName) {
                             null -> goToAuthScreen()
@@ -235,7 +241,7 @@ fun TopBar(
 
 
 
-        if (page == "ProfileScreen" && page == previousPage) popBackStack()
+        if (page == NavList.ProfileScreen.name && page == previousPage) popBackStack()
 
         HomeOrBackButton()
 

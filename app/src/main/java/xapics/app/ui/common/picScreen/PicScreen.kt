@@ -40,10 +40,6 @@ fun PicScreen(
         label = "user collections blur"
     )
 
-    LaunchedEffect(Unit) {
-        viewModel.changeBlurContent(false)
-    }
-
     /*
 //    val scope = rememberCoroutineScope()
     var animateFirstMove by remember { mutableStateOf(true) }
@@ -76,6 +72,7 @@ fun PicScreen(
      */
 
     LaunchedEffect(Unit) {
+        viewModel.changeBlurContent(false)
         viewModel.updateTopBarCaption(viewModel.stateHistory.last().topBarCaption)
         if (appState.picsList?.size == 1) {
             Toast.makeText(

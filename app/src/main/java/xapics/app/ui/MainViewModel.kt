@@ -261,7 +261,7 @@ class MainViewModel @Inject constructor (
     private fun updatePicsList(picsList: List<Pic>? = null) {
         _appState.update { it.copy(
             picsList = picsList ?: emptyList(),
-            picIndex = 1,
+            picIndex = 0,
         )}
     }
 
@@ -323,10 +323,10 @@ class MainViewModel @Inject constructor (
             try {
                 _appState.update { it.copy(
                     picsList = api.search(query),
-                    picIndex = 1,
+                    picIndex = 0,
                     isLoading = false
                 )}
-                saveStateSnapshot() // TODO check whether it waits for api ^^
+                saveStateSnapshot()
             } catch (e: Exception) { // TODO if error 500 -> custom error message
                 Log.e(TAG, "search: ", e)
                 onPicsListScreenRefresh = Pair(SEARCH, query)
@@ -337,14 +337,22 @@ class MainViewModel @Inject constructor (
     }
 
     fun updatePicState(picIndex: Int) {
-//        Log.d(TAG, "updatePicState picIndex: ${appState.value.picsList?.get(picIndex)?.id}")
-        _appState.update {
-            it.copy(
-                pic = appState.value.picsList?.get(picIndex), // TODO could picsList be null?
-                picIndex = picIndex
-            )
+        if (appState.value.picsList != null && appState.value.picsList!!.size > picIndex) {
+            _appState.update {
+                it.copy(
+                    pic = appState.value.picsList!![picIndex],
+                    picIndex = picIndex
+                )
+            }
+            getPicCollections(appState.value.picsList!![picIndex].id)
+        } else {
+            _appState.update {
+                it.copy(
+                    pic = null,
+                    picIndex = null
+                )
+            }
         }
-        appState.value.picsList?.get(picIndex)?.id?.let { getPicCollections(it) }
     }
 
     fun getRandomPic() {
@@ -443,7 +451,8 @@ class MainViewModel @Inject constructor (
         )
     }
 
-    fun loadStateSnapshot() {
+    fun loadStateSnapshot(): String {
+        if (stateHistory.isNotEmpty()) Log.d(TAG, "loadStateSnapshot 111: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
         stateHistory.removeLast()
         if (stateHistory.isNotEmpty()) {
             val last = stateHistory.last()
@@ -453,7 +462,9 @@ class MainViewModel @Inject constructor (
                 picIndex = last.picIndex,
                 topBarCaption = last.topBarCaption
             ) }
+            Log.d(TAG, "loadStateSnapshot 222: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
         }
+        return appState.value.topBarCaption
     }
 
     fun updateStateSnapshot() {
