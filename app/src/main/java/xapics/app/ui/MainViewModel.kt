@@ -25,7 +25,6 @@ import xapics.app.Thumb
 import xapics.app.data.PicsApi
 import xapics.app.data.auth.AuthRepository
 import xapics.app.data.auth.AuthResult
-import xapics.app.data.auth.backup.Downloader
 import xapics.app.getTagColorAndName
 import xapics.app.toTagsList
 import javax.inject.Inject
@@ -35,7 +34,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor (
     private val api: PicsApi,
     private val repository: AuthRepository,
-    private val downloader: Downloader
 ): ViewModel() {
 
     private val _appState = MutableStateFlow(AppState())
