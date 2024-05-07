@@ -139,6 +139,12 @@ fun NavScreen(
                     viewModel = viewModel,
                     appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
+                    updateAndGoToPicScreen = {
+                        viewModel.updatePicsList(listOf(appState.pic!!))
+                        viewModel.updateTopBarCaption("Random pic")
+                        viewModel.saveStateSnapshot()
+                        navController.navigate(NavList.PicScreen.name)
+                                    },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
                 )
             }

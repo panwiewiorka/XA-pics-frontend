@@ -41,9 +41,7 @@ fun PicDetails(
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit = {},
 ) {
-    var showTags by remember {
-        mutableStateOf(false)
-    }
+    var showTags by remember { mutableStateOf(false) }
     
     if (showTags) {
         AlertDialog(

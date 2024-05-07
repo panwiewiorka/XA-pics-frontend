@@ -1,7 +1,7 @@
 package xapics.app.ui.common.homeScreen
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,24 +19,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.ui.composables.AsyncPic
-import xapics.app.ui.composables.RollCard
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomePortraitMediumView(
     viewModel: MainViewModel,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
+    goToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
     maxWidth: Dp,
-    padding: Dp
+    padding: Dp,
+    tagsScrollState: ScrollState,
+    gridState: LazyGridState,
 ) {
-    val rolls = appState.rollThumbnails?.size ?: 0
-    val scrollState = rememberScrollState()
-
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
+        state = gridState,
         modifier = Modifier.fillMaxSize()
     ) {
         item(
@@ -44,49 +42,33 @@ fun HomePortraitMediumView(
         ) {
             Box(
                 modifier = Modifier
-                    .padding(bottom = 32.dp)
+                    .padding(bottom = padding * 2)
                     .fillMaxWidth()
                     .height(maxWidth / 3)
             ) {
                 Row {
-                    appState.pic?.let {
-                        AsyncPic(
-                            url = it.imageUrl,
-                            description = "random pic: ${it.description}",
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            viewModel.getRandomPic()
-                            // TODO goToPicScreen(), caption: Random pic, any collection?
-                        }
-                    }
+                    RandomPic(
+                        pic = appState.pic,
+                        getRandomPic = viewModel::getRandomPic,
+                        updateAndGoToPicScreen = goToPicScreen,
+                        modifier = Modifier.weight(1f),
+                        paddingModifier = Modifier,
+                    )
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .height(maxWidth / 3)
                     ) {
-                        TagsCloud(scrollState, appState.tags, viewModel::search, goToPicsListScreen, goToSearchScreen, padding)
+                        TagsCloud(tagsScrollState, appState.tags, viewModel::search, goToPicsListScreen, goToSearchScreen, padding)
                     }
                 }
 
-                Divider(modifier = Modifier.align(Alignment.TopCenter))
-                Divider(modifier = Modifier.align(Alignment.BottomCenter))
+                HorizontalDivider(modifier = Modifier.align(Alignment.TopCenter))
+                HorizontalDivider(modifier = Modifier.align(Alignment.BottomCenter))
             }
         }
 
-        items(rolls) {
-            val imageUrl = appState.rollThumbnails!![it].thumbUrl
-            val rollTitle = appState.rollThumbnails[it].title
-            RollCard(
-                isLoading = appState.isLoading,
-                imageUrl = imageUrl,
-                rollTitle = rollTitle,
-                isPortrait = true,
-                modifier = Modifier.padding(padding)
-            ) {
-                viewModel.search("roll = $rollTitle")
-                goToPicsListScreen()
-            }
-        }
+        rollCardsGrid(appState, viewModel::search, goToPicsListScreen, true, Modifier.padding(padding))
     }
 }

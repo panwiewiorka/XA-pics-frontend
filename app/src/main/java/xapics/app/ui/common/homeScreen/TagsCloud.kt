@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
@@ -28,6 +29,8 @@ import xapics.app.R
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.ui.composables.PicTag
+import xapics.app.ui.theme.AlmostWhite
+import xapics.app.ui.theme.AlphaBlack
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -67,12 +70,14 @@ fun TagsCloud(
 
         Icon(
             painterResource(R.drawable.baseline_unfold_more_24),
-            contentDescription = "go to search screen",
+            contentDescription = "Go to search screen",
+            tint = AlmostWhite,
             modifier = Modifier
                 .padding(8.dp)
                 .align(Alignment.BottomEnd)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f))
+                .alpha(0.7f)
+                .background(AlphaBlack)
                 .clickable { goToSearchScreen() }
                 .padding(8.dp)
         )
@@ -86,6 +91,6 @@ fun Gradient(top: Boolean, modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .height(8.dp)
             .rotate(if(top) 0f else 180f)
-            .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.onPrimary, Color.Transparent)))
+            .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.background, Color.Transparent)))
     ) { }
 }

@@ -74,7 +74,7 @@ fun PicScreen(
     LaunchedEffect(Unit) {
         viewModel.changeBlurContent(false)
         viewModel.updateTopBarCaption(viewModel.stateHistory.last().topBarCaption)
-        if (appState.picsList?.size == 1) {
+        if (appState.picsList?.size == 1 && appState.topBarCaption != "Random pic") {
             Toast.makeText(
                 context,
                 "Showing the only pic found",

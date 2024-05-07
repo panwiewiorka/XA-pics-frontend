@@ -11,11 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import xapics.app.TagState
 import xapics.app.ui.AppState
 import xapics.app.ui.MainViewModel
-import xapics.app.TagState
 import xapics.app.ui.composables.PicTag
+import xapics.app.ui.theme.myTextButtonColors
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -33,6 +36,7 @@ fun SearchScreen(
         ) {
             TextButton(
                 enabled = appState.tags.any { it.state == TagState.SELECTED },
+                colors = myTextButtonColors(),
                 onClick = {
                     val filters = appState.tags.filter { it.state == TagState.SELECTED }
                         .map { "${it.type} = ${it.value}" }
@@ -41,14 +45,15 @@ fun SearchScreen(
                     goToPicsListScreen()
                 }
             ) {
-                Text(text = "Show filtered pics")
+                Text(text = "Show filtered pics", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
             TextButton(
                 enabled = appState.tags.any { it.state == TagState.SELECTED },
+                colors = myTextButtonColors(),
                 onClick = { viewModel.getAllTags() }
             ) {
-                Text(text = "Reset filters")
+                Text(text = "Reset filters", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
 

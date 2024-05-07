@@ -125,12 +125,6 @@ class MainViewModel @Inject constructor (
         ) }
     }
 
-    fun updateUserCollections(userCollections: List<Thumb>?) {
-        _appState.update { it.copy(
-            userCollections = userCollections,
-        ) }
-    }
-
     fun logOut() {
         _appState.update { it.copy(
             userName = null
@@ -256,11 +250,10 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    private fun updatePicsList(picsList: List<Pic>? = null) {
+    fun updateUserCollections(userCollections: List<Thumb>?) {
         _appState.update { it.copy(
-            picsList = picsList ?: emptyList(),
-            picIndex = 0,
-        )}
+            userCollections = userCollections,
+        ) }
     }
 
     fun updateCollectionToSaveTo(collection: String) {
@@ -297,17 +290,24 @@ class MainViewModel @Inject constructor (
 
     /*** MAIN WORKFLOW */
 
+    fun updatePicsList(picsList: List<Pic>? = null) {
+        _appState.update { it.copy(
+            picsList = picsList ?: emptyList(),
+            picIndex = 0,
+        )}
+    }
+
     fun getRollThumbs() {
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
-                    rollThumbnails = api.getRollThumbnails(),
+                    rollThumbnails = api.getRollThumbnails().sortedByDescending { roll -> roll.thumbUrl },
                     isLoading = false
                 )}
             } catch (e: Exception) {
                 showConnectionError(true)
-                Log.e(TAG, "getRollsList(): ", e)
+                Log.e(TAG, "getRollThumbs(): ", e)
                 updateLoadingState(false)
             }
         }
@@ -357,8 +357,10 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
 //                updateLoadingState(true)
+                var randomPic = api.getRandomPic()
+                if(randomPic == appState.value.pic) randomPic = api.getRandomPic()
                 _appState.update { it.copy(
-                    pic = api.getRandomPic(),
+                    pic = randomPic,
 //                    isLoading = false
                 )}
 

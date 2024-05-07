@@ -1,5 +1,6 @@
 package xapics.app.ui.common.homeScreen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -25,27 +27,30 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.ui.AppState
-import xapics.app.ui.MainViewModel
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.ui.composables.AsyncPic
+import xapics.app.ui.AppState
+import xapics.app.ui.MainViewModel
 import xapics.app.ui.composables.PicTag
-import xapics.app.ui.composables.RollCard
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun HomeLandscapeCompactView(
     viewModel: MainViewModel,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
+    goToPicScreen: () -> Unit,
     padding: Dp,
+    gridState: LazyGridState,
 ) {
-    val rolls = appState.rollThumbnails?.size ?: 0
     var tagsWidth by remember { mutableStateOf(0.dp) }
     var tagHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
+    val tags = appState.tags.map {
+        Tag(it.type, it.value, TagState.ENABLED)
+    }
 
-    Box {
+    Box {// pre-calculating the size of tags cloud
         BoxWithConstraints(
             modifier = Modifier
                 .onSizeChanged { tagHeight = with(density) {it.height.toDp()} }
@@ -63,26 +68,17 @@ fun HomeLandscapeCompactView(
                 rows = StaggeredGridCells.FixedSize(tagHeight),
                 verticalArrangement = Arrangement.Center,
             ) {
-                val tags = appState.tags.map {
-                    Tag(
-                        it.type,
-                        it.value,
-                        TagState.ENABLED
-                    )
-                }
                 items(tags.size) {
-                    PicTag(tags[it]) {
-                        viewModel.search("${tags[it].type} = ${tags[it].value}")
-                        goToPicsListScreen()
-                    }
+                    PicTag(tags[it]) {}
                 }
             }
         }
 
         LazyHorizontalGrid(
             rows = GridCells.Adaptive(100.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(padding * 2),
             verticalArrangement = Arrangement.spacedBy(padding),
+            state = gridState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = padding)
@@ -90,32 +86,16 @@ fun HomeLandscapeCompactView(
             item(
                 span = { GridItemSpan(maxLineSpan) }
             ) {
-                appState.pic?.let {
-                    AsyncPic(
-                        url = it.imageUrl,
-                        description = "random pic: ${it.description}",
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(start = 8.dp, end = 32.dp, top = 1.dp)
-                    ) {
-                        viewModel.getRandomPic()
-                        // TODO goToPicScreen(), caption: Random pic, any collection?
-                    }
-                }
+                RandomPic(
+                    pic = appState.pic,
+                    getRandomPic = viewModel::getRandomPic,
+                    updateAndGoToPicScreen = goToPicScreen,
+                    modifier = Modifier.fillMaxHeight(),
+                    paddingModifier = Modifier.padding(start = 8.dp, end = 32.dp, top = 1.dp)
+                )
             }
-            items(rolls) {
-                val imageUrl = appState.rollThumbnails!![it].thumbUrl
-                val rollTitle = appState.rollThumbnails[it].title
-                RollCard(
-                    isLoading = appState.isLoading,
-                    imageUrl = imageUrl,
-                    rollTitle = rollTitle,
-                    isPortrait = false,
-                ) {
-                    viewModel.search("roll = $rollTitle")
-                    goToPicsListScreen()
-                }
-            }
+
+            rollCardsGrid(appState, viewModel::search, goToPicsListScreen, false, Modifier)
 
             item(
                 span = { GridItemSpan(maxLineSpan) }
@@ -141,13 +121,6 @@ fun HomeLandscapeCompactView(
                         rows = StaggeredGridCells.FixedSize(tagHeight),
                         verticalArrangement = Arrangement.Center,
                     ) {
-                        val tags = appState.tags.map {
-                            Tag(
-                                it.type,
-                                it.value,
-                                TagState.ENABLED
-                            )
-                        }
                         items(tags.size) {
                             PicTag(tags[it]) {
                                 viewModel.search("${tags[it].type} = ${tags[it].value}")

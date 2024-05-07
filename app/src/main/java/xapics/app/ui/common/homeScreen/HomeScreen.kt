@@ -3,6 +3,8 @@ package xapics.app.ui.common.homeScreen
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +18,11 @@ import xapics.app.ui.windowInfo
 
 @Composable
 fun HomeScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit, goToSearchScreen: () -> Unit,
+    viewModel: MainViewModel,
+    appState: AppState,
+    goToPicsListScreen: () -> Unit,
+    updateAndGoToPicScreen: () -> Unit,
+    goToSearchScreen: () -> Unit,
 ) {
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
@@ -28,7 +34,6 @@ fun HomeScreen(
             appState.showConnectionError -> {
                 ConnectionErrorButton {
                     viewModel.authenticate()
-//                    viewModel.getUserInfo {} // TODO needed?
                     viewModel.getRollThumbs()
                     viewModel.getRandomPic()
                     viewModel.getAllTags()
@@ -40,19 +45,15 @@ fun HomeScreen(
                 val windowInfo = windowInfo()
                 val isPortrait = windowInfo.isPortraitOrientation
                 val isCompact = windowInfo.windowType == Compact
-                val lowestDimension = if (isPortrait) maxWidth else maxHeight
                 val padding = 12.dp
-//                val gridCellSize = (when (windowInfo.windowType) {
-//                    is Compact -> lowestDimension / 2
-//                    is Medium -> lowestDimension / 4
-//                    is Expanded -> lowestDimension / 6
-//                }) - padding
+                val tagsScrollState = rememberScrollState()
+                val gridState = rememberLazyGridState()
 
                 when {
-                    isCompact && isPortrait -> HomePortraitCompactView(viewModel, appState, goToPicsListScreen)
-                    isCompact -> HomeLandscapeCompactView(viewModel, appState, goToPicsListScreen, padding)
-                    isPortrait -> HomePortraitMediumView(viewModel, appState, goToPicsListScreen, goToSearchScreen, maxWidth, padding)
-                    else -> HomeLandscapeMediumView(viewModel, appState, goToPicsListScreen, goToSearchScreen, maxHeight, padding)
+                    isCompact && isPortrait -> HomePortraitCompactView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, maxWidth, padding, gridState)
+                    isCompact -> HomeLandscapeCompactView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, padding, gridState)
+                    isPortrait -> HomePortraitMediumView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxWidth, padding, tagsScrollState, gridState)
+                    else -> HomeLandscapeMediumView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxHeight, padding, tagsScrollState, gridState)
                 }
 
                 if (appState.isLoading) CircularProgressIndicator()

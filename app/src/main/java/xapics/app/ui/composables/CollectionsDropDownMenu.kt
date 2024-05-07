@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TAG
 import xapics.app.Thumb
+import xapics.app.ui.theme.myTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -185,7 +186,7 @@ fun CollectionsDropDownMenu(
                     }
                 },
                 keyboardActions = KeyboardActions(onAny = { onNaming(titleField.trim()) }),
-//                colors = myTextFieldColors(),
+                colors = myTextFieldColors(),
                 modifier = Modifier.focusRequester(focusRequester)
             )
             LaunchedEffect(Unit) {

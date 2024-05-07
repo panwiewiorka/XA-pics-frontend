@@ -21,7 +21,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -150,7 +151,6 @@ fun UserView(
 
                 Box {
                     RollCard(
-                        isLoading = false,
                         imageUrl = thumbUrl,
                         rollTitle = rollTitle,
                         isPortrait = true,
@@ -201,7 +201,7 @@ fun UserView(
     }
     
     if (showRenameDialog) {
-        AlertDialog(
+        BasicAlertDialog(
             onDismissRequest = { showRenameDialog = false },
             modifier = if (!showDeleteDialog) Modifier else Modifier.alpha(0f)
         ) {
@@ -209,30 +209,14 @@ fun UserView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 fun onRename() = when {
-                    renamedTitle == collectionTitle -> {
-                        showRenameDialog = false
-                    }
-                    renamedTitle == "" -> {
-                        Toast.makeText(
-                            context,
-                            "Empty name is not available",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    renamedTitle == " " -> {
-                        Toast.makeText(
-                            context,
-                            "Empty name is not available",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    userCollections?.firstOrNull { it.title == renamedTitle } != null -> {
-                        Toast.makeText(
-                            context,
-                            "Name is taken by another collection",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    renamedTitle == collectionTitle -> { showRenameDialog = false }
+
+                    renamedTitle == "" -> { Toast.makeText(context, "Empty name is not available", Toast.LENGTH_SHORT).show() }
+
+                    renamedTitle == " " -> { Toast.makeText(context, "Empty name is not available", Toast.LENGTH_SHORT).show() }
+
+                    userCollections?.firstOrNull { it.title == renamedTitle } != null -> { Toast.makeText(context, "Name is taken by another collection", Toast.LENGTH_SHORT).show() }
+
                     else -> {
                         renameOrDeleteCollection(collectionTitle, renamedTitle.trim(), goToAuthScreen)
                         showRenameDialog = false
@@ -241,14 +225,14 @@ fun UserView(
 
                 OutlinedTextField(
                     value = renamedTitle,
-                    onValueChange = {renamedTitle = it},
+                    onValueChange = { renamedTitle = it },
                     singleLine = true,
                     label = { Text(text = "Rename collection") },
                     trailingIcon = {
                         IconButton(onClick = { onRename() }) {
                             Icon(painterResource(R.drawable.baseline_send_24), "Rename collection to $renamedTitle")
                         }
-                                   },
+                    },
                     keyboardActions = KeyboardActions(onAny = { onRename() }),
                     colors = myTextFieldColors(),
                 )
@@ -285,7 +269,7 @@ fun DeleteDialog(
     onDismiss: () -> Unit,
     onClick: () -> Unit
 ) {
-    AlertDialog(
+    BasicAlertDialog(
         onDismissRequest = onDismiss,
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 36.dp)
@@ -293,7 +277,7 @@ fun DeleteDialog(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = text)
+            Text(text = text, color = Color.White)
 
             Spacer(modifier = Modifier.height(16.dp))
 
