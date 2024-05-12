@@ -2,6 +2,7 @@ package xapics.app.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -25,7 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
 import xapics.app.ui.auth.AuthScreen
-import xapics.app.ui.auth.ProfileScreen
+import xapics.app.ui.auth.profileScreen.ProfileScreen
 import xapics.app.ui.common.PicsListScreen
 import xapics.app.ui.common.SearchScreen
 import xapics.app.ui.common.homeScreen.HomeScreen
@@ -66,14 +67,14 @@ fun NavScreen(
             if (appState.isFullscreen) {
                 controller?.apply {
                     hide(WindowInsetsCompat.Type.statusBars())
-//                hide(WindowInsetsCompat.Type.navigationBars())
-//                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    hide(WindowInsetsCompat.Type.navigationBars())
+                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
             } else {
                 controller?.apply {
                     show(WindowInsetsCompat.Type.statusBars())
-//                show(WindowInsetsCompat.Type.navigationBars())
-//                systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                    show(WindowInsetsCompat.Type.navigationBars())
+                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
                 }
             }
         }

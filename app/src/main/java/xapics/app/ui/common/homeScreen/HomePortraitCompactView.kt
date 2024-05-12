@@ -59,7 +59,7 @@ fun HomePortraitCompactView(
         item(
             span = { GridItemSpan(maxLineSpan) }
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         rollCardsGrid(appState, viewModel::search, goToPicsListScreen, true, modifier = Modifier.padding(padding))

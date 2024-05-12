@@ -272,7 +272,11 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
 //                updateLoadingState(true) // if uncomment -> tags in PicScreen will fade out before fade in
-                repository.getPicCollections(picId, ::updatePicCollections)
+                val result = repository.getPicCollections(picId, ::updatePicCollections)
+                if (result is AuthResult.Unauthorized) {
+                    repository.refreshTokens()
+                    repository.getPicCollections(picId, ::updatePicCollections)
+                }
 //                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.d(TAG, "getPicCollections: ", e)

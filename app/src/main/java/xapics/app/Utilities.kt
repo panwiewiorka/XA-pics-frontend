@@ -5,7 +5,6 @@ import xapics.app.ui.theme.AlphaGray
 import xapics.app.ui.theme.CollectionTag
 import xapics.app.ui.theme.DefaultTag
 import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.GrayMedium
 import xapics.app.ui.theme.RollAttribute
 import xapics.app.ui.theme.RollTag
 import xapics.app.ui.theme.YearTag
@@ -27,7 +26,7 @@ fun String.toTagsList(): List<Tag> {
 fun getTagColorAndName(tag: Tag): Pair<Color, String> {
     return when(tag.type) {
         "filmName" -> Pair(FilmTag, tag.value)
-        "filmType" -> Pair(GrayMedium, if (tag.value == "BW") "black and white" else tag.value.lowercase())
+        "filmType" -> Pair(AlphaGray, if (tag.value == "BW") "black and white" else tag.value.lowercase())
         "iso" -> Pair(AlphaGray, "iso ${tag.value}")
         "roll" -> Pair(RollTag, tag.value)
         "expired" -> Pair(RollAttribute, if(tag.value == "false") "not expired" else "expired")

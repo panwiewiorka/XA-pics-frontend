@@ -1,15 +1,14 @@
 package xapics.app.ui.common
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -97,84 +96,62 @@ fun PicsListScreen(
                     }
                 }
 
-                val scrollState = rememberLazyListState()
                 val windowInfo = windowInfo()
                 val isPortrait = windowInfo.isPortraitOrientation
                 val isCompact = windowInfo.windowType == Compact
                 val lowestDimension = if (isPortrait) maxWidth else maxHeight
-                val gridCellSize = if (windowInfo.windowType == Medium) lowestDimension / 2 else lowestDimension / 3
+                val gridCellSize = when (windowInfo.windowType) {
+                    Compact -> lowestDimension
+                    Medium -> lowestDimension / 2
+                    else -> lowestDimension / 3
+                }
 
-                when {
-                    isCompact && isPortrait -> { // TODO LazyVerticalGrid with one column/row instead of LazyColumn/LazyRow?
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            state = scrollState,
-                            modifier = Modifier
-                                .fillMaxSize()
+                if (isPortrait) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(gridCellSize),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(
+                            count = appState.picsList.size,
+                            key = { appState.picsList[it].id },
                         ) {
-                            items(
-                                count = appState.picsList.size,
-                                key = { appState.picsList[it].id },
-                            ) {
-                                picItem(it,
-                                    Modifier
-                                        .padding(horizontal = 32.dp)
-                                        .padding(vertical = 4.dp))
+                            picItem(
+                                index = it,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            )
+                        }
+                        item {
+                            if(appState.isLoading) {
+                                CircularProgressIndicator()
                             }
+                            Spacer(Modifier.height(12.dp))
                         }
                     }
-                    isCompact -> {
-                        LazyRow(
-                            state = scrollState,
-                            modifier = Modifier
-                                .padding(bottom = 32.dp)
-                                .fillMaxSize()
+                } else {
+                    LazyHorizontalGrid(
+                        rows = GridCells.Adaptive(gridCellSize),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = if (isCompact) 32.dp else 0.dp)
+                    ) {
+                        items(
+                            count = appState.picsList.size,
+                            key = { appState.picsList[it].id },
                         ) {
-                            items(
-                                count = appState.picsList.size,
-                                key = { appState.picsList[it].id },
-                            ) {
-                                picItem(it, Modifier.padding(16.dp))
-                            }
+                            picItem(
+                                index = it,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            )
                         }
-                    }
-                    isPortrait -> {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(gridCellSize),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(
-                                count = appState.picsList.size,
-                                key = { appState.picsList[it].id },
-                            ) {
-                                picItem(it,
-                                    Modifier
-                                        .padding(horizontal = 16.dp)
-                                        .padding(vertical = 12.dp))
+                        item {
+                            if(appState.isLoading) {
+                                CircularProgressIndicator()
                             }
-                        }
-                    }
-                    else -> {
-                        LazyHorizontalGrid(
-                            rows = GridCells.Adaptive(gridCellSize),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(
-                                count = appState.picsList.size,
-                                key = { appState.picsList[it].id },
-                            ) {
-                                picItem(it,
-                                    Modifier
-                                        .padding(horizontal = 16.dp)
-                                        .padding(vertical = 12.dp))
-                            }
+                            Spacer(Modifier.width(24.dp))
                         }
                     }
                 }
             }
-        }
-        if(appState.isLoading) {
-            CircularProgressIndicator()
         }
     }
 }
