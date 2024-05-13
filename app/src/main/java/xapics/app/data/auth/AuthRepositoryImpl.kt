@@ -38,8 +38,6 @@ class AuthRepositoryImpl(
             val response = api.signIn(
                 request = AuthRequest(username, password)
             )
-            Log.d(TAG, "signIn: getting response from API: refreshToken = ${response.refreshToken}")
-            Log.d(TAG, "signIn: getting response from API: accessToken = ${response.accessToken}")
             cryptoPrefs.putString("accessToken", response.accessToken)
             cryptoPrefs.putString("refreshToken", response.refreshToken)
 
@@ -60,10 +58,7 @@ class AuthRepositoryImpl(
     override suspend fun refreshTokens(): AuthResult<Unit> {
         return try {
             val refreshToken = cryptoPrefs.getString("refreshToken", null) ?: return AuthResult.UnknownError()
-            Log.d(TAG, "refreshTokens: getting refreshToken from cryptoPrefs: $refreshToken")
             val response = api.refreshTokens("Bearer $refreshToken")
-            Log.d(TAG, "refreshTokens: getting response from API: new refreshToken = ${response.refreshToken}")
-            Log.d(TAG, "refreshTokens: getting response from API: new accessToken = ${response.accessToken}")
             cryptoPrefs.putString("accessToken", response.accessToken)
             cryptoPrefs.putString("refreshToken", response.refreshToken)
 
@@ -82,9 +77,7 @@ class AuthRepositoryImpl(
     override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
         return try {
             val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-            Log.d(TAG, "authenticate: getting accessToken from cryptoPrefs: $token")
             val userName = api.authenticate("Bearer $token").string
-            Log.d(TAG, "authenticate: getting response from API: userName = $userName")
             updateUserName(userName)
             AuthResult.Authorized(userName) as AuthResult<Unit>
         } catch (e: HttpException) {
@@ -97,12 +90,10 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun getUserInfo(updateUserName: (String?) -> Unit, updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
+    override suspend fun getUserInfo(updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
         return try {
             val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-            Log.d(TAG, "getUserInfo: getting accessToken from cryptoPrefs: $token")
             val userCollections = api.getUserCollections("Bearer $token")
-            Log.d(TAG, "getUserInfo: getting response from API: userCollections size = ${userCollections.size}")
             updateUserCollections(userCollections)
             AuthResult.Authorized()
         } catch (e: HttpException) {

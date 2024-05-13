@@ -23,34 +23,31 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.updateUserCollections(null)
         if (appState.userName != null) viewModel.getUserInfo(goToAuthScreen)
-//        if (appState.userName != null) viewModel.getUserInfo{}
     }
 
-    if (appState.userCollections != null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                appState.showConnectionError -> {
-                    ConnectionErrorButton {
-                        viewModel.showConnectionError(false)
-                        viewModel.getUserInfo(goToAuthScreen)
-                    }
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            appState.showConnectionError -> {
+                ConnectionErrorButton {
+                    viewModel.showConnectionError(false)
+                    viewModel.getUserInfo(goToAuthScreen)
                 }
+            }
 //            appState.isLoading -> {
 //                CircularProgressIndicator()
 //            }
-                else -> {
-                    UserView(
-                        appState.userCollections,
-                        viewModel::getCollection,
-                        goToPicsListScreen,
-                        goToAuthScreen,
-                        viewModel::renameOrDeleteCollection,
-                        context
-                    )
-                }
+            appState.userCollections != null -> {
+                UserView(
+                    appState.userCollections,
+                    viewModel::getCollection,
+                    goToPicsListScreen,
+                    goToAuthScreen,
+                    viewModel::renameOrDeleteCollection,
+                    context
+                )
             }
         }
     }

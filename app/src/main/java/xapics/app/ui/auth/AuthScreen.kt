@@ -1,5 +1,6 @@
 package xapics.app.ui.auth
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -42,7 +43,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import xapics.app.R
+import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.ui.MainViewModel
 
@@ -63,21 +67,24 @@ fun AuthScreen(
     }
 
     LaunchedEffect(viewModel, context) {
-        viewModel.authResults.collect { result ->
-//            Log.d(TAG, "AuthScreen: result is $result")
+        viewModel.authResults.collectLatest { result ->
+            delay(30) // for collecting only latest AuthResult
+            Log.d(TAG, "AuthScreen: result is $result")
             val resultUserName = result.data.toString()
-//            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
+            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
+
             if (resultUserName != "null") {
-                when(result) {
+                when (result) {
                     is AuthResult.Authorized -> {
                         val stateUserName = viewModel.appState.value.userName
                         if(resultUserName != stateUserName) viewModel.updateUserName(resultUserName)
-//                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
+            //                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
                         when {
                             viewModel.appState.value.getBackAfterLoggingIn -> {
                                 viewModel.rememberToGetBackAfterLoggingIn(false)
                                 popBackStack()
                             }
+
                             viewModel.appState.value.userName == null -> {
                                 Toast.makeText(
                                     context,
@@ -85,12 +92,14 @@ fun AuthScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
+
                             else -> {
                                 popBackStack()
                                 goToProfileScreen()
                             }
                         }
                     }
+
                     is AuthResult.Conflicted -> {
                         Toast.makeText(
                             context,
@@ -98,6 +107,7 @@ fun AuthScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+
                     is AuthResult.Unauthorized -> {
                         Toast.makeText(
                             context,
@@ -105,6 +115,7 @@ fun AuthScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+
                     is AuthResult.UnknownError -> {
                         Toast.makeText(
                             context,
@@ -112,6 +123,7 @@ fun AuthScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+
                     is AuthResult.ConnectionError -> {
                         Toast.makeText(
                             context,
@@ -208,8 +220,12 @@ fun AuthScreen(
                 Button(
                     enabled = !isLoading,
                     onClick = {
-                        viewModel.signUpOrIn(userField, passField, signupMode)
-                        focusManager.clearFocus()
+                        if (userField.isBlank() || passField.isBlank()) {
+                            Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.signUpOrIn(userField, passField, signupMode)
+                            focusManager.clearFocus()
+                        }
                     }
                 ) {
                     Text(buttonText, fontSize = 18.sp)

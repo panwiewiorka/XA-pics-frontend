@@ -63,10 +63,10 @@ class MainViewModel @Inject constructor (
             try {
                 val result = if(signUp) repository.signUp(
                     username = user,
-                    password = pass
+                    password = pass,
                 ) else repository.signIn(
                     username = user,
-                    password = pass
+                    password = pass,
                 )
                 resultChannel.send(result)
                 updateLoadingState(false)
@@ -100,16 +100,16 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                var result = repository.getUserInfo(::updateUserName, ::updateUserCollections)
+                var result = repository.getUserInfo(::updateUserCollections)
                 if (result is AuthResult.Unauthorized) {
                     result = repository.refreshTokens()
                     if (result is AuthResult.Unauthorized) {
                         goToAuthScreen()
-                        resultChannel.send(result)
                     } else {
-                        repository.getUserInfo(::updateUserName, ::updateUserCollections)
+                        repository.getUserInfo(::updateUserCollections)
                     }
                 }
+                resultChannel.send(result)
                 updateLoadingState(false)
             } catch (e: Exception) {
                 showConnectionError(true)
@@ -126,9 +126,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun logOut() {
-        _appState.update { it.copy(
-            userName = null
-        ) }
+//        updateUserName(null)
         repository.logOut()
         updateTopBarCaption("Log in")
     }
