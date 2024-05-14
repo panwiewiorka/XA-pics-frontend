@@ -1,6 +1,5 @@
 package xapics.app.ui.auth
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -43,10 +42,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import xapics.app.R
-import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.ui.MainViewModel
 
@@ -67,11 +63,10 @@ fun AuthScreen(
     }
 
     LaunchedEffect(viewModel, context) {
-        viewModel.authResults.collectLatest { result ->
-            delay(30) // for collecting only latest AuthResult
-            Log.d(TAG, "AuthScreen: result is $result")
+        viewModel.authResults.collect { result ->
+//            Log.d(TAG, "AuthScreen: result is $result")
             val resultUserName = result.data.toString()
-            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
+//            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
 
             if (resultUserName != "null") {
                 when (result) {
@@ -86,11 +81,7 @@ fun AuthScreen(
                             }
 
                             viewModel.appState.value.userName == null -> {
-                                Toast.makeText(
-                                    context,
-                                    "username = null",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context,"username = null", Toast.LENGTH_SHORT).show()
                             }
 
                             else -> {
@@ -101,43 +92,23 @@ fun AuthScreen(
                     }
 
                     is AuthResult.Conflicted -> {
-                        Toast.makeText(
-                            context,
-                            result.data.toString(),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, result.data.toString(), Toast.LENGTH_SHORT).show()
                     }
 
                     is AuthResult.Unauthorized -> {
-                        Toast.makeText(
-                            context,
-                            "You are not authorized",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context,"You are not authorized", Toast.LENGTH_SHORT).show()
                     }
 
                     is AuthResult.UnknownError -> {
-                        Toast.makeText(
-                            context,
-                            "An unknown error occurred",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context,"An unknown error occurred", Toast.LENGTH_SHORT).show()
                     }
 
                     is AuthResult.ConnectionError -> {
-                        Toast.makeText(
-                            context,
-                            "No connection to server",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context,"No connection to server", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else if (result is AuthResult.ConnectionError) {
-                Toast.makeText(
-                    context,
-                    "No connection to server",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context,"No connection to server", Toast.LENGTH_SHORT).show()
             }
         }
     }
