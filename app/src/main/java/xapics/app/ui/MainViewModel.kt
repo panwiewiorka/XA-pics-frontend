@@ -508,7 +508,6 @@ class MainViewModel @Inject constructor (
             caption = query
         } else {
             val tags = query.toTagsList()
-            Log.d(TAG, "updateTopBarCaption: $tags")
             val searchIndex = tags.indexOfFirst{it.type == "search"}
             val isSearchQuery = searchIndex != -1
             val isFilteredList = tags.size > 1

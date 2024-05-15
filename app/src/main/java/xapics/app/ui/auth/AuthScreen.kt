@@ -64,51 +64,24 @@ fun AuthScreen(
 
     LaunchedEffect(viewModel, context) {
         viewModel.authResults.collect { result ->
-//            Log.d(TAG, "AuthScreen: result is $result")
-            val resultUserName = result.data.toString()
-//            Log.d(TAG, "AuthScreen: resultUserName is $resultUserName")
-
-            if (resultUserName != "null") {
-                when (result) {
-                    is AuthResult.Authorized -> {
-                        val stateUserName = viewModel.appState.value.userName
-                        if(resultUserName != stateUserName) viewModel.updateUserName(resultUserName)
-            //                        Log.d(TAG, "updateUserName(): result Name = $resultUserName, state Name = $stateUserName")
-                        when {
-                            viewModel.appState.value.getBackAfterLoggingIn -> {
-                                viewModel.rememberToGetBackAfterLoggingIn(false)
-                                popBackStack()
-                            }
-
-                            viewModel.appState.value.userName == null -> {
-                                Toast.makeText(context,"username = null", Toast.LENGTH_SHORT).show()
-                            }
-
-                            else -> {
-                                popBackStack()
-                                goToProfileScreen()
-                            }
-                        }
-                    }
-
-                    is AuthResult.Conflicted -> {
-                        Toast.makeText(context, result.data.toString(), Toast.LENGTH_SHORT).show()
-                    }
-
-                    is AuthResult.Unauthorized -> {
-                        Toast.makeText(context,"You are not authorized", Toast.LENGTH_SHORT).show()
-                    }
-
-                    is AuthResult.UnknownError -> {
-                        Toast.makeText(context,"An unknown error occurred", Toast.LENGTH_SHORT).show()
-                    }
-
-                    is AuthResult.ConnectionError -> {
-                        Toast.makeText(context,"No connection to server", Toast.LENGTH_SHORT).show()
-                    }
+            val response = result.data.toString()
+            if (result is AuthResult.Authorized) {
+                viewModel.updateUserName(response)
+                if (viewModel.appState.value.getBackAfterLoggingIn) {
+                    viewModel.rememberToGetBackAfterLoggingIn(false)
+                    popBackStack()
+                } else {
+                    popBackStack()
+                    goToProfileScreen()
                 }
-            } else if (result is AuthResult.ConnectionError) {
-                Toast.makeText(context,"No connection to server", Toast.LENGTH_SHORT).show()
+            } else {
+                val toastMessage = when (result) {
+                    is AuthResult.Conflicted -> response
+                    is AuthResult.ConnectionError -> "No connection to server"
+                    is AuthResult.Unauthorized -> "You are not authorized"
+                    else -> "An unknown error occurred"
+                }
+                if (response != "null" || result is AuthResult.ConnectionError) Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
             }
         }
     }

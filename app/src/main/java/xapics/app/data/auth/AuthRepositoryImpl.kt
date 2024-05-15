@@ -57,7 +57,7 @@ class AuthRepositoryImpl(
 
     override suspend fun refreshTokens(): AuthResult<Unit> {
         return try {
-            val refreshToken = cryptoPrefs.getString("refreshToken", null) ?: return AuthResult.UnknownError()
+            val refreshToken = cryptoPrefs.getString("refreshToken", null) ?: return AuthResult.Unauthorized()
             val response = api.refreshTokens("Bearer $refreshToken")
             cryptoPrefs.putString("accessToken", response.accessToken)
             cryptoPrefs.putString("refreshToken", response.refreshToken)
