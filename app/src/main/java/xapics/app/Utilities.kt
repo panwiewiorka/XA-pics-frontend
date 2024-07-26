@@ -1,13 +1,13 @@
 package xapics.app
 
 import androidx.compose.ui.graphics.Color
-import xapics.app.ui.theme.AlphaGray
-import xapics.app.ui.theme.CollectionTag
-import xapics.app.ui.theme.DefaultTag
-import xapics.app.ui.theme.FilmTag
-import xapics.app.ui.theme.RollAttribute
-import xapics.app.ui.theme.RollTag
-import xapics.app.ui.theme.YearTag
+import xapics.app.presentation.theme.AlphaGray
+import xapics.app.presentation.theme.CollectionTag
+import xapics.app.presentation.theme.DefaultTag
+import xapics.app.presentation.theme.FilmTag
+import xapics.app.presentation.theme.RollAttribute
+import xapics.app.presentation.theme.RollTag
+import xapics.app.presentation.theme.YearTag
 
 const val TAG = "mytag"
 

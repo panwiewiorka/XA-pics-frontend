@@ -9,8 +9,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import xapics.app.data.auth.AuthRepository
-import xapics.app.data.auth.AuthRepositoryImpl
+import xapics.app.domain.auth.AuthRepository
+import xapics.app.domain.auth.AuthRepositoryImpl
 import xapics.app.data.auth.backup.AndroidDownloader
 import xapics.app.data.auth.backup.Downloader
 import xapics.app.data.EncryptedSharedPrefs

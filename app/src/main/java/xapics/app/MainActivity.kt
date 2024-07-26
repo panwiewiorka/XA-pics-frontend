@@ -10,8 +10,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.remember
 import coil.annotation.ExperimentalCoilApi
 import dagger.hilt.android.AndroidEntryPoint
-import xapics.app.ui.NavScreen
-import xapics.app.ui.theme.XAPicsTheme
+import xapics.app.presentation.NavScreen
+import xapics.app.presentation.theme.XAPicsTheme
 
 @AndroidEntryPoint
 @ExperimentalCoilApi
