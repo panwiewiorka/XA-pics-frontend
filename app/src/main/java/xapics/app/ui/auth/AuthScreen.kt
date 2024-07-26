@@ -50,7 +50,7 @@ import xapics.app.ui.MainViewModel
 @Composable
 fun AuthScreen(
     viewModel: MainViewModel,
-    popBackStack: () -> Unit,
+    goBack: () -> Unit,
     goToProfileScreen: () -> Unit,
     isLoading: Boolean,
 ) {
@@ -69,9 +69,9 @@ fun AuthScreen(
                 viewModel.updateUserName(response)
                 if (viewModel.appState.value.getBackAfterLoggingIn) {
                     viewModel.rememberToGetBackAfterLoggingIn(false)
-                    popBackStack()
+                    goBack()
                 } else {
-                    popBackStack()
+                    goBack()
                     goToProfileScreen()
                 }
             } else {

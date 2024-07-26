@@ -91,7 +91,7 @@ fun NavScreen(
                 TopBar(
                     viewModel = viewModel,
                     appState = appState,
-                    popBackStack = { navController.popBackStack() },
+                    goBack = { navController.navigateUp() },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(NavList.HomeScreen.name) } },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
@@ -127,7 +127,7 @@ fun NavScreen(
                     viewModel.changeFullScreenMode(false)
                 }
             }
-            navController.popBackStack()
+            navController.navigateUp()
         }
 
         NavHost(
@@ -155,7 +155,7 @@ fun NavScreen(
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                    popBackStack = { navController.popBackStack() },
+                    goBack = { navController.navigateUp() },
                     previousPage = navController.previousBackStackEntry?.destination?.route,
                 )
             }
@@ -177,7 +177,7 @@ fun NavScreen(
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
                     viewModel = viewModel,
-                    popBackStack = { navController.popBackStack() },
+                    goBack = { navController.navigateUp() },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     isLoading = appState.isLoading,
                 )

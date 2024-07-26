@@ -42,45 +42,47 @@ fun TagsCloud(
     goToSearchScreen: () -> Unit,
     padding: Dp,
 ) {
-    Box(modifier = Modifier) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(start = padding, top = padding)
-        ) {
-            FlowRow {
-                val tagsMapped = tags.map {
-                    Tag(
-                        it.type,
-                        it.value,
-                        TagState.ENABLED
-                    )
-                }
-                tagsMapped.forEach {
-                    PicTag(it) {
-                        search("${it.type} = ${it.value}")
-                        goToPicsListScreen()
+    if (tags.isNotEmpty()) {
+        Box {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .padding(start = padding, top = padding)
+            ) {
+                FlowRow {
+                    val tagsMapped = tags.map {
+                        Tag(
+                            it.type,
+                            it.value,
+                            TagState.ENABLED
+                        )
+                    }
+                    tagsMapped.forEach {
+                        PicTag(it) {
+                            search("${it.type} = ${it.value}")
+                            goToPicsListScreen()
+                        }
                     }
                 }
             }
+
+            Gradient(top = true)
+            Gradient(top = false, Modifier.align(Alignment.BottomCenter))
+
+            Icon(
+                painterResource(R.drawable.baseline_unfold_more_24),
+                contentDescription = "Go to search screen",
+                tint = AlmostWhite,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.BottomEnd)
+                    .clip(CircleShape)
+                    .alpha(0.7f)
+                    .background(AlphaBlack)
+                    .clickable { goToSearchScreen() }
+                    .padding(8.dp)
+            )
         }
-
-        Gradient(top = true)
-        Gradient(top = false, Modifier.align(Alignment.BottomCenter))
-
-        Icon(
-            painterResource(R.drawable.baseline_unfold_more_24),
-            contentDescription = "Go to search screen",
-            tint = AlmostWhite,
-            modifier = Modifier
-                .padding(8.dp)
-                .align(Alignment.BottomEnd)
-                .clip(CircleShape)
-                .alpha(0.7f)
-                .background(AlphaBlack)
-                .clickable { goToSearchScreen() }
-                .padding(8.dp)
-        )
     }
 }
 

@@ -64,8 +64,10 @@ fun HomePortraitMediumView(
                     }
                 }
 
-                HorizontalDivider(modifier = Modifier.align(Alignment.TopCenter))
-                HorizontalDivider(modifier = Modifier.align(Alignment.BottomCenter))
+                if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+                    HorizontalDivider(modifier = Modifier.align(Alignment.TopCenter))
+                    HorizontalDivider(modifier = Modifier.align(Alignment.BottomCenter))
+                }
             }
         }
 

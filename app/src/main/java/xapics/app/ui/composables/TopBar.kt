@@ -59,7 +59,7 @@ import xapics.app.ui.nonScaledSp
 fun TopBar(
     viewModel: MainViewModel,
     appState: AppState,
-    popBackStack: () -> Unit,
+    goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
@@ -133,7 +133,7 @@ fun TopBar(
                             }
                         }
                     }
-                    popBackStack()
+                    goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
                 }
@@ -238,7 +238,7 @@ fun TopBar(
 
 
 
-        if (page == NavList.ProfileScreen.name && page == previousPage) popBackStack()
+        if (page == NavList.ProfileScreen.name && page == previousPage) goBack()
 
         HomeOrBackButton()
 

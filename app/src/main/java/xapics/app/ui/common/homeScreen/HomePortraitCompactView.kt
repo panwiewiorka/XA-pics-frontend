@@ -64,10 +64,12 @@ fun HomePortraitCompactView(
 
         rollCardsGrid(appState, viewModel::search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
 
-        item(
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+            item(
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            }
         }
 
         item(

@@ -34,6 +34,7 @@ fun PicLandscapeView(
             HorizontalPager(
                 state = pagerState,
                 pageSize = PageSize.Fill,
+                beyondBoundsPageCount = 1,
                 modifier = Modifier
                     .aspectRatio(3 / 2f)
                     .fillMaxSize()

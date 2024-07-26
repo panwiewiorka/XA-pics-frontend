@@ -50,7 +50,8 @@ fun HomeLandscapeCompactView(
         Tag(it.type, it.value, TagState.ENABLED)
     }
 
-    Box {// pre-calculating the size of tags cloud
+    Box {
+        // pre-calculating the size of tag composable
         BoxWithConstraints(
             modifier = Modifier
                 .onSizeChanged { tagHeight = with(density) {it.height.toDp()} }
@@ -59,6 +60,7 @@ fun HomeLandscapeCompactView(
             PicTag(tag = Tag("hashtag", "test tag")){}
         }
 
+        // pre-calculating the size of tags cloud
         BoxWithConstraints(
             modifier = Modifier
                 .onSizeChanged { tagsWidth = with(density) {it.width.toDp()} }
@@ -97,16 +99,18 @@ fun HomeLandscapeCompactView(
 
             rollCardsGrid(appState, viewModel::search, goToPicsListScreen, false, Modifier)
 
-            item(
-                span = { GridItemSpan(maxLineSpan) }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .fillMaxHeight()
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.tertiary)
-                )
+            if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+                item(
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .fillMaxHeight()
+                            .width(1.dp)
+                            .background(MaterialTheme.colorScheme.tertiary)
+                    )
+                }
             }
 
             item(

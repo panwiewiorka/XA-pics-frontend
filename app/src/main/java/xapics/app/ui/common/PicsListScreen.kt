@@ -36,7 +36,7 @@ fun PicsListScreen(
     appState: AppState,
     goToPicScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
-    popBackStack: () -> Unit,
+    goBack: () -> Unit,
     previousPage: String?
 ) {
     val context = LocalContext.current
@@ -47,7 +47,7 @@ fun PicsListScreen(
 
     LaunchedEffect(appState.picsList) {
         if (appState.picsList?.size == 1) {
-            popBackStack()
+            goBack()
             if (previousPage != "PicScreen") goToPicScreen()
         } else {
             appState.picsList?.forEach {// preloading images

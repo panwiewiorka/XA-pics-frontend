@@ -59,13 +59,15 @@ fun HomeLandscapeMediumView(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.tertiary)
-                        .align(Alignment.CenterEnd)
-                ) {}
+                if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .align(Alignment.CenterEnd)
+                    ) {}
+                }
             }
         }
 
