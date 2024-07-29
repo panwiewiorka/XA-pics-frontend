@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.picScreen
+package xapics.app.presentation.screens.picScreen.composables
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween

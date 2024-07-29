@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.homeScreen
+package xapics.app.presentation.screens.homeScreen.composables
 
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.ui.Modifier

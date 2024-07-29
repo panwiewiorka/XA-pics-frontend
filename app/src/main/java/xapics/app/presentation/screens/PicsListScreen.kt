@@ -1,4 +1,4 @@
-package xapics.app.presentation.common
+package xapics.app.presentation.screens
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer

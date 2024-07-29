@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.picScreen
+package xapics.app.presentation.screens.picScreen.layouts
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.picScreen.composables.PicDetails
+import xapics.app.presentation.screens.picScreen.composables.PicTags
 import xapics.app.presentation.composables.AsyncPic
 
 @OptIn(ExperimentalFoundationApi::class)

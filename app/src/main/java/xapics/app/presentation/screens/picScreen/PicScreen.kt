@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.picScreen
+package xapics.app.presentation.screens.picScreen
 
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.StateSnapshot
 import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.picScreen.layouts.PicLandscapeView
+import xapics.app.presentation.screens.picScreen.layouts.PicPortraitView
 import xapics.app.presentation.composables.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 

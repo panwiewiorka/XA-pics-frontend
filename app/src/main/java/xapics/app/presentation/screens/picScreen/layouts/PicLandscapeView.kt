@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.picScreen
+package xapics.app.presentation.screens.picScreen.layouts
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

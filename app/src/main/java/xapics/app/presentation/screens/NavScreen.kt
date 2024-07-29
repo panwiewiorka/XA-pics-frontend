@@ -1,4 +1,4 @@
-package xapics.app.presentation
+package xapics.app.presentation.screens
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -25,14 +25,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
-import xapics.app.presentation.auth.AuthScreen
-import xapics.app.presentation.auth.profileScreen.ProfileScreen
-import xapics.app.presentation.common.PicsListScreen
-import xapics.app.presentation.common.SearchScreen
-import xapics.app.presentation.common.homeScreen.HomeScreen
-import xapics.app.presentation.common.picScreen.PicDetails
-import xapics.app.presentation.common.picScreen.PicScreen
+import xapics.app.presentation.MainViewModel
+import xapics.app.presentation.screens.profileScreen.ProfileScreen
+import xapics.app.presentation.screens.homeScreen.HomeScreen
+import xapics.app.presentation.screens.picScreen.composables.PicDetails
+import xapics.app.presentation.screens.picScreen.PicScreen
 import xapics.app.presentation.composables.TopBar
+import xapics.app.presentation.windowInfo
 
 enum class NavList(@StringRes val title: Int) {
     HomeScreen(title = R.string.home_screen),
@@ -96,7 +95,8 @@ fun NavScreen(
                     logOut = viewModel::logOut,
                     appState = appState,
                     goBack = { navController.navigateUp() },
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(NavList.HomeScreen.name) } },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(
+                        NavList.HomeScreen.name) } },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
@@ -213,7 +213,6 @@ fun NavScreen(
                     updateTopBarCaption = viewModel::updateTopBarCaption,
                     updateUserName = viewModel::updateUserName,
                     rememberToGetBackAfterLoggingIn = viewModel::rememberToGetBackAfterLoggingIn,
-                    showSearch = viewModel::showSearch,
                     signUpOrIn = viewModel::signUpOrIn,
                     authResults = viewModel.authResults,
                     getBackAfterLoggingIn = appState.getBackAfterLoggingIn,

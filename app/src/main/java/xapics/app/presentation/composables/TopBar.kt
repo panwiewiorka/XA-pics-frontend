@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.NavList
-import xapics.app.presentation.nonScaledSp
+import xapics.app.presentation.screens.NavList
+import xapics.app.presentation.screens.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -183,7 +183,7 @@ fun TopBar(
                             modifier = Modifier
                                 .basicMarquee()
                                 .weight(1f)
-                                .clickable(enabled = page == NavList.PicScreen.name && appState.picsList?.size!! > 1) { goToPicsListScreen() }
+                                .clickable(enabled = page == NavList.PicScreen.name && appState.picsList.size > 1) { goToPicsListScreen() }
                         )
                     }
 

@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.homeScreen
+package xapics.app.presentation.screens.homeScreen.layouts
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -21,9 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.homeScreen.composables.RandomPic
+import xapics.app.presentation.screens.homeScreen.composables.TagsCloud
+import xapics.app.presentation.screens.homeScreen.composables.rollCardsGrid
 
 @Composable
-fun HomeLandscapeMediumView(
+fun HomeLandscapeMediumLayout(
     getRandomPic: () -> Unit,
     search: (query: String) -> Unit,
     appState: AppState,

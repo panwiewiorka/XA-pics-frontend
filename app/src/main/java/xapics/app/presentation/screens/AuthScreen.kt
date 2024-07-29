@@ -1,8 +1,7 @@
-package xapics.app.presentation.auth
+package xapics.app.presentation.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +51,6 @@ fun AuthScreen(
     updateTopBarCaption: (String) -> Unit,
     updateUserName: (String) -> Unit,
     rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
-    showSearch: (Boolean) -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
     authResults: Flow<AuthResult<Unit>>,
     getBackAfterLoggingIn: Boolean,
@@ -94,14 +92,7 @@ fun AuthScreen(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }) {
-                focusManager.clearFocus()
-                showSearch(false)
-            },
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 32.dp),

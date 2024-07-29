@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.picScreen
+package xapics.app.presentation.screens.picScreen.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

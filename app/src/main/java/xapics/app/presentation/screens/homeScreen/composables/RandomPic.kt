@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.homeScreen
+package xapics.app.presentation.screens.homeScreen.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

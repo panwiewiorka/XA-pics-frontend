@@ -1,4 +1,4 @@
-package xapics.app.presentation.common.homeScreen
+package xapics.app.presentation.screens.homeScreen.layouts
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -30,11 +30,13 @@ import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.homeScreen.composables.RandomPic
+import xapics.app.presentation.screens.homeScreen.composables.rollCardsGrid
 import xapics.app.presentation.composables.PicTag
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-fun HomeLandscapeCompactView(
+fun HomeLandscapeCompactLayout(
     getRandomPic: () -> Unit,
     search: (query: String) -> Unit,
     appState: AppState,
