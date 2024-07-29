@@ -26,12 +26,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
 import xapics.app.presentation.MainViewModel
-import xapics.app.presentation.screens.profileScreen.ProfileScreen
-import xapics.app.presentation.screens.homeScreen.HomeScreen
-import xapics.app.presentation.screens.picScreen.composables.PicDetails
-import xapics.app.presentation.screens.picScreen.PicScreen
 import xapics.app.presentation.composables.TopBar
-import xapics.app.presentation.windowInfo
+import xapics.app.presentation.screens.homeScreen.HomeScreen
+import xapics.app.presentation.screens.picScreen.PicScreen
+import xapics.app.presentation.screens.profileScreen.ProfileScreen
 
 enum class NavList(@StringRes val title: Int) {
     HomeScreen(title = R.string.home_screen),
@@ -95,29 +93,15 @@ fun NavScreen(
                     logOut = viewModel::logOut,
                     appState = appState,
                     goBack = { navController.navigateUp() },
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(
-                        NavList.HomeScreen.name) } },
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) {
+                        popUpTo(NavList.HomeScreen.name)
+                    } },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
                     page = backStackEntry?.destination?.route,
                     previousPage = navController.previousBackStackEntry?.destination?.route,
                     pageName = currentScreen.title,
-                )
-            }
-        },
-        bottomBar = {
-            if (!windowInfo().isPortraitOrientation && !appState.isFullscreen && backStackEntry?.destination?.route == "PicScreen") {
-                PicDetails(
-                    search = viewModel::search,
-                    saveStateSnapshot = viewModel::saveStateSnapshot,
-                    getCollection = viewModel::getCollection,
-                    editCollection = viewModel::editCollection,
-                    updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
-                    changeBlurContent = viewModel::changeBlurContent,
-                    appState = appState,
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
-                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )
             }
         },
@@ -192,12 +176,10 @@ fun NavScreen(
                     updatePicState = viewModel::updatePicState,
                     updateStateSnapshot = viewModel::updateStateSnapshot,
                     showConnectionError = viewModel::showConnectionError,
-                    updatePicDetailsWidth = viewModel::updatePicDetailsWidth,
                     stateHistory = viewModel.stateHistory,
                     appState = appState,
-                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
-                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
-                )
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
+                ) { navController.navigate(NavList.AuthScreen.name) }
             }
             composable(route = NavList.SearchScreen.name) {
                 SearchScreen(

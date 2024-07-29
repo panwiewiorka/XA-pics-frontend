@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import xapics.app.Thumb
 import xapics.app.presentation.AppState
 import xapics.app.presentation.composables.ConnectionErrorButton
+import xapics.app.presentation.screens.profileScreen.composables.UserView
 
 @Composable
 fun ProfileScreen(

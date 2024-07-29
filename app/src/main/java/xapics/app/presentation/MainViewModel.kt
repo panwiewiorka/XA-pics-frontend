@@ -1,7 +1,6 @@
 package xapics.app.presentation
 
 import android.util.Log
-import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -544,12 +543,6 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             isFullscreen = fullscreen ?: !appState.value.isFullscreen
         )}
-    }
-
-    fun updatePicDetailsWidth(width: Dp) {
-        _appState.update { it.copy(
-            picDetailsWidth = width
-        ) }
     }
 
     fun changeBlurContent(blur: Boolean) {

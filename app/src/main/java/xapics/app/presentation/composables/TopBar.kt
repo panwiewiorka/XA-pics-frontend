@@ -102,11 +102,8 @@ fun TopBar(
 
             when {
                 page == NavList.SearchScreen.name && filters.isNotBlank() -> {
-                    search(
-                        (if (formattedQuery.isBlank()) ""
-                        else "search = $formattedQuery, ")
-                                + filters
-                    )
+                    val prefix = if (formattedQuery.isBlank()) "" else "search = $formattedQuery, "
+                    search(prefix + filters)
                     goToPicsListScreen()
                 }
                 formattedQuery.isNotBlank() -> {

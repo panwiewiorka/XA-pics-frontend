@@ -12,13 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.StateSnapshot
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.picScreen.layouts.PicLandscapeView
-import xapics.app.presentation.screens.picScreen.layouts.PicPortraitView
 import xapics.app.presentation.composables.ConnectionErrorButton
+import xapics.app.presentation.screens.picScreen.layouts.PicLandscapeLayout
+import xapics.app.presentation.screens.picScreen.layouts.PicPortraitLayout
 import xapics.app.presentation.windowInfo
 
 @OptIn(ExperimentalFoundationApi::class,)
@@ -35,7 +34,6 @@ fun PicScreen(
     updatePicState: (picIndex: Int) -> Unit,
     updateStateSnapshot: () -> Unit,
     showConnectionError: (Boolean) -> Unit,
-    updatePicDetailsWidth: (width: Dp) -> Unit,
     stateHistory: MutableList<StateSnapshot>,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
@@ -113,7 +111,7 @@ fun PicScreen(
             .fillMaxSize()
             .blur(blurAmount)) {
             if (windowInfo().isPortraitOrientation) {
-                PicPortraitView(
+                PicPortraitLayout(
                     search,
                     saveStateSnapshot,
                     getCollection,
@@ -127,11 +125,18 @@ fun PicScreen(
                     goToAuthScreen
                 )
             } else {
-                PicLandscapeView(
+                PicLandscapeLayout(
+                    search,
+                    saveStateSnapshot,
+                    getCollection,
+                    editCollection,
+                    updateCollectionToSaveTo,
+                    changeBlurContent,
                     changeFullScreenMode,
-                    updatePicDetailsWidth,
                     appState,
-                    pagerState
+                    pagerState,
+                    goToPicsListScreen,
+                    goToAuthScreen
                 )
             }
         }
