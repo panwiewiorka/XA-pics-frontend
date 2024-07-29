@@ -42,14 +42,20 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.Flow
 import xapics.app.R
 import xapics.app.data.auth.AuthResult
-import xapics.app.presentation.MainViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AuthScreen(
-    viewModel: MainViewModel,
+    updateTopBarCaption: (String) -> Unit,
+    updateUserName: (String) -> Unit,
+    rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
+    showSearch: (Boolean) -> Unit,
+    signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
+    authResults: Flow<AuthResult<Unit>>,
+    getBackAfterLoggingIn: Boolean,
     goBack: () -> Unit,
     goToProfileScreen: () -> Unit,
     isLoading: Boolean,
@@ -59,16 +65,16 @@ fun AuthScreen(
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        viewModel.updateTopBarCaption("Log in")
+        updateTopBarCaption("Log in")
     }
 
-    LaunchedEffect(viewModel, context) {
-        viewModel.authResults.collect { result ->
+    LaunchedEffect(authResults, context) {
+        authResults.collect { result ->
             val response = result.data.toString()
             if (result is AuthResult.Authorized) {
-                viewModel.updateUserName(response)
-                if (viewModel.appState.value.getBackAfterLoggingIn) {
-                    viewModel.rememberToGetBackAfterLoggingIn(false)
+                updateUserName(response)
+                if (getBackAfterLoggingIn) {
+                    rememberToGetBackAfterLoggingIn(false)
                     goBack()
                 } else {
                     goBack()
@@ -94,7 +100,7 @@ fun AuthScreen(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }) {
                 focusManager.clearFocus()
-                viewModel.showSearch(false)
+                showSearch(false)
             },
     ) {
         Column(
@@ -141,7 +147,7 @@ fun AuthScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
                 keyboardActions = KeyboardActions(
                     onGo = {
-                        viewModel.signUpOrIn(userField, passField, signupMode)
+                        signUpOrIn(userField, passField, signupMode)
                         focusManager.clearFocus()
                     }
                 ),
@@ -167,7 +173,7 @@ fun AuthScreen(
                         if (userField.isBlank() || passField.isBlank()) {
                             Toast.makeText(context, "Fill in the text fields", Toast.LENGTH_SHORT).show()
                         } else {
-                            viewModel.signUpOrIn(userField, passField, signupMode)
+                            signUpOrIn(userField, passField, signupMode)
                             focusManager.clearFocus()
                         }
                     }
@@ -188,7 +194,7 @@ fun AuthScreen(
                 Text(text = questionText)
 
                 Text(text = changeModeText, textDecoration = TextDecoration.Underline, modifier = Modifier.clickable {
-                    viewModel.updateTopBarCaption(changeModeText)
+                    updateTopBarCaption(changeModeText)
                     signupMode = !signupMode
                 })
             }

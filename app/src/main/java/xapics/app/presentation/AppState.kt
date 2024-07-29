@@ -8,7 +8,7 @@ import xapics.app.Thumb
 
 
 data class AppState(
-    val picsList: List<Pic>? = null,
+    val picsList: List<Pic> = emptyList(),
     val showPicsList: Boolean = true,
     val tags: List<Tag> = emptyList(),
     val topBarCaption: String = "XA pics",

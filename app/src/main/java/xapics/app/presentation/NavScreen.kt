@@ -89,7 +89,11 @@ fun NavScreen(
         topBar = {
             if (!appState.isFullscreen) {
                 TopBar(
-                    viewModel = viewModel,
+                    search = viewModel::search,
+                    showSearch = viewModel::showSearch,
+                    loadStateSnapshot = viewModel::loadStateSnapshot,
+                    showPicsList = viewModel::showPicsList,
+                    logOut = viewModel::logOut,
                     appState = appState,
                     goBack = { navController.navigateUp() },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) { popUpTo(NavList.HomeScreen.name) } },
@@ -105,10 +109,15 @@ fun NavScreen(
         bottomBar = {
             if (!windowInfo().isPortraitOrientation && !appState.isFullscreen && backStackEntry?.destination?.route == "PicScreen") {
                 PicDetails(
-                    viewModel,
-                    appState,
-                    { navController.navigate(NavList.AuthScreen.name) },
-                    { navController.navigate(NavList.PicsListScreen.name) }
+                    search = viewModel::search,
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    getCollection = viewModel::getCollection,
+                    editCollection = viewModel::editCollection,
+                    updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
+                    changeBlurContent = viewModel::changeBlurContent,
+                    appState = appState,
+                    goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
+                    goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 )
             }
         },
@@ -137,7 +146,12 @@ fun NavScreen(
         ) {
             composable(route = NavList.HomeScreen.name) {
                 HomeScreen(
-                    viewModel = viewModel,
+                    authenticate = viewModel::authenticate,
+                    getRollThumbs = viewModel::getRollThumbs,
+                    getAllTags = viewModel::getAllTags,
+                    showConnectionError = viewModel::showConnectionError,
+                    getRandomPic = viewModel::getRandomPic,
+                    search = viewModel::search,
                     appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     updateAndGoToPicScreen = {
@@ -151,7 +165,13 @@ fun NavScreen(
             }
             composable(route = NavList.PicsListScreen.name) {
                 PicsListScreen(
-                    viewModel = viewModel,
+                    showPicsList = viewModel::showPicsList,
+                    search = viewModel::search,
+                    getCollection = viewModel::getCollection,
+                    showConnectionError = viewModel::showConnectionError,
+                    updatePicState = viewModel::updatePicState,
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    toDo = viewModel.onPicsListScreenRefresh,
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
@@ -161,7 +181,19 @@ fun NavScreen(
             }
             composable(route = NavList.PicScreen.name) {
                 PicScreen(
-                    viewModel = viewModel,
+                    search = viewModel::search,
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    getCollection = viewModel::getCollection,
+                    editCollection = viewModel::editCollection,
+                    updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
+                    changeBlurContent = viewModel::changeBlurContent,
+                    changeFullScreenMode = viewModel::changeFullScreenMode,
+                    updateTopBarCaption = viewModel::updateTopBarCaption,
+                    updatePicState = viewModel::updatePicState,
+                    updateStateSnapshot = viewModel::updateStateSnapshot,
+                    showConnectionError = viewModel::showConnectionError,
+                    updatePicDetailsWidth = viewModel::updatePicDetailsWidth,
+                    stateHistory = viewModel.stateHistory,
                     appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) }
@@ -169,14 +201,22 @@ fun NavScreen(
             }
             composable(route = NavList.SearchScreen.name) {
                 SearchScreen(
-                    viewModel = viewModel,
+                    search = viewModel::search,
+                    getAllTags = viewModel::getAllTags,
+                    getFilteredTags = viewModel::getFilteredTags,
                     appState = appState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 )
             }
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
-                    viewModel = viewModel,
+                    updateTopBarCaption = viewModel::updateTopBarCaption,
+                    updateUserName = viewModel::updateUserName,
+                    rememberToGetBackAfterLoggingIn = viewModel::rememberToGetBackAfterLoggingIn,
+                    showSearch = viewModel::showSearch,
+                    signUpOrIn = viewModel::signUpOrIn,
+                    authResults = viewModel.authResults,
+                    getBackAfterLoggingIn = appState.getBackAfterLoggingIn,
                     goBack = { navController.navigateUp() },
                     goToProfileScreen = { navController.navigate(NavList.ProfileScreen.name) },
                     isLoading = appState.isLoading,
@@ -184,7 +224,11 @@ fun NavScreen(
             }
             composable(route = NavList.ProfileScreen.name) {
                 ProfileScreen(
-                    viewModel = viewModel,
+                    updateUserCollections = viewModel::updateUserCollections,
+                    getUserInfo = viewModel::getUserInfo,
+                    showConnectionError = viewModel::showConnectionError,
+                    getCollection = viewModel::getCollection,
+                    renameOrDeleteCollection = viewModel::renameOrDeleteCollection,
                     appState = appState,
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }

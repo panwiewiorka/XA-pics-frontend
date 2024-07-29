@@ -30,13 +30,13 @@ import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.PicTag
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun HomeLandscapeCompactView(
-    viewModel: MainViewModel,
+    getRandomPic: () -> Unit,
+    search: (query: String) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToPicScreen: () -> Unit,
@@ -90,14 +90,14 @@ fun HomeLandscapeCompactView(
             ) {
                 RandomPic(
                     pic = appState.pic,
-                    getRandomPic = viewModel::getRandomPic,
+                    getRandomPic = getRandomPic,
                     updateAndGoToPicScreen = goToPicScreen,
                     modifier = Modifier.fillMaxHeight(),
                     paddingModifier = Modifier.padding(start = 8.dp, end = 32.dp, top = 1.dp)
                 )
             }
 
-            rollCardsGrid(appState, viewModel::search, goToPicsListScreen, false, Modifier)
+            rollCardsGrid(appState, search, goToPicsListScreen, false, Modifier)
 
             if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
                 item(
@@ -127,7 +127,7 @@ fun HomeLandscapeCompactView(
                     ) {
                         items(tags.size) {
                             PicTag(tags[it]) {
-                                viewModel.search("${tags[it].type} = ${tags[it].value}")
+                                search("${tags[it].type} = ${tags[it].value}")
                                 goToPicsListScreen()
                             }
                         }

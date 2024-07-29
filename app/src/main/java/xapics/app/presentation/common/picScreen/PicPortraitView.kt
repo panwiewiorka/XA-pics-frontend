@@ -17,13 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.AsyncPic
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicPortraitView(
-    viewModel: MainViewModel,
+    search: (query: String) -> Unit,
+    saveStateSnapshot: () -> Unit,
+    getCollection: (collection: String, () -> Unit) -> Unit,
+    editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
+    updateCollectionToSaveTo: (String) -> Unit,
+    changeBlurContent: (Boolean) -> Unit,
+    changeFullScreenMode: () -> Unit,
     appState: AppState,
     pagerState: PagerState,
     goToPicsListScreen: () -> Unit,
@@ -36,7 +41,7 @@ fun PicPortraitView(
             .background(if (appState.isFullscreen) Color.Black else Color.Transparent)
             .padding(vertical = 32.dp)
     ) {
-        if (appState.picIndex != null && appState.picsList != null && appState.pic != null) { // TODO
+        if (appState.picIndex != null && appState.pic != null) { // TODO
 
             if (appState.isFullscreen) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -86,7 +91,7 @@ fun PicPortraitView(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
-                            viewModel.changeFullScreenMode()
+                            changeFullScreenMode()
                         }
                     }
                 }
@@ -99,9 +104,25 @@ fun PicPortraitView(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    PicDetails(viewModel, appState, goToAuthScreen)
+                    PicDetails(
+                        search,
+                        saveStateSnapshot,
+                        getCollection,
+                        editCollection,
+                        updateCollectionToSaveTo,
+                        changeBlurContent,
+                        appState,
+                        goToAuthScreen
+                    )
 
-                    PicTags(viewModel, appState, goToPicsListScreen, goToAuthScreen)
+                    PicTags(
+                        search,
+                        saveStateSnapshot,
+                        getCollection,
+                        appState,
+                        goToPicsListScreen,
+                        goToAuthScreen
+                    )
                 }
             }
         }

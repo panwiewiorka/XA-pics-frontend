@@ -12,16 +12,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import xapics.app.StateSnapshot
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @OptIn(ExperimentalFoundationApi::class,)
 @Composable
 fun PicScreen(
-    viewModel: MainViewModel,
+    search: (query: String) -> Unit,
+    saveStateSnapshot: () -> Unit,
+    getCollection: (collection: String, () -> Unit) -> Unit,
+    editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
+    updateCollectionToSaveTo: (String) -> Unit,
+    changeBlurContent: (Boolean) -> Unit,
+    changeFullScreenMode: () -> Unit,
+    updateTopBarCaption: (query: String) -> Unit,
+    updatePicState: (picIndex: Int) -> Unit,
+    updateStateSnapshot: () -> Unit,
+    showConnectionError: (Boolean) -> Unit,
+    updatePicDetailsWidth: (width: Dp) -> Unit,
+    stateHistory: MutableList<StateSnapshot>,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
@@ -32,7 +45,7 @@ fun PicScreen(
         initialPage = appState.picIndex ?: 0,
         initialPageOffsetFraction = 0f
     ) {
-        appState.picsList?.size ?: 0
+        appState.picsList.size
     }
 
     val blurAmount by animateDpAsState(
@@ -72,9 +85,9 @@ fun PicScreen(
      */
 
     LaunchedEffect(Unit) {
-        viewModel.changeBlurContent(false)
-        viewModel.updateTopBarCaption(viewModel.stateHistory.last().topBarCaption)
-        if (appState.picsList?.size == 1 && appState.topBarCaption != "Random pic") {
+        changeBlurContent(false)
+        updateTopBarCaption(stateHistory.last().topBarCaption)
+        if (appState.picsList.size == 1 && appState.topBarCaption != "Random pic") {
             Toast.makeText(
                 context,
                 "Showing the only pic found",
@@ -84,23 +97,40 @@ fun PicScreen(
     }
 
     LaunchedEffect(pagerState.currentPage) {
-        viewModel.updatePicState(pagerState.currentPage)
-        viewModel.updateStateSnapshot()
+        updatePicState(pagerState.currentPage)
+        updateStateSnapshot()
     }
 
     if (appState.showConnectionError) {
         ConnectionErrorButton {
-            appState.picIndex?.let { viewModel.updatePicState(it) }
-            viewModel.showConnectionError(false)
+            appState.picIndex?.let { updatePicState(it) }
+            showConnectionError(false)
         }
     } else {
         Box(modifier = Modifier
             .fillMaxSize()
             .blur(blurAmount)) {
             if (windowInfo().isPortraitOrientation) {
-                PicPortraitView(viewModel, appState, pagerState, goToPicsListScreen, goToAuthScreen)
+                PicPortraitView(
+                    search,
+                    saveStateSnapshot,
+                    getCollection,
+                    editCollection,
+                    updateCollectionToSaveTo,
+                    changeBlurContent,
+                    changeFullScreenMode,
+                    appState,
+                    pagerState,
+                    goToPicsListScreen,
+                    goToAuthScreen
+                )
             } else {
-                PicLandscapeView(viewModel, appState, pagerState)
+                PicLandscapeView(
+                    changeFullScreenMode,
+                    updatePicDetailsWidth,
+                    appState,
+                    pagerState
+                )
             }
         }
     }

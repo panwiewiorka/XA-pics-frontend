@@ -45,10 +45,10 @@ import xapics.app.presentation.windowInfo
 @Composable
 fun UserView(
     userCollections: List<Thumb>?,
-    getCollection: (String, () -> Unit) -> Unit,
+    getCollection: (collection: String, onAuthError: () -> Unit) -> Unit,
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
-    renameOrDeleteCollection:(String, String?, () -> Unit) -> Unit,
+    renameOrDeleteCollection: (currentTitle: String, newTitle: String?, onAuthError: () -> Unit) -> Unit,
     context: Context,
 ) {
     var showRenameDialog by rememberSaveable { mutableStateOf(false) }

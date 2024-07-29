@@ -30,13 +30,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.CollectionsDropDownMenu
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
-    viewModel: MainViewModel,
+    search: (query: String) -> Unit,
+    saveStateSnapshot: () -> Unit,
+    getCollection: (collection: String, () -> Unit) -> Unit,
+    editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
+    updateCollectionToSaveTo:(String) -> Unit,
+    changeBlurContent: (Boolean) -> Unit,
     appState: AppState,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit = {},
@@ -47,7 +51,7 @@ fun PicDetails(
         AlertDialog(
             onDismissRequest = {
                 showTags = false
-                viewModel.changeBlurContent(false)
+                changeBlurContent(false)
                                },
             title = {
                 Row {
@@ -62,12 +66,19 @@ fun PicDetails(
                     },
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             confirmButton = {
-                PicTags(viewModel, appState, goToPicsListScreen, goToAuthScreen)
+                PicTags(
+                    search,
+                    saveStateSnapshot,
+                    getCollection,
+                    appState,
+                    goToPicsListScreen,
+                    goToAuthScreen
+                )
             }
         )
     }
     
-    if (appState.picIndex != null && appState.picsList != null && appState.pic != null) { // TODO
+    if (appState.picIndex != null && appState.pic != null) { // TODO
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
@@ -92,7 +103,7 @@ fun PicDetails(
                     IconButton(
                         onClick = {
                             showTags = true
-                            viewModel.changeBlurContent(true)
+                            changeBlurContent(true)
                                   },
                         modifier = Modifier.offset(4.dp, 0.dp)
                     ) {
@@ -106,15 +117,15 @@ fun PicDetails(
                         appState.picCollections,
                         appState.collectionToSaveTo,
                         appState.pic.id,
-                        viewModel::editCollection,
-                        viewModel::updateCollectionToSaveTo,
-                        viewModel::changeBlurContent,
+                        editCollection,
+                        updateCollectionToSaveTo,
+                        changeBlurContent,
                     ) { goToAuthScreen() }
                 }
 
                 IconButton(
                     onClick = {
-                        viewModel.editCollection(
+                        editCollection(
                             appState.collectionToSaveTo,
                             appState.pic.id,
                             goToAuthScreen

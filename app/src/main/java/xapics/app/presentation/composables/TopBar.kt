@@ -50,14 +50,17 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.NavList
 import xapics.app.presentation.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
-    viewModel: MainViewModel,
+    search: (query: String) -> Unit,
+    showSearch: (Boolean) -> Unit,
+    loadStateSnapshot: () -> String,
+    showPicsList: (Boolean) -> Unit,
+    logOut: () -> Unit,
     appState: AppState,
     goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
@@ -99,7 +102,7 @@ fun TopBar(
 
             when {
                 page == NavList.SearchScreen.name && filters.isNotBlank() -> {
-                    viewModel.search(
+                    search(
                         (if (formattedQuery.isBlank()) ""
                         else "search = $formattedQuery, ")
                                 + filters
@@ -107,12 +110,12 @@ fun TopBar(
                     goToPicsListScreen()
                 }
                 formattedQuery.isNotBlank() -> {
-                    viewModel.search("search = $formattedQuery")
+                    search("search = $formattedQuery")
                     goToPicsListScreen()
                 }
                 else -> {}
             }
-            viewModel.showSearch(false)
+            showSearch(false)
         }
 
         @Composable
@@ -124,10 +127,10 @@ fun TopBar(
             } else {
                 IconButton(enabled = true, onClick = {
                     when(page) {
-                        NavList.PicScreen.name -> viewModel.loadStateSnapshot()
+                        NavList.PicScreen.name -> loadStateSnapshot()
                         NavList.PicsListScreen.name -> {
-                            val previousQuery = viewModel.loadStateSnapshot().drop(1).dropLast(1)
-                            viewModel.showPicsList(false)
+                            val previousQuery = loadStateSnapshot().drop(1).dropLast(1)
+                            showPicsList(false)
                             if (previousPage == NavList.PicsListScreen.name) {
                                 query = TextFieldValue(previousQuery, TextRange(previousQuery.length))
                             }
@@ -193,7 +196,7 @@ fun TopBar(
                     }
 
                     IconButton(onClick = {
-                        if (appState.showSearch) filteredSearch() else viewModel.showSearch(true)
+                        if (appState.showSearch) filteredSearch() else showSearch(true)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -216,7 +219,7 @@ fun TopBar(
         fun ProfileOrLogOutButton() {
             if(page == NavList.ProfileScreen.name) {
                 IconButton(onClick = {
-                    viewModel.logOut()
+                    logOut()
                     goToAuthScreen()
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
@@ -249,6 +252,6 @@ fun TopBar(
         ProfileOrLogOutButton()
     }
     LaunchedEffect(page) {
-        if (appState.showSearch) viewModel.showSearch(false)
+        if (appState.showSearch) showSearch(false)
     }
 }

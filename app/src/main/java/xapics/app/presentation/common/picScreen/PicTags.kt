@@ -12,15 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
-import xapics.app.toTagsList
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.PicTag
+import xapics.app.toTagsList
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PicTags(
-    viewModel: MainViewModel,
+    search: (query: String) -> Unit,
+    saveStateSnapshot: () -> Unit,
+    getCollection: (collection: String, onClick: () -> Unit) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
@@ -40,7 +41,7 @@ fun PicTags(
 
                 tags.forEach {
                     PicTag(it) {
-                        viewModel.search("${it.type} = ${it.value}")
+                        search("${it.type} = ${it.value}")
                         goToPicsListScreen()
                     }
                 }
@@ -48,8 +49,8 @@ fun PicTags(
 
             state.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
-                    viewModel.saveStateSnapshot()
-                    viewModel.getCollection(it, goToAuthScreen)
+                    saveStateSnapshot()
+                    getCollection(it, goToAuthScreen)
                     goToPicsListScreen()
                 }
             }

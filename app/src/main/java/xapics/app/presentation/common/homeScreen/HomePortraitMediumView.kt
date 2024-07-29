@@ -18,11 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 
 @Composable
 fun HomePortraitMediumView(
-    viewModel: MainViewModel,
+    getRandomPic: () -> Unit,
+    search: (query: String) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToPicScreen: () -> Unit,
@@ -49,7 +49,7 @@ fun HomePortraitMediumView(
                 Row {
                     RandomPic(
                         pic = appState.pic,
-                        getRandomPic = viewModel::getRandomPic,
+                        getRandomPic = getRandomPic,
                         updateAndGoToPicScreen = goToPicScreen,
                         modifier = Modifier.weight(1f),
                         paddingModifier = Modifier,
@@ -60,7 +60,7 @@ fun HomePortraitMediumView(
                             .weight(1f)
                             .height(maxWidth / 3)
                     ) {
-                        TagsCloud(tagsScrollState, appState.tags, viewModel::search, goToPicsListScreen, goToSearchScreen, padding)
+                        TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)
                     }
                 }
 
@@ -71,6 +71,6 @@ fun HomePortraitMediumView(
             }
         }
 
-        rollCardsGrid(appState, viewModel::search, goToPicsListScreen, true, Modifier.padding(padding))
+        rollCardsGrid(appState, search, goToPicsListScreen, true, Modifier.padding(padding))
     }
 }

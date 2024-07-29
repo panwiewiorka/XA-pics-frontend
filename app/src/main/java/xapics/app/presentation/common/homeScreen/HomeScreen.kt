@@ -11,14 +11,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.composables.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun HomeScreen(
-    viewModel: MainViewModel,
+    authenticate: () -> Unit,
+    getRollThumbs: () -> Unit,
+    getAllTags: () -> Unit,
+    showConnectionError: (Boolean) -> Unit,
+    getRandomPic: () -> Unit,
+    search: (query: String) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     updateAndGoToPicScreen: () -> Unit,
@@ -33,12 +37,12 @@ fun HomeScreen(
         when {
             appState.showConnectionError -> {
                 ConnectionErrorButton {
-                    viewModel.authenticate()
-                    viewModel.getRollThumbs()
-                    viewModel.getRandomPic()
-                    viewModel.getAllTags()
+                    authenticate()
+                    getRollThumbs()
+                    getRandomPic()
+                    getAllTags()
 
-                    viewModel.showConnectionError(false)
+                    showConnectionError(false)
                 }
             }
             else -> {
@@ -50,10 +54,10 @@ fun HomeScreen(
                 val gridState = rememberLazyGridState()
 
                 when {
-                    isCompact && isPortrait -> HomePortraitCompactView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, maxWidth, padding, gridState)
-                    isCompact -> HomeLandscapeCompactView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, padding, gridState)
-                    isPortrait -> HomePortraitMediumView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxWidth, padding, tagsScrollState, gridState)
-                    else -> HomeLandscapeMediumView(viewModel, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxHeight, padding, tagsScrollState, gridState)
+                    isCompact && isPortrait -> HomePortraitCompactView(getRandomPic, search, appState, goToPicsListScreen, updateAndGoToPicScreen, maxWidth, padding, gridState)
+                    isCompact -> HomeLandscapeCompactView(getRandomPic, search, appState, goToPicsListScreen, updateAndGoToPicScreen, padding, gridState)
+                    isPortrait -> HomePortraitMediumView(getRandomPic, search, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxWidth, padding, tagsScrollState, gridState)
+                    else -> HomeLandscapeMediumView(getRandomPic, search, appState, goToPicsListScreen, updateAndGoToPicScreen, goToSearchScreen, maxHeight, padding, tagsScrollState, gridState)
                 }
 
                 if (appState.isLoading) CircularProgressIndicator()

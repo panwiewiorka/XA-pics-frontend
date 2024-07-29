@@ -13,14 +13,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.AsyncPic
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicLandscapeView(
-    viewModel: MainViewModel,
+    changeFullScreenMode: () -> Unit,
+    updatePicDetailsWidth: (width: Dp) -> Unit,
     appState: AppState,
     pagerState: PagerState,
 ) {
@@ -30,7 +31,7 @@ fun PicLandscapeView(
             .fillMaxSize()
             .background(if (appState.isFullscreen) Color.Black else Color.Transparent)
     ) {
-        if (appState.picIndex != null && appState.picsList != null && appState.pic != null) { // TODO
+        if (appState.picIndex != null && appState.pic != null) { // TODO
             HorizontalPager(
                 state = pagerState,
                 pageSize = PageSize.Fill,
@@ -46,12 +47,11 @@ fun PicLandscapeView(
                         url = pic.imageUrl,
                         description = pic.description,
                         indication = null,
-                    ) {
-                        viewModel.changeFullScreenMode()
-                    }
+                        onClick = changeFullScreenMode
+                    )
 
                     LaunchedEffect(maxWidth) {
-                        viewModel.updatePicDetailsWidth(maxWidth)
+                        updatePicDetailsWidth(maxWidth)
                     }
                 }
             }

@@ -21,11 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 
 @Composable
 fun HomeLandscapeMediumView(
-    viewModel: MainViewModel,
+    getRandomPic: () -> Unit,
+    search: (query: String) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToPicScreen: () -> Unit,
@@ -52,10 +52,10 @@ fun HomeLandscapeMediumView(
                     .width((maxHeight.value * 0.75).dp)
             ) {
                 Column {
-                    RandomPic(appState.pic, viewModel::getRandomPic, goToPicScreen, Modifier, Modifier)
+                    RandomPic(appState.pic, getRandomPic, goToPicScreen, Modifier, Modifier)
 
                     Box {
-                        TagsCloud(tagsScrollState, appState.tags, viewModel::search, goToPicsListScreen, goToSearchScreen, padding)
+                        TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)
                     }
                 }
 
@@ -71,7 +71,7 @@ fun HomeLandscapeMediumView(
             }
         }
 
-        rollCardsGrid(appState, viewModel::search, goToPicsListScreen, false, Modifier.padding(bottom = padding))
+        rollCardsGrid(appState, search, goToPicsListScreen, false, Modifier.padding(bottom = padding))
 
         item {
             Spacer(modifier = Modifier.width(1.dp))

@@ -7,13 +7,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import xapics.app.Thumb
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.ConnectionErrorButton
 
 @Composable
 fun ProfileScreen(
-    viewModel: MainViewModel,
+    updateUserCollections: (userCollections: List<Thumb>?) -> Unit,
+    getUserInfo: (onAuthError: () -> Unit) -> Unit,
+    showConnectionError: (Boolean) -> Unit,
+    getCollection: (String, () -> Unit) -> Unit,
+    renameOrDeleteCollection: (String, String?, () -> Unit) -> Unit,
     appState: AppState,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
@@ -21,8 +25,8 @@ fun ProfileScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.updateUserCollections(null)
-        if (appState.userName != null) viewModel.getUserInfo(goToAuthScreen)
+        updateUserCollections(null)
+        if (appState.userName != null) getUserInfo(goToAuthScreen)
     }
 
     Box(
@@ -32,8 +36,8 @@ fun ProfileScreen(
         when {
             appState.showConnectionError -> {
                 ConnectionErrorButton {
-                    viewModel.showConnectionError(false)
-                    viewModel.getUserInfo(goToAuthScreen)
+                    showConnectionError(false)
+                    getUserInfo(goToAuthScreen)
                 }
             }
 //            appState.isLoading -> {
@@ -42,10 +46,10 @@ fun ProfileScreen(
             appState.userCollections != null -> {
                 UserView(
                     appState.userCollections,
-                    viewModel::getCollection,
+                    getCollection,
                     goToPicsListScreen,
                     goToAuthScreen,
-                    viewModel::renameOrDeleteCollection,
+                    renameOrDeleteCollection,
                     context
                 )
             }

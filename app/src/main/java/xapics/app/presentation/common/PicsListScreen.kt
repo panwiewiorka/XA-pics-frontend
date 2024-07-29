@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,9 +20,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
+import xapics.app.OnPicsListScreenRefresh
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.composables.AsyncPic
@@ -32,7 +31,13 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicsListScreen(
-    viewModel: MainViewModel,
+    showPicsList: (Boolean) -> Unit,
+    search: (query: String) -> Unit,
+    getCollection: (collection: String, () -> Unit) -> Unit,
+    showConnectionError: (Boolean) -> Unit,
+    updatePicState: (Int) -> Unit,
+    saveStateSnapshot: () -> Unit,
+    toDo: Pair<OnPicsListScreenRefresh, String>,
     appState: AppState,
     goToPicScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
@@ -42,15 +47,15 @@ fun PicsListScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.showPicsList(true)
+        showPicsList(true)
     }
 
     LaunchedEffect(appState.picsList) {
-        if (appState.picsList?.size == 1) {
+        if (appState.picsList.size == 1) {
             goBack()
             if (previousPage != "PicScreen") goToPicScreen()
         } else {
-            appState.picsList?.forEach {// preloading images
+            appState.picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)
                     .data(it.imageUrl)
                     // Optional, but setting a ViewSizeResolver will conserve memory by limiting the size the image should be preloaded into memory at.
@@ -68,17 +73,15 @@ fun PicsListScreen(
         when {
             appState.showConnectionError -> {
                 ConnectionErrorButton {
-                    val toDo = viewModel.onPicsListScreenRefresh
                     if (toDo.first == SEARCH) {
-                        viewModel.search(toDo.second)
+                        search(toDo.second)
                     } else {
-                        viewModel.getCollection(toDo.second, goToAuthScreen)
+                        getCollection(toDo.second, goToAuthScreen)
                     }
-                    viewModel.showConnectionError(false)
+                    showConnectionError(false)
                 }
             }
             !appState.showPicsList -> { }
-            appState.picsList == null -> {} // TODO what?
             appState.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
             appState.picsList.size == 1 -> {} // going to PicScreen
             else -> {
@@ -90,8 +93,8 @@ fun PicsListScreen(
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp))
                     ) {
-                        viewModel.updatePicState(index)
-                        viewModel.saveStateSnapshot()
+                        updatePicState(index)
+                        saveStateSnapshot()
                         goToPicScreen()
                     }
                 }
@@ -121,9 +124,6 @@ fun PicsListScreen(
                             )
                         }
                         item {
-                            if(appState.isLoading) {
-                                CircularProgressIndicator()
-                            }
                             Spacer(Modifier.height(12.dp))
                         }
                     }
@@ -144,9 +144,6 @@ fun PicsListScreen(
                             )
                         }
                         item {
-                            if(appState.isLoading) {
-                                CircularProgressIndicator()
-                            }
                             Spacer(Modifier.width(24.dp))
                         }
                     }

@@ -20,13 +20,13 @@ import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.PicTag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomePortraitCompactView(
-    viewModel: MainViewModel,
+    getRandomPic: () -> Unit,
+    search: (query: String) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
     goToPicScreen: () -> Unit,
@@ -48,7 +48,7 @@ fun HomePortraitCompactView(
             ) {
                 RandomPic(
                     pic = appState.pic,
-                    getRandomPic = viewModel::getRandomPic,
+                    getRandomPic = getRandomPic,
                     updateAndGoToPicScreen = goToPicScreen,
                     modifier = Modifier.fillMaxWidth(),
                     paddingModifier = Modifier
@@ -62,7 +62,7 @@ fun HomePortraitCompactView(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        rollCardsGrid(appState, viewModel::search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
+        rollCardsGrid(appState, search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
 
         if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
             item(
@@ -85,7 +85,7 @@ fun HomePortraitCompactView(
                 }
                 tags.forEach {
                     PicTag(it) {
-                        viewModel.search("${it.type} = ${it.value}")
+                        search("${it.type} = ${it.value}")
                         goToPicsListScreen()
                     }
                 }

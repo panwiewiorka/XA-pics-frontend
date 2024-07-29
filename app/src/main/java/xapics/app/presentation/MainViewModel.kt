@@ -22,8 +22,8 @@ import xapics.app.TagState.DISABLED
 import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.Thumb
-import xapics.app.data.PicsApi
 import xapics.app.data.auth.AuthResult
+import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.getTagColorAndName
 import xapics.app.toTagsList
@@ -32,8 +32,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
-    private val api: PicsApi,
-    private val repository: AuthRepository,
+    private val authRepository: AuthRepository,
+    private val picsRepository: PicsRepository,
 ): ViewModel() {
 
     private val _appState = MutableStateFlow(AppState())
@@ -61,10 +61,10 @@ class MainViewModel @Inject constructor (
         updateLoadingState(true)
         viewModelScope.launch {
             try {
-                val result = if(signUp) repository.signUp(
+                val result = if(signUp) authRepository.signUp(
                     username = user,
                     password = pass,
-                ) else repository.signIn(
+                ) else authRepository.signIn(
                     username = user,
                     password = pass,
                 )
@@ -82,10 +82,10 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                val result = repository.authenticate(::updateUserName)
+                val result = authRepository.authenticate(::updateUserName)
                 if (result is AuthResult.Unauthorized) {
-                    repository.refreshTokens()
-                    repository.authenticate(::updateUserName)
+                    authRepository.refreshTokens()
+                    authRepository.authenticate(::updateUserName)
                 }
                 updateLoadingState(false)
             } catch (e: Exception) {
@@ -99,14 +99,14 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                var result = repository.getUserInfo(::updateUserCollections)
+                var result = authRepository.getUserInfo(::updateUserCollections)
                 if (result is AuthResult.Unauthorized) {
-                    result = repository.refreshTokens()
+                    result = authRepository.refreshTokens()
                     if (result is AuthResult.Unauthorized) {
                         goToAuthScreen()
                         resultChannel.send(result)
                     } else {
-                        repository.getUserInfo(::updateUserCollections)
+                        authRepository.getUserInfo(::updateUserCollections)
                     }
                 }
                 updateLoadingState(false)
@@ -125,7 +125,7 @@ class MainViewModel @Inject constructor (
     }
 
     fun logOut() {
-        repository.logOut()
+        authRepository.logOut()
         updateTopBarCaption("Log in")
     }
 
@@ -136,7 +136,7 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
 //                updateLoadingState(true)
-                var result = repository.editCollection(
+                var result = authRepository.editCollection(
                     collection = collection,
                     picId = picId
                 )
@@ -146,13 +146,13 @@ class MainViewModel @Inject constructor (
                         getPicCollections(picId) // TODO locally (check success first). Same everywhere ^v
                     }
                     is AuthResult.Unauthorized -> {
-                        result = repository.refreshTokens()
+                        result = authRepository.refreshTokens()
                         if (result is AuthResult.Unauthorized) {
                             rememberToGetBackAfterLoggingIn(true)
                             goToAuthScreen()
                             resultChannel.send(result)
                         } else {
-                            repository.editCollection(collection, picId)
+                            authRepository.editCollection(collection, picId)
                             getPicCollections(picId)
                         }
                     }
@@ -191,7 +191,7 @@ class MainViewModel @Inject constructor (
                     ) }
                 }
 
-                var result = repository.renameOrDeleteCollection(
+                var result = authRepository.renameOrDeleteCollection(
                     collectionTitle = collectionTitle,
                     renamedTitle = renamedTitle
                 )
@@ -201,12 +201,12 @@ class MainViewModel @Inject constructor (
                     }
                     is AuthResult.Conflicted -> TODO()
                     is AuthResult.Unauthorized -> {
-                        result = repository.refreshTokens()
+                        result = authRepository.refreshTokens()
                         if (result is AuthResult.Unauthorized) {
                             goToAuthScreen()
                             resultChannel.send(result)
                         } else {
-                            repository.renameOrDeleteCollection(collectionTitle, renamedTitle)
+                            authRepository.renameOrDeleteCollection(collectionTitle, renamedTitle)
                             run()
                         }
                     }
@@ -225,14 +225,14 @@ class MainViewModel @Inject constructor (
         updateTopBarCaption(collection)
         viewModelScope.launch {
             try {
-                var result = repository.getCollection(collection, ::updatePicsList)
+                var result = authRepository.getCollection(collection, ::updatePicsList)
                 if (result is AuthResult.Unauthorized) {
-                    result = repository.refreshTokens()
+                    result = authRepository.refreshTokens()
                     if (result is AuthResult.Unauthorized) {
                         goToAuthScreen()
                         resultChannel.send(result)
                     } else {
-                        repository.getCollection(collection, ::updatePicsList)
+                        authRepository.getCollection(collection, ::updatePicsList)
                     }
                 }
                 updateLoadingState(false)
@@ -268,10 +268,10 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
 //                updateLoadingState(true) // if uncomment -> tags in PicScreen will fade out before fade in
-                val result = repository.getPicCollections(picId, ::updatePicCollections)
+                val result = authRepository.getPicCollections(picId, ::updatePicCollections)
                 if (result is AuthResult.Unauthorized) {
-                    repository.refreshTokens()
-                    repository.getPicCollections(picId, ::updatePicCollections)
+                    authRepository.refreshTokens()
+                    authRepository.getPicCollections(picId, ::updatePicCollections)
                 }
 //                updateLoadingState(false)
             } catch (e: Exception) {
@@ -302,7 +302,7 @@ class MainViewModel @Inject constructor (
             try {
                 updateLoadingState(true)
                 _appState.update { it.copy(
-                    rollThumbnails = api.getRollThumbnails().sortedByDescending { roll -> roll.thumbUrl },
+                    rollThumbnails = picsRepository.getRollThumbs(),
                     isLoading = false
                 )}
             } catch (e: Exception) {
@@ -320,7 +320,7 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 _appState.update { it.copy(
-                    picsList = api.search(query),
+                    picsList = picsRepository.search(query),
                     picIndex = 0,
                     isLoading = false
                 )}
@@ -335,14 +335,14 @@ class MainViewModel @Inject constructor (
     }
 
     fun updatePicState(picIndex: Int) {
-        if (appState.value.picsList != null && appState.value.picsList!!.size > picIndex) {
+        if (appState.value.picsList.size > picIndex) {
             _appState.update {
                 it.copy(
-                    pic = appState.value.picsList!![picIndex],
+                    pic = appState.value.picsList[picIndex],
                     picIndex = picIndex
                 )
             }
-            getPicCollections(appState.value.picsList!![picIndex].id)
+            getPicCollections(appState.value.picsList[picIndex].id)
         } else {
             _appState.update {
                 it.copy(
@@ -356,17 +356,13 @@ class MainViewModel @Inject constructor (
     fun getRandomPic() {
         viewModelScope.launch {
             try {
-//                updateLoadingState(true)
-                var randomPic = api.getRandomPic()
-                if(randomPic == appState.value.pic) randomPic = api.getRandomPic()
+                var randomPic = picsRepository.getRandomPic()
+                if(randomPic == appState.value.pic) randomPic = picsRepository.getRandomPic()
                 _appState.update { it.copy(
                     pic = randomPic,
-//                    isLoading = false
                 )}
-
             } catch (e: Exception) {
                 Log.e(TAG, "getRandomPic: ", e)
-//                updateLoadingState(false)
             }
         }
     }
@@ -376,7 +372,7 @@ class MainViewModel @Inject constructor (
             try {
                 updateLoadingState(true)
 
-                val tags = api.getAllTags().string.toTagsList()
+                val tags = picsRepository.getAllTags()
 
                 _appState.update { it.copy(
                     tags = tags,
@@ -407,12 +403,11 @@ class MainViewModel @Inject constructor (
                     "${it.type} = ${it.value}"
                 }.toString().drop(1).dropLast(1)
 
-                val filteredTags = (if (query.isEmpty()) {
-                    api.getAllTags().string
+                val filteredTags = if (query.isEmpty()) {
+                    picsRepository.getAllTags()
                 } else {
-                    api.getFilteredTags(query).string
+                    picsRepository.getFilteredTags(query)
                 }
-                        ).toTagsList()
 
                 val refreshedTags = appState.value.tags.toMutableList()
                 refreshedTags.forEach { tag ->
@@ -540,7 +535,7 @@ class MainViewModel @Inject constructor (
 
     private fun clearPicsList() {
         _appState.update { it.copy(
-            picsList = null,
+            picsList = emptyList(),
             picIndex = null,
         )}
     }

@@ -14,16 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.composables.PicTag
 import xapics.app.presentation.theme.myTextButtonColors
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
-    viewModel: MainViewModel, appState: AppState, goToPicsListScreen: () -> Unit,
+    search: (String) -> Unit,
+    getAllTags: () -> Unit,
+    getFilteredTags: (Tag) -> Unit,
+    appState: AppState,
+    goToPicsListScreen: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -41,7 +45,7 @@ fun SearchScreen(
                     val filters = appState.tags.filter { it.state == TagState.SELECTED }
                         .map { "${it.type} = ${it.value}" }
                         .toString().drop(1).dropLast(1)
-                    viewModel.search(filters)
+                    search(filters)
                     goToPicsListScreen()
                 }
             ) {
@@ -51,7 +55,7 @@ fun SearchScreen(
             TextButton(
                 enabled = appState.tags.any { it.state == TagState.SELECTED },
                 colors = myTextButtonColors(),
-                onClick = { viewModel.getAllTags() }
+                onClick = { getAllTags() }
             ) {
                 Text(text = "Reset filters", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
@@ -62,7 +66,7 @@ fun SearchScreen(
         ) {
             appState.tags.forEach {
                 PicTag(it) {
-                    viewModel.getFilteredTags(it)
+                    getFilteredTags(it)
                 }
             }
         }
