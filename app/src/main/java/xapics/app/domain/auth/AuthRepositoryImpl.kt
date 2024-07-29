@@ -17,7 +17,7 @@ class AuthRepositoryImpl(
 
     /** AUTH */
 
-    override suspend fun signUp(username: String, password: String): AuthResult<Unit> {
+    override suspend fun signUp(username: String, password: String): AuthResult<String?> {
         return try {
             api.signUp(
                 request = AuthRequest(username, password)
@@ -25,17 +25,15 @@ class AuthRepositoryImpl(
             signIn(username, password)
         } catch (e: HttpException) {
             Log.e(TAG, "signUp: ", e)
-            (
-                if (e.code() == 409) {
-                    AuthResult.Conflicted(e.response()?.errorBody()?.string())
-                } else {
-                    AuthResult.UnknownError()
-                }
-            ) as AuthResult<Unit>
+            if (e.code() == 409) {
+                AuthResult.Conflicted(e.response()?.errorBody()?.string())
+            } else {
+                AuthResult.UnknownError()
+            }
         }
     }
 
-    override suspend fun signIn(username: String, password: String): AuthResult<Unit> {
+    override suspend fun signIn(username: String, password: String): AuthResult<String?> {
         return try {
             val response = api.signIn(
                 request = AuthRequest(username, password)
@@ -43,21 +41,19 @@ class AuthRepositoryImpl(
             cryptoPrefs.putString("accessToken", response.accessToken)
             cryptoPrefs.putString("refreshToken", response.refreshToken)
 
-            AuthResult.Authorized(response.userName) as AuthResult<Unit>
+            AuthResult.Authorized(response.userName)
 
         } catch (e: HttpException) {
             Log.e(TAG, "signIn: ", e)
-            (
-                if (e.code() == 409) {
-                    AuthResult.Conflicted(e.response()?.errorBody()?.string())
-                } else {
-                    AuthResult.UnknownError()
-                }
-                ) as AuthResult<Unit>
+            if (e.code() == 409) {
+                AuthResult.Conflicted(e.response()?.errorBody()?.string())
+            } else {
+                AuthResult.UnknownError()
+            }
         }
     }
 
-    override suspend fun refreshTokens(): AuthResult<Unit> {
+    override suspend fun refreshTokens(): AuthResult<String?> {
         return try {
             val refreshToken = cryptoPrefs.getString("refreshToken", null) ?: return AuthResult.Unauthorized()
             val response = api.refreshTokens("Bearer $refreshToken")
@@ -76,36 +72,53 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-            val userName = api.authenticate("Bearer $token").string
-            updateUserName(userName)
-            AuthResult.Authorized(userName) as AuthResult<Unit>
-        } catch (e: HttpException) {
-            Log.e(TAG, "authenticate: ", e)
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                val userName = api.authenticate("Bearer $token").string
+                updateUserName(userName)
+                AuthResult.Authorized(userName)
+            } catch (e: HttpException) {
+                Log.e(TAG, "authenticate: ", e)
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
     }
 
-    override suspend fun getUserInfo(updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-            val userCollections = api.getUserCollections("Bearer $token")
-            updateUserCollections(userCollections)
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            Log.e(TAG, " repo getUserInfo: ", e)
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun getUserCollections(updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                val userCollections = api.getUserCollections("Bearer $token")
+                updateUserCollections(userCollections)
+                AuthResult.Authorized()
+            } catch (e: HttpException) {
+                Log.e(TAG, " repo getUserCollections: ", e)
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
+    }
+
+    override suspend fun runOrRefreshTokensAndRun(func: suspend (String) -> AuthResult<String?>): AuthResult<String?> {
+        var token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
+
+        var result = func(token)
+
+        if (result is AuthResult.Unauthorized) {
+            result = refreshTokens()
+            if (result is AuthResult.Authorized) {
+                token = cryptoPrefs.getString("accessToken", null)!!
+                result = func(token)
+            }
+        }
+        return result
     }
 
     override fun logOut(): AuthResult<Unit> {
@@ -117,61 +130,65 @@ class AuthRepositoryImpl(
 
     /** COLLECTIONS */
 
-    override suspend fun editCollection(collection: String, picId: Int): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null)
-            api.editCollection("Bearer $token", collection, picId)
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun editCollection(collection: String, picId: Int): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                api.editCollection("Bearer $token", collection, picId)
+                AuthResult.Authorized()
+            } catch (e: HttpException) {
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
     }
 
-    override suspend fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null)
-            api.renameOrDeleteCollection("Bearer $token", collectionTitle, renamedTitle)
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                api.renameOrDeleteCollection("Bearer $token", collectionTitle, renamedTitle)
+                AuthResult.Authorized()
+            } catch (e: HttpException) {
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
     }
 
-    override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null)
-            val picsList = api.getCollection("Bearer $token", collection).reversed()
-            updatePicsList(picsList)
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                val picsList = api.getCollection("Bearer $token", collection).reversed()
+                updatePicsList(picsList)
+                AuthResult.Authorized()
+            } catch (e: HttpException) {
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
     }
 
-    override suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<Unit> {
-        return try {
-            val token = cryptoPrefs.getString("accessToken", null)
-            val collectionsList = api.getPicCollections ("Bearer $token", picId)
-            Log.d(TAG, "getPicCollections: collectionsList = $collectionsList")
-            updatePicCollections(collectionsList)
-            AuthResult.Authorized()
-        } catch (e: HttpException) {
-            if (e.code() == 401) {
-                AuthResult.Unauthorized()
-            } else {
-                AuthResult.UnknownError()
+    override suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<String?> {
+        return runOrRefreshTokensAndRun { token ->
+            try {
+                val collectionsList = api.getPicCollections ("Bearer $token", picId)
+                Log.d(TAG, "getPicCollections: collectionsList = $collectionsList")
+                updatePicCollections(collectionsList)
+                AuthResult.Authorized()
+            } catch (e: HttpException) {
+                if (e.code() == 401) {
+                    AuthResult.Unauthorized()
+                } else {
+                    AuthResult.UnknownError()
+                }
             }
         }
     }

@@ -52,7 +52,7 @@ fun AuthScreen(
     updateUserName: (String) -> Unit,
     rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
-    authResults: Flow<AuthResult<Unit>>,
+    authResults: Flow<AuthResult<String?>>,
     getBackAfterLoggingIn: Boolean,
     goBack: () -> Unit,
     goToProfileScreen: () -> Unit,
