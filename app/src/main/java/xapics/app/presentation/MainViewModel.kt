@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,28 +49,23 @@ class MainViewModel @Inject constructor (
     var onPicsListScreenRefresh = Pair(SEARCH, "")
 
     init {
+//        CoroutineScope(Dispatchers.Default).launch {
+//            val xaData = XaData()
+//            dao.populateSettings(xaData)
+//
+//            _appState.update { it.copy(
+//                picsList = dao.loadSettings().picsList,
+//                pic = dao.loadSettings().pic,
+//                picIndex = dao.loadSettings().picIndex,
+//                topBarCaption = dao.loadSettings().topBarCaption,
+//            ) }
+//        }
+
         authenticate()
 //        getUserInfo {} // TODO needed?
-        getRollThumbs()
         getRandomPic()
+        getRollThumbs()
         getAllTags()
-
-        CoroutineScope(Dispatchers.Default).launch {
-            val xaData = XaData()
-            dao.populateSettings(xaData)
-
-            _appState.update { it.copy(
-//                departure = dao.loadSettings().departure
-            ) }
-        }
-    }
-
-    fun saveToDb() {
-        viewModelScope.launch {
-//            dao.saveSettings(
-//                XaData(departure = appState.value.departure)
-//            )
-        }
     }
 
 
@@ -423,6 +416,18 @@ class MainViewModel @Inject constructor (
     /*** BACKSTACK / NAVIGATION */
 
     fun saveStateSnapshot() {
+        viewModelScope.launch {
+            dao.saveSettings(
+                XaData(
+                    id = 1,
+                    picsList = appState.value.picsList,
+                    pic = appState.value.pic,
+                    picIndex = appState.value.picIndex,
+                    topBarCaption = appState.value.topBarCaption,
+                )
+            )
+        }
+
         stateHistory.add(
             StateSnapshot(
                 appState.value.picsList,

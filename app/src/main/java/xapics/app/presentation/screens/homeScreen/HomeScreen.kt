@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
+import xapics.app.presentation.composables.ConnectionErrorButton
 import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeCompactLayout
 import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeMediumLayout
 import xapics.app.presentation.screens.homeScreen.layouts.HomePortraitCompactLayout
 import xapics.app.presentation.screens.homeScreen.layouts.HomePortraitMediumLayout
-import xapics.app.presentation.composables.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @Composable
@@ -42,8 +42,8 @@ fun HomeScreen(
             appState.showConnectionError -> {
                 ConnectionErrorButton {
                     authenticate()
-                    getRollThumbs()
                     getRandomPic()
+                    getRollThumbs()
                     getAllTags()
 
                     showConnectionError(false)
