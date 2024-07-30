@@ -71,7 +71,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Accompanist
+    // Coil
     implementation (libs.coil.compose)
 
     // Compose dependencies
@@ -99,4 +99,15 @@ dependencies {
 
     // Encrypted Shared Preferences
     implementation (libs.androidx.security.crypto.ktx)
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    testImplementation(libs.androidx.room.testing)
+    annotationProcessor (libs.androidx.lifecycle)
+    kapt (libs.androidx.lifecycle)
+//    kapt (libs.androidx.lifecycle)
+    kapt (libs.androidx.room.compiler)
+//    ksp (libs.androidx.room.compiler)
 }

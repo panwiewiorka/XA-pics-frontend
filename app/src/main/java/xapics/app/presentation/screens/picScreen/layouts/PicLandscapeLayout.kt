@@ -1,5 +1,6 @@
 package xapics.app.presentation.screens.picScreen.layouts
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
@@ -31,7 +33,6 @@ fun PicLandscapeLayout(
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
-    changeBlurContent: (Boolean) -> Unit,
     changeFullScreenMode: () -> Unit,
     appState: AppState,
     pagerState: PagerState,
@@ -40,10 +41,22 @@ fun PicLandscapeLayout(
 ) {
     var picDetailsWidth by remember { mutableStateOf(1.dp) }
 
+    var blurTarget by remember { mutableStateOf(0.dp) }
+
+    val blurAmount by animateDpAsState(
+        targetValue = blurTarget,
+        label = "user collections blur"
+    )
+
+    fun blurContent(blur: Boolean) {
+        blurTarget = if (blur) 10.dp else 0.dp
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
+            .blur(blurAmount)
             .background(if (appState.isFullscreen) Color.Black else Color.Transparent)
     ) {
         HorizontalPager(
@@ -77,7 +90,7 @@ fun PicLandscapeLayout(
                 getCollection = getCollection,
                 editCollection = editCollection,
                 updateCollectionToSaveTo = updateCollectionToSaveTo,
-                changeBlurContent = changeBlurContent,
+                blurContent = ::blurContent,
                 appState = appState,
                 picDetailsWidth = picDetailsWidth,
                 goToAuthScreen = goToAuthScreen,

@@ -51,7 +51,7 @@ fun CollectionsDropDownMenu(
     picId: Int,
     editCollection: (String, Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
-    changeBlurContent:(Boolean) -> Unit,
+    blurContent:(Boolean) -> Unit,
     goToAuthScreen: () -> Unit,
 ) {
     var collectionListOpened by rememberSaveable { mutableStateOf(false) }
@@ -144,13 +144,13 @@ fun CollectionsDropDownMenu(
     }
 
     if (newCollectionDialogOpened) {
-        changeBlurContent(true)
+        blurContent(true)
         titleField = ""
         BasicAlertDialog(
             onDismissRequest = {
                 newCollectionDialogOpened = false
                 collectionListOpened = false
-                changeBlurContent(false)
+                blurContent(false)
             }
         ) {
             fun onNaming(newTitle: String) = when {
@@ -171,7 +171,7 @@ fun CollectionsDropDownMenu(
                 else -> {
                     editCollectionAndCloseMenu(newTitle)
                     newCollectionDialogOpened = false
-                    changeBlurContent(false)
+                    blurContent(false)
                 }
             }
 

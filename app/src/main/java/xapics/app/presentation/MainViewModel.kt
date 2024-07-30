@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,8 @@ import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
+import xapics.app.data.db.XaDao
+import xapics.app.data.db.XaData
 import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.getTagColorAndName
@@ -33,6 +37,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor (
     private val authRepository: AuthRepository,
     private val picsRepository: PicsRepository,
+    private val dao: XaDao,
 ): ViewModel() {
 
     private val _appState = MutableStateFlow(AppState())
@@ -51,6 +56,23 @@ class MainViewModel @Inject constructor (
         getRollThumbs()
         getRandomPic()
         getAllTags()
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val xaData = XaData()
+            dao.populateSettings(xaData)
+
+            _appState.update { it.copy(
+//                departure = dao.loadSettings().departure
+            ) }
+        }
+    }
+
+    fun saveToDb() {
+        viewModelScope.launch {
+//            dao.saveSettings(
+//                XaData(departure = appState.value.departure)
+//            )
+        }
     }
 
 
@@ -509,9 +531,5 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             isFullscreen = fullscreen ?: !appState.value.isFullscreen
         )}
-    }
-
-    fun changeBlurContent(blur: Boolean) {
-        _appState.update { it.copy(blurContent = blur) }
     }
 }

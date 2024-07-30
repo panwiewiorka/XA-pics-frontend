@@ -39,9 +39,9 @@ fun PicDetails(
     search: (query: String) -> Unit,
     saveStateSnapshot: () -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
-    editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
+    editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
-    changeBlurContent: (Boolean) -> Unit,
+    blurContent: (Boolean) -> Unit,
     appState: AppState,
     picDetailsWidth: Dp,
     goToAuthScreen: () -> Unit,
@@ -53,7 +53,7 @@ fun PicDetails(
         AlertDialog(
             onDismissRequest = {
                 showTags = false
-                changeBlurContent(false)
+                blurContent(false)
                                },
             title = {
                 Row {
@@ -69,12 +69,12 @@ fun PicDetails(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             confirmButton = {
                 PicTags(
-                    search,
-                    saveStateSnapshot,
-                    getCollection,
-                    appState,
-                    goToPicsListScreen,
-                    goToAuthScreen
+                    search = search,
+                    saveStateSnapshot = saveStateSnapshot,
+                    getCollection = getCollection,
+                    appState = appState,
+                    goToPicsListScreen = goToPicsListScreen,
+                    goToAuthScreen = goToAuthScreen
                 )
             }
         )
@@ -105,7 +105,7 @@ fun PicDetails(
                     IconButton(
                         onClick = {
                             showTags = true
-                            changeBlurContent(true)
+                            blurContent(true)
                                   },
                         modifier = Modifier.offset(4.dp, 0.dp)
                     ) {
@@ -115,14 +115,15 @@ fun PicDetails(
 
                 Box {
                     CollectionsDropDownMenu(
-                        appState.userCollections,
-                        appState.picCollections,
-                        appState.collectionToSaveTo,
-                        appState.pic.id,
-                        editCollection,
-                        updateCollectionToSaveTo,
-                        changeBlurContent,
-                    ) { goToAuthScreen() }
+                        userCollections = appState.userCollections,
+                        picCollections = appState.picCollections,
+                        collectionToSaveTo = appState.collectionToSaveTo,
+                        picId = appState.pic.id,
+                        editCollection = editCollection,
+                        updateCollectionToSaveTo = updateCollectionToSaveTo,
+                        blurContent = blurContent,
+                        goToAuthScreen = goToAuthScreen
+                    )
                 }
 
                 IconButton(

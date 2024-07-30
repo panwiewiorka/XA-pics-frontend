@@ -170,7 +170,6 @@ fun NavScreen(
                     getCollection = viewModel::getCollection,
                     editCollection = viewModel::editCollection,
                     updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
-                    changeBlurContent = viewModel::changeBlurContent,
                     changeFullScreenMode = viewModel::changeFullScreenMode,
                     updateTopBarCaption = viewModel::updateTopBarCaption,
                     updatePicState = viewModel::updatePicState,
