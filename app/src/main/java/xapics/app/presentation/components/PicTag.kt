@@ -1,4 +1,4 @@
-package xapics.app.presentation.composables
+package xapics.app.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

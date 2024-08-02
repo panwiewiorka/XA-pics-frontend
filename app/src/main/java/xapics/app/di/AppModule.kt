@@ -14,10 +14,17 @@ import xapics.app.data.EncryptedSharedPrefsImpl
 import xapics.app.data.PicsApi
 import xapics.app.data.PicsApi.Companion.BASE_URL
 import xapics.app.data.db.AppDatabase
+import xapics.app.data.db.XaDao
 import xapics.app.domain.PicsRepository
 import xapics.app.domain.PicsRepositoryImpl
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.auth.AuthRepositoryImpl
+import xapics.app.domain.useCases.GetTopBarCaptionUseCase
+import xapics.app.domain.useCases.LoadSnapshotUseCase
+import xapics.app.domain.useCases.SaveSnapshotUseCase
+import xapics.app.domain.useCases.UpdatePicUseCase
+import xapics.app.domain.useCases.UpdateTopBarCaptionUseCase
+import xapics.app.domain.useCases.UseCases
 import javax.inject.Singleton
 
 @Module
@@ -58,8 +65,8 @@ object AppModule {
         return PicsRepositoryImpl(api)
     }
 
-    @Singleton
     @Provides
+    @Singleton
     fun provideAppDatabase(
         @ApplicationContext context: Context
     ) = Room.databaseBuilder(
@@ -67,4 +74,16 @@ object AppModule {
         AppDatabase::class.java,
         "appdb"
     ).build().getDao()
+
+    @Provides
+    @Singleton
+    fun provideUseCases(dao: XaDao): UseCases {
+        return UseCases(
+            updateTopBarCaption = UpdateTopBarCaptionUseCase(dao),
+            loadSnapshot = LoadSnapshotUseCase(dao),
+            saveSnapshot = SaveSnapshotUseCase(dao),
+            getTopBarCaption = GetTopBarCaptionUseCase(dao),
+            updatePicUseCase = UpdatePicUseCase(dao)
+        )
+    }
 }

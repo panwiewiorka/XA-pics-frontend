@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.PicTag
+import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.theme.myTextButtonColors
 
 @OptIn(ExperimentalLayoutApi::class)

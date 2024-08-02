@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.homeScreen.composables.RandomPic
-import xapics.app.presentation.screens.homeScreen.composables.TagsCloud
-import xapics.app.presentation.screens.homeScreen.composables.rollCardsGrid
+import xapics.app.presentation.screens.homeScreen.components.RandomPic
+import xapics.app.presentation.screens.homeScreen.components.TagsCloud
+import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
 
 @Composable
 fun HomeLandscapeMediumLayout(
@@ -74,7 +74,7 @@ fun HomeLandscapeMediumLayout(
             }
         }
 
-        rollCardsGrid(appState, search, goToPicsListScreen, false, Modifier.padding(bottom = padding))
+        rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, false, Modifier.padding(bottom = padding))
 
         item {
             Spacer(modifier = Modifier.width(1.dp))

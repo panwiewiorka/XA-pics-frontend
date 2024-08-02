@@ -1,4 +1,4 @@
-package xapics.app.presentation.composables
+package xapics.app.presentation.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -61,6 +61,8 @@ fun TopBar(
     loadStateSnapshot: () -> String,
     showPicsList: (Boolean) -> Unit,
     logOut: () -> Unit,
+    topBarCaption: String?,
+//    topBarCaptionFlow: Flow<String>,
     appState: AppState,
     goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
@@ -71,15 +73,25 @@ fun TopBar(
     previousPage: String?,
     @StringRes pageName: Int,
 ) {
+//    var topBarCaption by remember {
+//        mutableStateOf("XA Pics")
+//    }
+//
+//    LaunchedEffect(topBarCaptionFlow) {
+////        topBarCaptionFlow.collectLatest { caption ->
+////            topBarCaption = caption
+////        }
+//    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val focusRequester = remember { FocusRequester() }
         val text = when (page) {
-            NavList.PicsListScreen.name -> appState.topBarCaption
-            NavList.PicScreen.name -> appState.topBarCaption
-            NavList.AuthScreen.name -> appState.topBarCaption
+            NavList.PicsListScreen.name -> topBarCaption
+            NavList.PicScreen.name -> topBarCaption
+            NavList.AuthScreen.name -> topBarCaption
             NavList.ProfileScreen.name -> appState.userName ?: ""
             else -> stringResource(id = pageName)
         }
@@ -173,7 +185,7 @@ fun TopBar(
                         SearchField()
                     } else {
                         Text(
-                            text = text,
+                            text = text ?: "XA pics",
                             fontSize = 18.nonScaledSp,
                             maxLines = 1,
                             overflow = Ellipsis,

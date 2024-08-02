@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.profileScreen.composables
+package xapics.app.presentation.screens.profileScreen.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import xapics.app.R
-import xapics.app.presentation.composables.RollCard
+import xapics.app.presentation.components.RollCard
 import xapics.app.presentation.theme.AlmostWhite
 import xapics.app.presentation.theme.AlphaBlack
 

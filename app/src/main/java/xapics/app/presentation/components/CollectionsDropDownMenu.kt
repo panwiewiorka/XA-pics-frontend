@@ -1,4 +1,4 @@
-package xapics.app.presentation.composables
+package xapics.app.presentation.components
 
 import android.util.Log
 import android.widget.Toast

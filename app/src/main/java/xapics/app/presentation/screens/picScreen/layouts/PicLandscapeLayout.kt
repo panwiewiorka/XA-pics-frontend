@@ -22,14 +22,14 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.AsyncPic
-import xapics.app.presentation.screens.picScreen.composables.PicDetails
+import xapics.app.presentation.components.AsyncPic
+import xapics.app.presentation.screens.picScreen.components.PicDetails
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicLandscapeLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: () -> Unit,
+    saveStateSnapshot: (String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,

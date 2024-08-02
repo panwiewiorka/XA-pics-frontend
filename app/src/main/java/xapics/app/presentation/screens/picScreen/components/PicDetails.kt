@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.picScreen.composables
+package xapics.app.presentation.screens.picScreen.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,13 +31,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.CollectionsDropDownMenu
+import xapics.app.presentation.components.CollectionsDropDownMenu
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
     search: (query: String) -> Unit,
-    saveStateSnapshot: () -> Unit,
+    saveStateSnapshot: (String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,

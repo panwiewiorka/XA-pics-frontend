@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.homeScreen.composables.RandomPic
-import xapics.app.presentation.screens.homeScreen.composables.rollCardsGrid
-import xapics.app.presentation.composables.PicTag
+import xapics.app.presentation.components.PicTag
+import xapics.app.presentation.screens.homeScreen.components.RandomPic
+import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
@@ -99,7 +99,7 @@ fun HomeLandscapeCompactLayout(
                 )
             }
 
-            rollCardsGrid(appState, search, goToPicsListScreen, false, Modifier)
+            rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, false, Modifier)
 
             if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
                 item(

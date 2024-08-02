@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import xapics.app.Thumb
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.ConnectionErrorButton
-import xapics.app.presentation.screens.profileScreen.composables.UserView
+import xapics.app.presentation.components.ConnectionErrorButton
+import xapics.app.presentation.screens.profileScreen.components.UserView
 
 @Composable
 fun ProfileScreen(

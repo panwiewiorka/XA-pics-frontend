@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.profileScreen.composables
+package xapics.app.presentation.screens.profileScreen.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

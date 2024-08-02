@@ -22,12 +22,9 @@ import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
-import xapics.app.data.db.XaDao
-import xapics.app.data.db.XaData
 import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
-import xapics.app.getTagColorAndName
-import xapics.app.toTagsList
+import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
 
 
@@ -35,7 +32,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor (
     private val authRepository: AuthRepository,
     private val picsRepository: PicsRepository,
-    private val dao: XaDao,
+    private val useCases: UseCases,
 ): ViewModel() {
 
     private val _appState = MutableStateFlow(AppState())
@@ -129,10 +126,10 @@ class MainViewModel @Inject constructor (
         ) }
     }
 
-    fun logOut() {
-        authRepository.logOut()
-        updateTopBarCaption("Log in")
-    }
+//    fun logOut() {
+//        authRepository.logOut()
+//        updateTopBarCaption("Log in")
+//    }
 
 
     /*** COLLECTIONS */
@@ -211,7 +208,7 @@ class MainViewModel @Inject constructor (
     fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
         clearPicsList()
         updateLoadingState(true)
-        updateTopBarCaption(collection)
+//        updateTopBarCaption(collection)
         viewModelScope.launch {
             try {
                 val result = authRepository.getCollection(collection, ::updatePicsList)
@@ -220,7 +217,7 @@ class MainViewModel @Inject constructor (
                     resultChannel.send(result)
                 }
                 updateLoadingState(false)
-                saveStateSnapshot()
+                saveNewStateSnapshot(collection)
             } catch (e: Exception) {
                 onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
                 showConnectionError(true)
@@ -296,15 +293,15 @@ class MainViewModel @Inject constructor (
     fun search(query: String) {
         clearPicsList()
         updateLoadingState(true)
-        updateTopBarCaption(query)
+//        updateTopBarCaption(query)
         viewModelScope.launch {
             try {
                 _appState.update { it.copy(
                     picsList = picsRepository.search(query),
-                    picIndex = 0,
+                    picIndex = null,
                     isLoading = false
                 )}
-                saveStateSnapshot()
+                saveNewStateSnapshot(query)
             } catch (e: Exception) { // TODO if error 500 -> custom error message
                 Log.e(TAG, "search: ", e)
                 onPicsListScreenRefresh = Pair(SEARCH, query)
@@ -415,48 +412,58 @@ class MainViewModel @Inject constructor (
 
     /*** BACKSTACK / NAVIGATION */
 
-    fun saveStateSnapshot() {
+    fun saveNewStateSnapshot(topBarCaption: String?) {
         viewModelScope.launch {
-            dao.saveSettings(
-                XaData(
-                    id = 1,
-                    picsList = appState.value.picsList,
-                    pic = appState.value.pic,
-                    picIndex = appState.value.picIndex,
-                    topBarCaption = appState.value.topBarCaption,
-                )
+            useCases.saveSnapshot(
+                picsList = appState.value.picsList,
+                pic = appState.value.pic,
+                picIndex = appState.value.picIndex,
+                topBarCaption = topBarCaption,
             )
         }
-
-        stateHistory.add(
-            StateSnapshot(
-                appState.value.picsList,
-                appState.value.pic,
-                appState.value.picIndex,
-                appState.value.topBarCaption,
-            )
-        )
+//
+//        stateHistory.add(
+//            StateSnapshot(
+//                appState.value.picsList,
+//                appState.value.pic,
+//                appState.value.picIndex,
+//                appState.value.topBarCaption,
+//            )
+//        )
     }
 
     fun loadStateSnapshot(): String {
-        if (stateHistory.isNotEmpty()) Log.d(TAG, "loadStateSnapshot 111: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
-        stateHistory.removeLast()
-        if (stateHistory.isNotEmpty()) {
-            val last = stateHistory.last()
+        viewModelScope.launch {
+            val snapshot = useCases.loadSnapshot()
             _appState.update { it.copy(
-                picsList = last.picsList,
-                pic = last.pic,
-                picIndex = last.picIndex,
-                topBarCaption = last.topBarCaption
+                picsList = snapshot.picsList,
+                pic = snapshot.pic,
+                picIndex = snapshot.picIndex
             ) }
-            Log.d(TAG, "loadStateSnapshot 222: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
         }
-        return appState.value.topBarCaption
+
+//        if (stateHistory.isNotEmpty()) Log.d(TAG, "loadStateSnapshot 111: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
+//        stateHistory.removeLast()
+//        if (stateHistory.isNotEmpty()) {
+//            val last = stateHistory.last()
+//            _appState.update { it.copy(
+//                picsList = last.picsList,
+//                pic = last.pic,
+//                picIndex = last.picIndex,
+//                topBarCaption = last.topBarCaption
+//            ) }
+//            Log.d(TAG, "loadStateSnapshot 222: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
+//        }
+//        return appState.value.topBarCaption
+        return "testLoad" // todo
     }
 
     fun updateStateSnapshot() {
-        stateHistory.last().pic = appState.value.pic
-        stateHistory.last().picIndex = appState.value.picIndex
+        viewModelScope.launch {
+            useCases.updatePicUseCase(appState.value.pic, appState.value.picIndex)
+        }
+//        stateHistory.last().pic = appState.value.pic
+//        stateHistory.last().picIndex = appState.value.picIndex
     }
 
     fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
@@ -488,42 +495,45 @@ class MainViewModel @Inject constructor (
         ) }
     }
 
-    fun updateTopBarCaption(query: String) {
-        val caption: String
-
-        if (!query.contains(" = ")) {
-            caption = query
-        } else {
-            val tags = query.toTagsList()
-            val searchIndex = tags.indexOfFirst{it.type == "search"}
-            val isSearchQuery = searchIndex != -1
-            val isFilteredList = tags.size > 1
-
-            caption = when {
-                tags.isEmpty() -> "??? $query"
-                isSearchQuery -> "\"${tags[searchIndex].value}\""
-                isFilteredList -> "Filtered pics"
-                else -> { // single category
-                    val theTag = tags[0].value
-                    when (tags[0].type) {
-                        "filmType" -> when (theTag) {
-                            "BW" -> "Black and white films"
-                            "NEGATIVE" -> "Negative films"
-                            "SLIDE" -> "Slide films"
-                            else -> ""
-                        }
-                        "filmName" -> "film: $theTag"
-                        "hashtag" -> "#$theTag"
-                        else -> getTagColorAndName(tags[0]).second
-                    }
-                }
-            }
-        }
-
-        _appState.update { it.copy(
-            topBarCaption = caption
-        )}
-    }
+//    fun updateTopBarCaption(query: String) {
+//        viewModelScope.launch {
+//            useCases.updateTopBarCaption(query)
+//        }
+//        val caption: String
+//
+//        if (!query.contains(" = ")) {
+//            caption = query
+//        } else {
+//            val tags = query.toTagsList()
+//            val searchIndex = tags.indexOfFirst{it.type == "search"}
+//            val isSearchQuery = searchIndex != -1
+//            val isFilteredList = tags.size > 1
+//
+//            caption = when {
+//                tags.isEmpty() -> "??? $query"
+//                isSearchQuery -> "\"${tags[searchIndex].value}\""
+//                isFilteredList -> "Filtered pics"
+//                else -> { // single category
+//                    val theTag = tags[0].value
+//                    when (tags[0].type) {
+//                        "filmType" -> when (theTag) {
+//                            "BW" -> "Black and white films"
+//                            "NEGATIVE" -> "Negative films"
+//                            "SLIDE" -> "Slide films"
+//                            else -> ""
+//                        }
+//                        "filmName" -> "film: $theTag"
+//                        "hashtag" -> "#$theTag"
+//                        else -> getTagColorAndName(tags[0]).second
+//                    }
+//                }
+//            }
+//        }
+//
+//        _appState.update { it.copy(
+//            topBarCaption = caption
+//        )}
+//    }
 
     private fun clearPicsList() {
         _appState.update { it.copy(

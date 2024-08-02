@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
-import xapics.app.presentation.composables.ConnectionErrorButton
+import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeCompactLayout
 import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeMediumLayout
 import xapics.app.presentation.screens.homeScreen.layouts.HomePortraitCompactLayout

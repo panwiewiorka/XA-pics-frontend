@@ -1,4 +1,4 @@
-package xapics.app.presentation.composables
+package xapics.app.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

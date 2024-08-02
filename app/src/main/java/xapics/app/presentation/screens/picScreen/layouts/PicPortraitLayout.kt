@@ -17,15 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.AsyncPic
-import xapics.app.presentation.screens.picScreen.composables.PicDetails
-import xapics.app.presentation.screens.picScreen.composables.PicTags
+import xapics.app.presentation.components.AsyncPic
+import xapics.app.presentation.screens.picScreen.components.PicDetails
+import xapics.app.presentation.screens.picScreen.components.PicTags
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicPortraitLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: () -> Unit,
+    saveStateSnapshot: (String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
@@ -80,18 +80,14 @@ fun PicPortraitLayout(
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
             ) {index ->
                 val pic = appState.picsList[index]
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Box {
                     AsyncPic(
                         url = pic.imageUrl,
                         description = pic.description,
                         indication = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        changeFullScreenMode()
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { changeFullScreenMode() }
+                    )
                 }
             }
         }

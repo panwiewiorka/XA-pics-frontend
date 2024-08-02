@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.composables
+package xapics.app.presentation.screens.homeScreen.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import xapics.app.Pic
 import xapics.app.R
-import xapics.app.presentation.composables.AsyncPic
+import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.theme.AlmostWhite
 import xapics.app.presentation.theme.AlphaBlack
 

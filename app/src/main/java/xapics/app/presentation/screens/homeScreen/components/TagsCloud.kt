@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.composables
+package xapics.app.presentation.screens.homeScreen.components
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.presentation.composables.PicTag
+import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.theme.AlmostWhite
 import xapics.app.presentation.theme.AlphaBlack
 

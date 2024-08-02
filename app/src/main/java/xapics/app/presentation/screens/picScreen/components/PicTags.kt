@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.picScreen.composables
+package xapics.app.presentation.screens.picScreen.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -13,14 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.presentation.AppState
-import xapics.app.presentation.composables.PicTag
+import xapics.app.presentation.components.PicTag
 import xapics.app.toTagsList
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PicTags(
     search: (query: String) -> Unit,
-    saveStateSnapshot: () -> Unit,
+    saveStateSnapshot: (topBarCaption: String) -> Unit,
     getCollection: (collection: String, onClick: () -> Unit) -> Unit,
     appState: AppState,
     goToPicsListScreen: () -> Unit,
@@ -49,7 +49,7 @@ fun PicTags(
 
             state.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
-                    saveStateSnapshot()
+//                    saveStateSnapshot("TAGGAGAG") // TODO needed? vv getCollection() saves snapshot
                     getCollection(it, goToAuthScreen)
                     goToPicsListScreen()
                 }

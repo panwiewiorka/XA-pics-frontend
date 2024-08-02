@@ -26,10 +26,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
 import xapics.app.presentation.MainViewModel
-import xapics.app.presentation.composables.TopBar
+import xapics.app.presentation.components.TopBar
 import xapics.app.presentation.screens.homeScreen.HomeScreen
 import xapics.app.presentation.screens.picScreen.PicScreen
 import xapics.app.presentation.screens.profileScreen.ProfileScreen
+import xapics.app.presentation.topBar.TopBarViewModel
 
 enum class NavList(@StringRes val title: Int) {
     HomeScreen(title = R.string.home_screen),
@@ -84,13 +85,18 @@ fun NavScreen(
             })
         },
         topBar = {
+            val topBarViewModel: TopBarViewModel = hiltViewModel()
+            val state by topBarViewModel.state.collectAsState()
+            val topBarCaption by topBarViewModel.topBarCaptionFlow.collectAsState("XA Pics")
             if (!appState.isFullscreen) {
                 TopBar(
                     search = viewModel::search,
                     showSearch = viewModel::showSearch,
                     loadStateSnapshot = viewModel::loadStateSnapshot,
                     showPicsList = viewModel::showPicsList,
-                    logOut = viewModel::logOut,
+                    logOut = topBarViewModel::logOut,
+                    topBarCaption = topBarCaption,
+//                    topBarCaptionFlow = topBarViewModel.topBarCaptionFlow,
                     appState = appState,
                     goBack = { navController.navigateUp() },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) {
@@ -110,15 +116,11 @@ fun NavScreen(
             enabled = backStackEntry?.destination?.route == NavList.PicsListScreen.name
                     || backStackEntry?.destination?.route == NavList.PicScreen.name
         ) {
+            viewModel.loadStateSnapshot()
+
             when (backStackEntry?.destination?.route) {
-                NavList.PicsListScreen.name -> {
-                    viewModel.loadStateSnapshot()
-                    viewModel.showPicsList(false)
-                }
-                NavList.PicScreen.name -> {
-                    viewModel.loadStateSnapshot()
-                    viewModel.changeFullScreenMode(false)
-                }
+                NavList.PicsListScreen.name -> viewModel.showPicsList(false)
+                NavList.PicScreen.name -> viewModel.changeFullScreenMode(false)
             }
             navController.navigateUp()
         }
@@ -140,8 +142,8 @@ fun NavScreen(
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     updateAndGoToPicScreen = {
                         viewModel.updatePicsList(listOf(appState.pic!!))
-                        viewModel.updateTopBarCaption("Random pic")
-                        viewModel.saveStateSnapshot()
+//                        viewModel.updateTopBarCaption("Random pic")
+                        viewModel.saveNewStateSnapshot("Random pic")
                         navController.navigate(NavList.PicScreen.name)
                                     },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
@@ -154,7 +156,7 @@ fun NavScreen(
                     getCollection = viewModel::getCollection,
                     showConnectionError = viewModel::showConnectionError,
                     updatePicState = viewModel::updatePicState,
-                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    saveStateSnapshot = viewModel::saveNewStateSnapshot,
                     toDo = viewModel.onPicsListScreenRefresh,
                     appState = appState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
@@ -166,12 +168,12 @@ fun NavScreen(
             composable(route = NavList.PicScreen.name) {
                 PicScreen(
                     search = viewModel::search,
-                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    saveStateSnapshot = viewModel::saveNewStateSnapshot,
                     getCollection = viewModel::getCollection,
                     editCollection = viewModel::editCollection,
                     updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
                     changeFullScreenMode = viewModel::changeFullScreenMode,
-                    updateTopBarCaption = viewModel::updateTopBarCaption,
+//                    updateTopBarCaption = viewModel::updateTopBarCaption,
                     updatePicState = viewModel::updatePicState,
                     updateStateSnapshot = viewModel::updateStateSnapshot,
                     showConnectionError = viewModel::showConnectionError,
@@ -191,7 +193,7 @@ fun NavScreen(
             }
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
-                    updateTopBarCaption = viewModel::updateTopBarCaption,
+                    updateTopBarCaption = {}, // TODO
                     updateUserName = viewModel::updateUserName,
                     rememberToGetBackAfterLoggingIn = viewModel::rememberToGetBackAfterLoggingIn,
                     signUpOrIn = viewModel::signUpOrIn,

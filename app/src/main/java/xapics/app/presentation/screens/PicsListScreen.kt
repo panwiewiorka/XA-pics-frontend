@@ -25,8 +25,8 @@ import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
-import xapics.app.presentation.composables.AsyncPic
-import xapics.app.presentation.composables.ConnectionErrorButton
+import xapics.app.presentation.components.AsyncPic
+import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @Composable
@@ -36,7 +36,7 @@ fun PicsListScreen(
     getCollection: (collection: String, () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
     updatePicState: (Int) -> Unit,
-    saveStateSnapshot: () -> Unit,
+    saveStateSnapshot: (topBarCaption: String?) -> Unit,
     toDo: Pair<OnPicsListScreenRefresh, String>,
     appState: AppState,
     goToPicScreen: () -> Unit,
@@ -91,12 +91,13 @@ fun PicsListScreen(
                     AsyncPic(
                         url = pic.imageUrl,
                         description = pic.description,
-                        modifier = modifier.clip(RoundedCornerShape(2.dp))
-                    ) {
-                        updatePicState(index)
-                        saveStateSnapshot()
-                        goToPicScreen()
-                    }
+                        modifier = modifier.clip(RoundedCornerShape(2.dp)),
+                        onClick = {
+                            updatePicState(index)
+                            saveStateSnapshot(null)
+                            goToPicScreen()
+                        }
+                    )
                 }
 
                 val windowInfo = windowInfo()

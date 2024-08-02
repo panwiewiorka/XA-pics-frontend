@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.homeScreen.composables.RandomPic
-import xapics.app.presentation.screens.homeScreen.composables.rollCardsGrid
-import xapics.app.presentation.composables.PicTag
+import xapics.app.presentation.components.PicTag
+import xapics.app.presentation.screens.homeScreen.components.RandomPic
+import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -64,7 +64,7 @@ fun HomePortraitCompactLayout(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        rollCardsGrid(appState, search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
+        rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
 
         if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
             item(
