@@ -1,6 +1,5 @@
 package xapics.app.domain.auth
 
-import xapics.app.Pic
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
 
@@ -14,6 +13,6 @@ interface AuthRepository {
     fun logOut(): AuthResult<Unit>
     suspend fun editCollection(collection: String, picId: Int): AuthResult<String?>
     suspend fun renameOrDeleteCollection(collectionTitle: String, renamedTitle: String?): AuthResult<String?>
-    suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<String?>
+    suspend fun getCollection(collection: String): AuthResult<String?>
     suspend fun getPicCollections(picId: Int, updatePicCollections: (List<String>) -> Unit): AuthResult<String?>
 }

@@ -56,32 +56,6 @@ fun PicPortraitLayout(
         }
 
         Box {
-
-            /*
-            if (pagerState.currentPage > 0) {
-                Icon(
-                    Icons.Default.KeyboardArrowLeft,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = -swipeArrowsOffset)
-                        .alpha(swipeArrowsAlpha)
-                )
-            }
-
-            if (pagerState.currentPage < appState.picsList.lastIndex) {
-                Icon(
-                    Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = swipeArrowsOffset)
-                        .alpha(swipeArrowsAlpha)
-                )
-            }
-
-             */
-
             HorizontalPager(
                 state = pagerState,
                 pageSize = PageSize.Fill,

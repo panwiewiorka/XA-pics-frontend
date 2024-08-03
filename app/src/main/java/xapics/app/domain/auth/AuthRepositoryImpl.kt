@@ -2,16 +2,19 @@ package xapics.app.domain.auth
 
 import android.util.Log
 import retrofit2.HttpException
-import xapics.app.Pic
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.data.EncryptedSharedPrefs
 import xapics.app.data.PicsApi
 import xapics.app.data.auth.AuthRequest
 import xapics.app.data.auth.AuthResult
+import xapics.app.data.db.StateSnapshot
+import xapics.app.data.db.XaDao
+import xapics.app.domain.transformTopBarCaption
 
 class AuthRepositoryImpl(
     private val api: PicsApi,
+    private val dao: XaDao,
     private val cryptoPrefs: EncryptedSharedPrefs
 ): AuthRepository {
 
@@ -160,11 +163,22 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun getCollection(collection: String, updatePicsList: (List<Pic>) -> Unit): AuthResult<String?> {
+    override suspend fun getCollection(collection: String): AuthResult<String?> {
         return runOrRefreshTokensAndRun { token ->
             try {
                 val picsList = api.getCollection("Bearer $token", collection).reversed()
-//                updatePicsList(picsList) // todo replace with dao
+                val state = dao.loadSnapshot()
+
+                dao.saveSnapshot(
+                    StateSnapshot(
+                        id = state.id + 1,
+                        picsList = picsList,
+                        pic = if (picsList.size == 1) picsList[0] else null,
+                        picIndex = if (picsList.size == 1) 0 else null,
+                        topBarCaption = collection.transformTopBarCaption()
+                    )
+                )
+
                 AuthResult.Authorized()
             } catch (e: HttpException) {
                 if (e.code() == 401) {
@@ -180,7 +194,6 @@ class AuthRepositoryImpl(
         return runOrRefreshTokensAndRun { token ->
             try {
                 val collectionsList = api.getPicCollections ("Bearer $token", picId)
-                Log.d(TAG, "getPicCollections: collectionsList = $collectionsList")
                 updatePicCollections(collectionsList)
                 AuthResult.Authorized()
             } catch (e: HttpException) {

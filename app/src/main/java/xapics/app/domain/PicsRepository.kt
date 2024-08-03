@@ -6,8 +6,6 @@ import xapics.app.Thumb
 
 interface PicsRepository {
     suspend fun getRollThumbs(): List<Thumb>
-    suspend fun search(query: String): List<Pic>
-    suspend fun getRandomPic(): Pic
     suspend fun getAllTags(): List<Tag>
     suspend fun getFilteredTags(query: String): List<Tag>
 }

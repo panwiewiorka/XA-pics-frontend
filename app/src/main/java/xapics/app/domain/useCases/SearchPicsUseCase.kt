@@ -13,7 +13,7 @@ class SearchPicsUseCase(
         val state = dao.loadSnapshot()
         val picsList = api.search(query)
 
-        dao.updateSnapshot(
+        dao.saveSnapshot(
             StateSnapshot(
                 id = state.id + 1,
                 picsList = picsList,
@@ -22,13 +22,5 @@ class SearchPicsUseCase(
                 topBarCaption = query.transformTopBarCaption()
             )
         )
-//        dao.saveSnapshot(
-//            StateSnapshot(
-//                id = state.id + 1,
-//                picsList = picsList,
-//                pic = state.pic,
-//                picIndex = state.picIndex,
-//            )
-//        )
     }
 }

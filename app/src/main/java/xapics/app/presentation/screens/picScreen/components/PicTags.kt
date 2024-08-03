@@ -34,6 +34,7 @@ fun PicTags(
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
 ) {
+
     AnimatedContent(
         targetState = state,
         transitionSpec = {
@@ -44,8 +45,8 @@ fun PicTags(
         FlowRow(
             modifier = Modifier.padding(horizontal = 28.dp)
         ) {
-            if(theState.pic != null) {
-                val tags = theState.pic.tags.toTagsList()
+//            if(theState.pic != null) {
+                val tags = theState.pic!!.tags.toTagsList()
 
                 tags.forEach {
                     PicTag(it) {
@@ -53,7 +54,7 @@ fun PicTags(
                         goToPicsListScreen()
                     }
                 }
-            }
+//            }
 
             // TODO uncomment / fix (merge states, ???)
 //            theState.picCollections.forEach {

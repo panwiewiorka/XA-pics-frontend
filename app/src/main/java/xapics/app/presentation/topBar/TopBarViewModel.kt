@@ -35,11 +35,10 @@ class TopBarViewModel @Inject constructor (
     }
 
 
-    
     fun logOut() {
         authRepository.logOut()
         viewModelScope.launch{
-            useCases.updateSnapshot(replaceExisting = true, topBarCaption = "Log in")
+            useCases.saveSnapshot(replaceExisting = true, topBarCaption = "Log in")
         }
     }
 

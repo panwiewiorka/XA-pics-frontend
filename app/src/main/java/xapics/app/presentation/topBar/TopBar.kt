@@ -1,4 +1,4 @@
-package xapics.app.presentation.components
+package xapics.app.presentation.topBar
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -62,8 +62,6 @@ fun TopBar(
     loadStateSnapshot: () -> Unit,
     showPicsList: (Boolean) -> Unit,
     logOut: () -> Unit,
-//    topBarCaption: String?,
-//    topBarCaptionFlow: Flow<String>,
     appState: AppState,
     state: StateSnapshot,
     goBack: () -> Unit,
@@ -75,16 +73,6 @@ fun TopBar(
     previousPage: String?,
     @StringRes pageName: Int,
 ) {
-//    var topBarCaption by remember {
-//        mutableStateOf("XA Pics")
-//    }
-//
-//    LaunchedEffect(topBarCaptionFlow) {
-////        topBarCaptionFlow.collectLatest { caption ->
-////            topBarCaption = caption
-////        }
-//    }
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically

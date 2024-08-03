@@ -43,7 +43,6 @@ fun PicsListScreen(
     search: (query: String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
-    updatePicState: (Int) -> Unit,
     saveStateSnapshot: (
         replaceExisting: Boolean,
         picsList: List<Pic>?,
@@ -66,9 +65,7 @@ fun PicsListScreen(
     }
 
     LaunchedEffect(state.picsList) {
-        Log.d(TAG, "PicsListScreen: ${state.picsList.size}")
         if (state.picsList.size == 1) {
-            Log.d(TAG, "PicsListScreen: ${state.picsList.size} YES")
             goBack()
             if (previousPage != "PicScreen") goToPicScreen()
         } else {
@@ -110,7 +107,6 @@ fun PicsListScreen(
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
-//                            updatePicState(index)
                             saveStateSnapshot(false, null, state.picsList[index], index, null)
                             goToPicScreen()
                         }
@@ -146,9 +142,7 @@ fun PicsListScreen(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                CircularProgressIndicator(
-//                                    modifier = Modifier.width(24.dp)
-                                )
+                                CircularProgressIndicator()
                             }
                         }
                         item {
@@ -176,9 +170,7 @@ fun PicsListScreen(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxHeight()
                             ) {
-                                CircularProgressIndicator(
-//                                    modifier = Modifier.width(24.dp)
-                                )
+                                CircularProgressIndicator()
                             }
                         }
                         item {

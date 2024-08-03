@@ -26,10 +26,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.R
 import xapics.app.presentation.MainViewModel
-import xapics.app.presentation.components.TopBar
 import xapics.app.presentation.screens.homeScreen.HomeScreen
 import xapics.app.presentation.screens.picScreen.PicScreen
 import xapics.app.presentation.screens.profileScreen.ProfileScreen
+import xapics.app.presentation.topBar.TopBar
 import xapics.app.presentation.topBar.TopBarViewModel
 
 enum class NavList(@StringRes val title: Int) {
@@ -141,9 +141,7 @@ fun NavScreen(
                     state = state,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     updateAndGoToPicScreen = {
-//                        viewModel.updatePicsList(listOf(appState.pic!!)) // todo check
                         viewModel.saveStateSnapshot(replaceExisting = false, picsList = listOf(state.pic!!), picIndex = 0, topBarCaption = "Random pic")
-//                        viewModel.saveNewStateSnapshot("Random pic")
                         navController.navigate(NavList.PicScreen.name)
                                     },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
@@ -155,7 +153,6 @@ fun NavScreen(
                     search = viewModel::search,
                     getCollection = viewModel::getCollection,
                     showConnectionError = viewModel::showConnectionError,
-                    updatePicState = viewModel::updatePicState,
                     saveStateSnapshot = viewModel::saveStateSnapshot,
                     toDo = viewModel.onPicsListScreenRefresh,
                     appState = appState,
@@ -170,12 +167,11 @@ fun NavScreen(
                 PicScreen(
                     search = viewModel::search,
                     saveStateSnapshot = viewModel::saveStateSnapshot,
+//                    getPicCollections = viewModel::getPicCollections,
                     getCollection = viewModel::getCollection,
                     editCollection = viewModel::editCollection,
                     updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
                     changeFullScreenMode = viewModel::changeFullScreenMode,
-                    updatePicState = viewModel::updatePicState,
-//                    updateStateSnapshot = viewModel::saveStateSnapshot,
                     showConnectionError = viewModel::showConnectionError,
                     appState = appState,
                     state = state,
@@ -193,7 +189,7 @@ fun NavScreen(
             }
             composable(route = NavList.AuthScreen.name) {
                 AuthScreen(
-                    updateTopBarCaption = {}, // TODO
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
                     updateUserName = viewModel::updateUserName,
                     rememberToGetBackAfterLoggingIn = viewModel::rememberToGetBackAfterLoggingIn,
                     signUpOrIn = viewModel::signUpOrIn,

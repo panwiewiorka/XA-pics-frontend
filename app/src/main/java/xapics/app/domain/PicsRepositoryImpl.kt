@@ -1,6 +1,5 @@
 package xapics.app.domain
 
-import xapics.app.Pic
 import xapics.app.Tag
 import xapics.app.Thumb
 import xapics.app.data.PicsApi
@@ -16,14 +15,6 @@ class PicsRepositoryImpl(
 //            Log.e(TAG, "getRollThumbs: ", e) // "ERROR ${e.code()}: ${e.message()}"
 //            emptyList()
 //        }
-    }
-
-    override suspend fun search(query: String): List<Pic> {
-        return api.search(query)
-    }
-
-    override suspend fun getRandomPic(): Pic {
-        return api.getRandomPic()
     }
 
     override suspend fun getAllTags(): List<Tag> {

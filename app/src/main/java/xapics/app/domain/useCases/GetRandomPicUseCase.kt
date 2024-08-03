@@ -18,7 +18,7 @@ class GetRandomPicUseCase(
             pic = api.getRandomPic()
         }
 
-        dao.updateSnapshot(
+        dao.saveSnapshot(
             StateSnapshot(
                 id = snapshot.id,
                 pic = pic

@@ -46,21 +46,12 @@ class MainViewModel @Inject constructor (
     private val _state = MutableStateFlow(StateSnapshot())
     val state = _state.asStateFlow()
 
+//    val mergedFlow = merge(appState, state)
+
+
     var onPicsListScreenRefresh = Pair(SEARCH, "")
 
     init {
-//        CoroutineScope(Dispatchers.Default).launch {
-//            val state = StateHistory()
-//            dao.populateSettings(state)
-//
-//            _appState.update { it.copy(
-//                picsList = dao.loadSettings().picsList,
-//                pic = dao.loadSettings().pic,
-//                picIndex = dao.loadSettings().picIndex,
-//                topBarCaption = dao.loadSettings().topBarCaption,
-//            ) }
-//        }
-
         CoroutineScope(Dispatchers.Default).launch {
             useCases.populateStateDb()
         }
@@ -72,8 +63,6 @@ class MainViewModel @Inject constructor (
         }
 
         authenticate()
-//        getUserInfo {} // TODO needed?
-//        getRandomPic()
         getRollThumbs()
         getAllTags()
     }
@@ -152,8 +141,7 @@ class MainViewModel @Inject constructor (
                 )
                 when (result) {
                     is AuthResult.Authorized -> {
-                        Log.d(TAG, "Pic $picId added to $collection")
-                        getPicCollections(picId) // TODO locally (check success first). Same everywhere ^v
+                        getPicCollections(picId)
                     }
                     is AuthResult.Unauthorized -> {
                         rememberToGetBackAfterLoggingIn(true)
@@ -218,18 +206,12 @@ class MainViewModel @Inject constructor (
         updateLoadingState(true)
         viewModelScope.launch {
             try {
-                val result = authRepository.getCollection(collection, ::updatePicsList)
+                val result = authRepository.getCollection(collection)
                 if (result is AuthResult.Unauthorized) {
                     goToAuthScreen()
                     resultChannel.send(result)
                 }
-                saveStateSnapshot(
-                    replaceExisting = false,
-//                    picIndex = 0, // todo needed?
-                    topBarCaption = collection
-                    )
                 updateLoadingState(false)
-//                saveNewStateSnapshot(collection)
             } catch (e: Exception) {
                 onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
                 showConnectionError(true)
@@ -279,13 +261,6 @@ class MainViewModel @Inject constructor (
 
     /*** MAIN WORKFLOW */
 
-    fun updatePicsList(picsList: List<Pic>? = null) {
-//        _appState.update { it.copy(
-//            picsList = picsList ?: emptyList(),
-//            picIndex = 0,
-//        )}
-    }
-
     fun getRollThumbs() {
         viewModelScope.launch {
             try {
@@ -303,16 +278,10 @@ class MainViewModel @Inject constructor (
     }
 
     fun search(query: String) {
-        clearPicsList()
         updateLoadingState(true)
+        clearPicsList()
         viewModelScope.launch {
             try {
-//                val picsList = picsRepository.search(query)
-//                _appState.update { it.copy(
-//                    picsList = picsRepository.search(query),
-//                    picIndex = null,
-//                    isLoading = false
-//                )}
                 useCases.searchPics(query)
                 updateLoadingState(false)
             } catch (e: Exception) { // TODO if error 500 -> custom error message
@@ -322,25 +291,6 @@ class MainViewModel @Inject constructor (
                 updateLoadingState(false)
             }
         }
-    }
-
-    fun updatePicState(picIndex: Int) { // todo commented while refactoring, delete upon success
-//        if (state.value.picsList.size > picIndex) {
-//            _appState.update {
-//                it.copy(
-//                    pic = state.value.picsList[picIndex],
-//                    picIndex = picIndex
-//                )
-//            }
-//            getPicCollections(appState.value.picsList[picIndex].id)
-//        } else {
-//            _appState.update {
-//                it.copy(
-//                    pic = null,
-//                    picIndex = null
-//                )
-//            }
-//        }
     }
 
     fun getRandomPic() {
@@ -426,16 +376,6 @@ class MainViewModel @Inject constructor (
 
     /*** BACKSTACK / NAVIGATION */
 
-//    fun saveNewStateSnapshot(topBarCaption: String?) {
-//        viewModelScope.launch {
-//            useCases.saveSnapshot(
-//                picsList = appState.value.picsList,
-//                pic = appState.value.pic,
-//                picIndex = appState.value.picIndex,
-//                topBarCaption = topBarCaption,
-//            )
-//        }
-//    }
 
     fun saveStateSnapshot(
         replaceExisting: Boolean,
@@ -445,8 +385,8 @@ class MainViewModel @Inject constructor (
         topBarCaption: String? = null
     ) {
         viewModelScope.launch {
-            useCases.updateSnapshot(replaceExisting, picsList, pic, picIndex, topBarCaption)
-//            useCases.updatePic(appState.value.pic, appState.value.picIndex)
+            useCases.saveSnapshot(replaceExisting, picsList, pic, picIndex, topBarCaption)
+            if (pic != null) getPicCollections(pic.id)
         }
     }
 
@@ -490,46 +430,6 @@ class MainViewModel @Inject constructor (
             showPicsList = show
         ) }
     }
-
-//    fun updateTopBarCaption(query: String) {
-//        viewModelScope.launch {
-//            useCases.updateTopBarCaption(query)
-//        }
-//        val caption: String
-//
-//        if (!query.contains(" = ")) {
-//            caption = query
-//        } else {
-//            val tags = query.toTagsList()
-//            val searchIndex = tags.indexOfFirst{it.type == "search"}
-//            val isSearchQuery = searchIndex != -1
-//            val isFilteredList = tags.size > 1
-//
-//            caption = when {
-//                tags.isEmpty() -> "??? $query"
-//                isSearchQuery -> "\"${tags[searchIndex].value}\""
-//                isFilteredList -> "Filtered pics"
-//                else -> { // single category
-//                    val theTag = tags[0].value
-//                    when (tags[0].type) {
-//                        "filmType" -> when (theTag) {
-//                            "BW" -> "Black and white films"
-//                            "NEGATIVE" -> "Negative films"
-//                            "SLIDE" -> "Slide films"
-//                            else -> ""
-//                        }
-//                        "filmName" -> "film: $theTag"
-//                        "hashtag" -> "#$theTag"
-//                        else -> getTagColorAndName(tags[0]).second
-//                    }
-//                }
-//            }
-//        }
-//
-//        _appState.update { it.copy(
-//            topBarCaption = caption
-//        )}
-//    }
 
     private fun clearPicsList() {
         _state.update { it.copy(

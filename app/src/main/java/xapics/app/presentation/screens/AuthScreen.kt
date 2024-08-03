@@ -42,13 +42,20 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
+import xapics.app.Pic
 import xapics.app.R
 import xapics.app.data.auth.AuthResult
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AuthScreen(
-    updateTopBarCaption: (String) -> Unit,
+    saveStateSnapshot: (
+        replaceExisting: Boolean,
+        picsList: List<Pic>?,
+        pic: Pic?,
+        picIndex: Int?,
+        topBarCaption: String?
+    ) -> Unit,
     updateUserName: (String) -> Unit,
     rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
@@ -63,7 +70,7 @@ fun AuthScreen(
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        updateTopBarCaption("Log in")
+        saveStateSnapshot(true, null, null, null, "Log in")
     }
 
     LaunchedEffect(authResults, context) {
@@ -185,7 +192,7 @@ fun AuthScreen(
                 Text(text = questionText)
 
                 Text(text = changeModeText, textDecoration = TextDecoration.Underline, modifier = Modifier.clickable {
-                    updateTopBarCaption(changeModeText)
+                    saveStateSnapshot(true, null, null, null, changeModeText)
                     signupMode = !signupMode
                 })
             }

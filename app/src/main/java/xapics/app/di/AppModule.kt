@@ -25,7 +25,7 @@ import xapics.app.domain.useCases.UseCases
 import xapics.app.domain.useCases.stateHistory.GetSnapshotFlowUseCase
 import xapics.app.domain.useCases.stateHistory.LoadSnapshotUseCase
 import xapics.app.domain.useCases.stateHistory.PopulateStateDbUseCase
-import xapics.app.domain.useCases.stateHistory.UpdateSnapshotUseCase
+import xapics.app.domain.useCases.stateHistory.SaveSnapshotUseCase
 import javax.inject.Singleton
 
 @Module
@@ -56,8 +56,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: PicsApi, cryptoPrefs: EncryptedSharedPrefs): AuthRepository {
-        return AuthRepositoryImpl(api, cryptoPrefs)
+    fun provideAuthRepository(api: PicsApi, dao: XaDao, cryptoPrefs: EncryptedSharedPrefs): AuthRepository {
+        return AuthRepositoryImpl(api, dao, cryptoPrefs)
     }
 
     @Provides
@@ -82,13 +82,9 @@ object AppModule {
         return UseCases(
             populateStateDb = PopulateStateDbUseCase(dao, api),
             getRandomPic = GetRandomPicUseCase(dao, api),
-//            updateTopBarCaption = UpdateTopBarCaptionUseCase(dao),
             loadSnapshot = LoadSnapshotUseCase(dao),
-//            saveSnapshot = SaveSnapshotUseCase(dao),
             getSnapshotFlow = GetSnapshotFlowUseCase(dao),
-//            getTopBarCaptionFlow = GetTopBarCaptionFlowUseCase(dao),
-//            updatePic = UpdatePicUseCase(dao),
-            updateSnapshot = UpdateSnapshotUseCase(dao),
+            saveSnapshot = SaveSnapshotUseCase(dao),
             searchPics = SearchPicsUseCase(dao, api),
         )
     }

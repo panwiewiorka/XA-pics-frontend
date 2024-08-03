@@ -1,5 +1,6 @@
 package xapics.app.presentation.screens.picScreen.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.Pic
 import xapics.app.R
+import xapics.app.TAG
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.CollectionsDropDownMenu
@@ -147,6 +149,7 @@ fun PicDetails(
                 ) {
                     val collection = appState.collectionToSaveTo
                     val picInCollection = appState.picCollections.contains(collection)
+                    Log.d(TAG, "PicDetails: collectionToSaveTo = $collection, picCollections: ${appState.picCollections}")
                     if (collection == stringResource(R.string.fav_collection)) {
                         if (picInCollection) {
                             Icon(Icons.Filled.Favorite, "Remove from $collection")
