@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import xapics.app.Pic
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.screens.picScreen.components.PicDetails
@@ -29,12 +31,19 @@ import xapics.app.presentation.screens.picScreen.components.PicDetails
 @Composable
 fun PicLandscapeLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (String) -> Unit,
+    saveStateSnapshot: (
+        replaceExisting: Boolean,
+        picsList: List<Pic>?,
+        pic: Pic?,
+        picIndex: Int?,
+        topBarCaption: String?
+    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     pagerState: PagerState,
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit
@@ -68,7 +77,7 @@ fun PicLandscapeLayout(
                 .aspectRatio(3 / 2f)
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
         ) {index ->
-            val pic = appState.picsList[index]
+            val pic = state.picsList[index]
             BoxWithConstraints {
                 AsyncPic(
                     url = pic.imageUrl,
@@ -92,6 +101,7 @@ fun PicLandscapeLayout(
                 updateCollectionToSaveTo = updateCollectionToSaveTo,
                 blurContent = ::blurContent,
                 appState = appState,
+                state = state,
                 picDetailsWidth = picDetailsWidth,
                 goToAuthScreen = goToAuthScreen,
                 goToPicsListScreen = goToPicsListScreen

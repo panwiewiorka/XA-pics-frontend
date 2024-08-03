@@ -1,8 +1,12 @@
 package xapics.app.presentation.screens
 
+import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -10,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +27,9 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.OnPicsListScreenRefresh
 import xapics.app.OnPicsListScreenRefresh.SEARCH
+import xapics.app.Pic
+import xapics.app.TAG
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
@@ -36,9 +44,16 @@ fun PicsListScreen(
     getCollection: (collection: String, () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
     updatePicState: (Int) -> Unit,
-    saveStateSnapshot: (topBarCaption: String?) -> Unit,
+    saveStateSnapshot: (
+        replaceExisting: Boolean,
+        picsList: List<Pic>?,
+        pic: Pic?,
+        picIndex: Int?,
+        topBarCaption: String?
+            ) -> Unit,
     toDo: Pair<OnPicsListScreenRefresh, String>,
     appState: AppState,
+    state: StateSnapshot,
     goToPicScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
     goBack: () -> Unit,
@@ -50,12 +65,14 @@ fun PicsListScreen(
         showPicsList(true)
     }
 
-    LaunchedEffect(appState.picsList) {
-        if (appState.picsList.size == 1) {
+    LaunchedEffect(state.picsList) {
+        Log.d(TAG, "PicsListScreen: ${state.picsList.size}")
+        if (state.picsList.size == 1) {
+            Log.d(TAG, "PicsListScreen: ${state.picsList.size} YES")
             goBack()
             if (previousPage != "PicScreen") goToPicScreen()
         } else {
-            appState.picsList.forEach {// preloading images
+            state.picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)
                     .data(it.imageUrl)
                     // Optional, but setting a ViewSizeResolver will conserve memory by limiting the size the image should be preloaded into memory at.
@@ -82,19 +99,19 @@ fun PicsListScreen(
                 }
             }
             !appState.showPicsList -> { }
-            appState.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
-            appState.picsList.size == 1 -> {} // going to PicScreen
+            state.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
+            state.picsList.size == 1 -> {} // going to PicScreen
             else -> {
                 @Composable
                 fun picItem(index: Int, modifier: Modifier = Modifier) {
-                    val pic = appState.picsList[index]
+                    val pic = state.picsList[index]
                     AsyncPic(
                         url = pic.imageUrl,
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
-                            updatePicState(index)
-                            saveStateSnapshot(null)
+//                            updatePicState(index)
+                            saveStateSnapshot(false, null, state.picsList[index], index, null)
                             goToPicScreen()
                         }
                     )
@@ -116,13 +133,23 @@ fun PicsListScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(
-                            count = appState.picsList.size,
-                            key = { appState.picsList[it].id },
+                            count = state.picsList.size,
+                            key = { state.picsList[it].id },
                         ) {
                             picItem(
                                 index = it,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                             )
+                        }
+                        if (appState.isLoading) item {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                CircularProgressIndicator(
+//                                    modifier = Modifier.width(24.dp)
+                                )
+                            }
                         }
                         item {
                             Spacer(Modifier.height(12.dp))
@@ -136,13 +163,23 @@ fun PicsListScreen(
                             .padding(bottom = if (isCompact) 32.dp else 0.dp)
                     ) {
                         items(
-                            count = appState.picsList.size,
-                            key = { appState.picsList[it].id },
+                            count = state.picsList.size,
+                            key = { state.picsList[it].id },
                         ) {
                             picItem(
                                 index = it,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                             )
+                        }
+                        if (appState.isLoading) item {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxHeight()
+                            ) {
+                                CircularProgressIndicator(
+//                                    modifier = Modifier.width(24.dp)
+                                )
+                            }
                         }
                         item {
                             Spacer(Modifier.width(24.dp))

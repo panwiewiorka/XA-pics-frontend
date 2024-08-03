@@ -45,10 +45,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.TagState
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.screens.NavList
 import xapics.app.presentation.screens.nonScaledSp
@@ -58,12 +59,13 @@ import xapics.app.presentation.screens.nonScaledSp
 fun TopBar(
     search: (query: String) -> Unit,
     showSearch: (Boolean) -> Unit,
-    loadStateSnapshot: () -> String,
+    loadStateSnapshot: () -> Unit,
     showPicsList: (Boolean) -> Unit,
     logOut: () -> Unit,
-    topBarCaption: String?,
+//    topBarCaption: String?,
 //    topBarCaptionFlow: Flow<String>,
     appState: AppState,
+    state: StateSnapshot,
     goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
@@ -89,9 +91,9 @@ fun TopBar(
     ) {
         val focusRequester = remember { FocusRequester() }
         val text = when (page) {
-            NavList.PicsListScreen.name -> topBarCaption
-            NavList.PicScreen.name -> topBarCaption
-            NavList.AuthScreen.name -> topBarCaption
+            NavList.PicsListScreen.name -> state.topBarCaption
+            NavList.PicScreen.name -> state.topBarCaption
+            NavList.AuthScreen.name -> state.topBarCaption
             NavList.ProfileScreen.name -> appState.userName ?: ""
             else -> stringResource(id = pageName)
         }
@@ -135,16 +137,8 @@ fun TopBar(
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-                    when(page) {
-                        NavList.PicScreen.name -> loadStateSnapshot()
-                        NavList.PicsListScreen.name -> {
-                            val previousQuery = loadStateSnapshot().drop(1).dropLast(1)
-                            showPicsList(false)
-                            if (previousPage == NavList.PicsListScreen.name) {
-                                query = TextFieldValue(previousQuery, TextRange(previousQuery.length))
-                            }
-                        }
-                    }
+                    loadStateSnapshot()
+                    if (page == NavList.PicsListScreen.name) showPicsList(false)
                     goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
@@ -188,11 +182,11 @@ fun TopBar(
                             text = text ?: "XA pics",
                             fontSize = 18.nonScaledSp,
                             maxLines = 1,
-                            overflow = Ellipsis,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .basicMarquee()
                                 .weight(1f)
-                                .clickable(enabled = page == NavList.PicScreen.name && appState.picsList.size > 1) { goToPicsListScreen() }
+                                .clickable(enabled = page == NavList.PicScreen.name && state.picsList.size > 1) { goToPicsListScreen() }
                         )
                     }
 

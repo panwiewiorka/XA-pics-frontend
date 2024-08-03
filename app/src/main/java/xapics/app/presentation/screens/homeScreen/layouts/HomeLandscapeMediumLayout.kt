@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.screens.homeScreen.components.RandomPic
 import xapics.app.presentation.screens.homeScreen.components.TagsCloud
@@ -30,8 +31,9 @@ fun HomeLandscapeMediumLayout(
     getRandomPic: () -> Unit,
     search: (query: String) -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     goToPicsListScreen: () -> Unit,
-    goToPicScreen: () -> Unit,
+    updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
     maxHeight: Dp,
     padding: Dp,
@@ -55,7 +57,7 @@ fun HomeLandscapeMediumLayout(
                     .width((maxHeight.value * 0.75).dp)
             ) {
                 Column {
-                    RandomPic(appState.pic, getRandomPic, goToPicScreen, Modifier, Modifier)
+                    RandomPic(state.pic, getRandomPic, updateAndGoToPicScreen, Modifier, Modifier)
 
                     Box {
                         TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)

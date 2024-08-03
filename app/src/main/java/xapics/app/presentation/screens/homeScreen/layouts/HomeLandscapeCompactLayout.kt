@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.screens.homeScreen.components.RandomPic
@@ -40,8 +41,9 @@ fun HomeLandscapeCompactLayout(
     getRandomPic: () -> Unit,
     search: (query: String) -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     goToPicsListScreen: () -> Unit,
-    goToPicScreen: () -> Unit,
+    updateAndGoToPicScreen: () -> Unit,
     padding: Dp,
     gridState: LazyGridState,
 ) {
@@ -91,9 +93,9 @@ fun HomeLandscapeCompactLayout(
                 span = { GridItemSpan(maxLineSpan) }
             ) {
                 RandomPic(
-                    pic = appState.pic,
+                    pic = state.pic,
                     getRandomPic = getRandomPic,
-                    updateAndGoToPicScreen = goToPicScreen,
+                    updateAndGoToPicScreen = updateAndGoToPicScreen,
                     modifier = Modifier.fillMaxHeight(),
                     paddingModifier = Modifier.padding(start = 8.dp, end = 32.dp, top = 1.dp)
                 )

@@ -53,6 +53,7 @@ fun NavScreen(
 
     val viewModel: MainViewModel = hiltViewModel()
     val appState by viewModel.appState.collectAsState()
+    val state by viewModel.state.collectAsState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = NavList.valueOf(
         backStackEntry?.destination?.route ?: NavList.HomeScreen.name
@@ -86,8 +87,7 @@ fun NavScreen(
         },
         topBar = {
             val topBarViewModel: TopBarViewModel = hiltViewModel()
-            val state by topBarViewModel.state.collectAsState()
-            val topBarCaption by topBarViewModel.topBarCaptionFlow.collectAsState("XA Pics")
+            val topBarState by topBarViewModel.state.collectAsState()
             if (!appState.isFullscreen) {
                 TopBar(
                     search = viewModel::search,
@@ -95,9 +95,8 @@ fun NavScreen(
                     loadStateSnapshot = viewModel::loadStateSnapshot,
                     showPicsList = viewModel::showPicsList,
                     logOut = topBarViewModel::logOut,
-                    topBarCaption = topBarCaption,
-//                    topBarCaptionFlow = topBarViewModel.topBarCaptionFlow,
                     appState = appState,
+                    state = topBarState,
                     goBack = { navController.navigateUp() },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) {
                         popUpTo(NavList.HomeScreen.name)
@@ -139,11 +138,12 @@ fun NavScreen(
                     getRandomPic = viewModel::getRandomPic,
                     search = viewModel::search,
                     appState = appState,
+                    state = state,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                     updateAndGoToPicScreen = {
-                        viewModel.updatePicsList(listOf(appState.pic!!))
-//                        viewModel.updateTopBarCaption("Random pic")
-                        viewModel.saveNewStateSnapshot("Random pic")
+//                        viewModel.updatePicsList(listOf(appState.pic!!)) // todo check
+                        viewModel.saveStateSnapshot(replaceExisting = false, picsList = listOf(state.pic!!), picIndex = 0, topBarCaption = "Random pic")
+//                        viewModel.saveNewStateSnapshot("Random pic")
                         navController.navigate(NavList.PicScreen.name)
                                     },
                     goToSearchScreen = { navController.navigate(NavList.SearchScreen.name) },
@@ -156,9 +156,10 @@ fun NavScreen(
                     getCollection = viewModel::getCollection,
                     showConnectionError = viewModel::showConnectionError,
                     updatePicState = viewModel::updatePicState,
-                    saveStateSnapshot = viewModel::saveNewStateSnapshot,
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
                     toDo = viewModel.onPicsListScreenRefresh,
                     appState = appState,
+                    state = state,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goBack = { navController.navigateUp() },
@@ -168,17 +169,16 @@ fun NavScreen(
             composable(route = NavList.PicScreen.name) {
                 PicScreen(
                     search = viewModel::search,
-                    saveStateSnapshot = viewModel::saveNewStateSnapshot,
+                    saveStateSnapshot = viewModel::saveStateSnapshot,
                     getCollection = viewModel::getCollection,
                     editCollection = viewModel::editCollection,
                     updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
                     changeFullScreenMode = viewModel::changeFullScreenMode,
-//                    updateTopBarCaption = viewModel::updateTopBarCaption,
                     updatePicState = viewModel::updatePicState,
-                    updateStateSnapshot = viewModel::updateStateSnapshot,
+//                    updateStateSnapshot = viewModel::saveStateSnapshot,
                     showConnectionError = viewModel::showConnectionError,
-                    stateHistory = viewModel.stateHistory,
                     appState = appState,
+                    state = state,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 ) { navController.navigate(NavList.AuthScreen.name) }
             }

@@ -164,7 +164,7 @@ class AuthRepositoryImpl(
         return runOrRefreshTokensAndRun { token ->
             try {
                 val picsList = api.getCollection("Bearer $token", collection).reversed()
-                updatePicsList(picsList)
+//                updatePicsList(picsList) // todo replace with dao
                 AuthResult.Authorized()
             } catch (e: HttpException) {
                 if (e.code() == 401) {

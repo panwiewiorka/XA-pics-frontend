@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import xapics.app.data.db.StateSnapshot
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
@@ -18,16 +18,28 @@ class TopBarViewModel @Inject constructor (
     private val useCases: UseCases,
 ): ViewModel() {
 
-    private val _state = MutableStateFlow(TopBarState())
-    val state: StateFlow<TopBarState> = _state.asStateFlow()
+//    private val _state = MutableStateFlow(TopBarState())
+//    val state: StateFlow<TopBarState> = _state.asStateFlow()
 
-    val topBarCaptionFlow = useCases.getTopBarCaption()
+//    val topBarCaptionFlow = useCases.getTopBarCaptionFlow()
+
+    private val _state = MutableStateFlow(StateSnapshot())
+    val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            useCases.getSnapshotFlow().collect { value ->
+                _state.value = value
+            }
+        }
+    }
+
 
     
     fun logOut() {
         authRepository.logOut()
         viewModelScope.launch{
-            useCases.updateTopBarCaption("Log in")
+            useCases.updateSnapshot(replaceExisting = true, topBarCaption = "Log in")
         }
     }
 

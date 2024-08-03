@@ -6,15 +6,15 @@ import com.google.gson.annotations.SerializedName
 import xapics.app.Pic
 
 @Entity
-data class StateHistory(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int,
+data class StateSnapshot(
+    @PrimaryKey(autoGenerate = false)
+    val id: Int = 1,
     @SerializedName("picsList")
-    val picsList: List<Pic>,
+    val picsList: List<Pic> = emptyList(),
     @SerializedName("pic")
-    var pic: Pic?,
+    val pic: Pic? = null,
     @SerializedName("picIndex")
-    var picIndex: Int?,
+    val picIndex: Int? = null,
     @SerializedName("topBarCaption")
     val topBarCaption: String = "XA pics"
 )

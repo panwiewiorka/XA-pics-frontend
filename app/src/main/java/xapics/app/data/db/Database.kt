@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [
-    StateHistory::class,
+    StateSnapshot::class,
 ], version = 1, exportSchema = false)
 @TypeConverters(PicTypeConverter::class)
 abstract class AppDatabase: RoomDatabase() {

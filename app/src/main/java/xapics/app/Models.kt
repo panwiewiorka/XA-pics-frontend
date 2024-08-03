@@ -32,9 +32,9 @@ data class Tag(
     var state: TagState = TagState.ENABLED
 )
 
-data class StateSnapshot(
-    val picsList: List<Pic>,
-    var pic: Pic?,
-    var picIndex: Int?,
-    val topBarCaption: String
-)
+//data class StateSnapshot(
+//    val picsList: List<Pic>,
+//    var pic: Pic?,
+//    var picIndex: Int?,
+//    val topBarCaption: String
+//)

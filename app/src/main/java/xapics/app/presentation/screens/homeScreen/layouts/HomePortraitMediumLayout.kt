@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.screens.homeScreen.components.RandomPic
 import xapics.app.presentation.screens.homeScreen.components.TagsCloud
@@ -27,8 +28,9 @@ fun HomePortraitMediumLayout(
     getRandomPic: () -> Unit,
     search: (query: String) -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     goToPicsListScreen: () -> Unit,
-    goToPicScreen: () -> Unit,
+    updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
     maxWidth: Dp,
     padding: Dp,
@@ -51,9 +53,9 @@ fun HomePortraitMediumLayout(
             ) {
                 Row {
                     RandomPic(
-                        pic = appState.pic,
+                        pic = state.pic,
                         getRandomPic = getRandomPic,
-                        updateAndGoToPicScreen = goToPicScreen,
+                        updateAndGoToPicScreen = updateAndGoToPicScreen,
                         modifier = Modifier.weight(1f),
                         paddingModifier = Modifier,
                     )

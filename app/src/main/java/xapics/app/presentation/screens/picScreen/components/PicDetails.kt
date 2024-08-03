@@ -29,7 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import xapics.app.Pic
 import xapics.app.R
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.CollectionsDropDownMenu
 import xapics.app.presentation.windowInfo
@@ -37,12 +39,19 @@ import xapics.app.presentation.windowInfo
 @Composable
 fun PicDetails(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (String) -> Unit,
+    saveStateSnapshot: (
+        replaceExisting: Boolean,
+        picsList: List<Pic>?,
+        pic: Pic?,
+        picIndex: Int?,
+        topBarCaption: String?
+    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
     blurContent: (Boolean) -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     picDetailsWidth: Dp,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
@@ -59,7 +68,7 @@ fun PicDetails(
                 Row {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = appState.pic?.description ?: "",
+                        text = state.pic?.description ?: "",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         )
@@ -73,6 +82,7 @@ fun PicDetails(
                     saveStateSnapshot = saveStateSnapshot,
                     getCollection = getCollection,
                     appState = appState,
+                    state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen
                 )
@@ -80,7 +90,7 @@ fun PicDetails(
         )
     }
     
-    if (appState.picIndex != null && appState.pic != null) { // TODO
+    if (state.picIndex != null && state.pic != null) { // TODO
         Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
@@ -93,9 +103,9 @@ fun PicDetails(
                     )
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "${appState.picIndex + 1} / ${appState.picsList.size}")
+                    Text(text = "${state.picIndex + 1} / ${state.picsList.size}")
                     Text(
-                        text = appState.pic.description,
+                        text = state.pic.description,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -118,7 +128,7 @@ fun PicDetails(
                         userCollections = appState.userCollections,
                         picCollections = appState.picCollections,
                         collectionToSaveTo = appState.collectionToSaveTo,
-                        picId = appState.pic.id,
+                        picId = state.pic.id,
                         editCollection = editCollection,
                         updateCollectionToSaveTo = updateCollectionToSaveTo,
                         blurContent = blurContent,
@@ -130,7 +140,7 @@ fun PicDetails(
                     onClick = {
                         editCollection(
                             appState.collectionToSaveTo,
-                            appState.pic.id,
+                            state.pic.id,
                             goToAuthScreen
                         )
                     },

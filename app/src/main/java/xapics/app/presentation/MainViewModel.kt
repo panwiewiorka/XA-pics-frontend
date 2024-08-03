@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +16,6 @@ import kotlinx.coroutines.launch
 import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
 import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
-import xapics.app.StateSnapshot
 import xapics.app.TAG
 import xapics.app.Tag
 import xapics.app.TagState.DISABLED
@@ -22,6 +23,7 @@ import xapics.app.TagState.ENABLED
 import xapics.app.TagState.SELECTED
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
+import xapics.app.data.db.StateSnapshot
 import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
@@ -41,14 +43,15 @@ class MainViewModel @Inject constructor (
     private val resultChannel = Channel<AuthResult<String?>>()
     val authResults = resultChannel.receiveAsFlow()
 
-    var stateHistory: MutableList<StateSnapshot> = mutableListOf()
+    private val _state = MutableStateFlow(StateSnapshot())
+    val state = _state.asStateFlow()
 
     var onPicsListScreenRefresh = Pair(SEARCH, "")
 
     init {
 //        CoroutineScope(Dispatchers.Default).launch {
-//            val xaData = XaData()
-//            dao.populateSettings(xaData)
+//            val state = StateHistory()
+//            dao.populateSettings(state)
 //
 //            _appState.update { it.copy(
 //                picsList = dao.loadSettings().picsList,
@@ -58,9 +61,19 @@ class MainViewModel @Inject constructor (
 //            ) }
 //        }
 
+        CoroutineScope(Dispatchers.Default).launch {
+            useCases.populateStateDb()
+        }
+
+        viewModelScope.launch {
+            useCases.getSnapshotFlow().collect { value ->
+                _state.value = value
+            }
+        }
+
         authenticate()
 //        getUserInfo {} // TODO needed?
-        getRandomPic()
+//        getRandomPic()
         getRollThumbs()
         getAllTags()
     }
@@ -125,11 +138,6 @@ class MainViewModel @Inject constructor (
             userName = userName,
         ) }
     }
-
-//    fun logOut() {
-//        authRepository.logOut()
-//        updateTopBarCaption("Log in")
-//    }
 
 
     /*** COLLECTIONS */
@@ -208,7 +216,6 @@ class MainViewModel @Inject constructor (
     fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
         clearPicsList()
         updateLoadingState(true)
-//        updateTopBarCaption(collection)
         viewModelScope.launch {
             try {
                 val result = authRepository.getCollection(collection, ::updatePicsList)
@@ -216,8 +223,13 @@ class MainViewModel @Inject constructor (
                     goToAuthScreen()
                     resultChannel.send(result)
                 }
+                saveStateSnapshot(
+                    replaceExisting = false,
+//                    picIndex = 0, // todo needed?
+                    topBarCaption = collection
+                    )
                 updateLoadingState(false)
-                saveNewStateSnapshot(collection)
+//                saveNewStateSnapshot(collection)
             } catch (e: Exception) {
                 onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
                 showConnectionError(true)
@@ -240,7 +252,7 @@ class MainViewModel @Inject constructor (
         ) }
         if(isNewCollection) {
             _appState.update { it.copy(
-                userCollections = appState.value.userCollections?.plus(Thumb(collection, appState.value.pic!!.imageUrl)),
+                userCollections = appState.value.userCollections?.plus(Thumb(collection, state.value.pic!!.imageUrl)),
             )}
         }
     }
@@ -268,10 +280,10 @@ class MainViewModel @Inject constructor (
     /*** MAIN WORKFLOW */
 
     fun updatePicsList(picsList: List<Pic>? = null) {
-        _appState.update { it.copy(
-            picsList = picsList ?: emptyList(),
-            picIndex = 0,
-        )}
+//        _appState.update { it.copy(
+//            picsList = picsList ?: emptyList(),
+//            picIndex = 0,
+//        )}
     }
 
     fun getRollThumbs() {
@@ -293,15 +305,16 @@ class MainViewModel @Inject constructor (
     fun search(query: String) {
         clearPicsList()
         updateLoadingState(true)
-//        updateTopBarCaption(query)
         viewModelScope.launch {
             try {
-                _appState.update { it.copy(
-                    picsList = picsRepository.search(query),
-                    picIndex = null,
-                    isLoading = false
-                )}
-                saveNewStateSnapshot(query)
+//                val picsList = picsRepository.search(query)
+//                _appState.update { it.copy(
+//                    picsList = picsRepository.search(query),
+//                    picIndex = null,
+//                    isLoading = false
+//                )}
+                useCases.searchPics(query)
+                updateLoadingState(false)
             } catch (e: Exception) { // TODO if error 500 -> custom error message
                 Log.e(TAG, "search: ", e)
                 onPicsListScreenRefresh = Pair(SEARCH, query)
@@ -311,33 +324,34 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun updatePicState(picIndex: Int) {
-        if (appState.value.picsList.size > picIndex) {
-            _appState.update {
-                it.copy(
-                    pic = appState.value.picsList[picIndex],
-                    picIndex = picIndex
-                )
-            }
-            getPicCollections(appState.value.picsList[picIndex].id)
-        } else {
-            _appState.update {
-                it.copy(
-                    pic = null,
-                    picIndex = null
-                )
-            }
-        }
+    fun updatePicState(picIndex: Int) { // todo commented while refactoring, delete upon success
+//        if (state.value.picsList.size > picIndex) {
+//            _appState.update {
+//                it.copy(
+//                    pic = state.value.picsList[picIndex],
+//                    picIndex = picIndex
+//                )
+//            }
+//            getPicCollections(appState.value.picsList[picIndex].id)
+//        } else {
+//            _appState.update {
+//                it.copy(
+//                    pic = null,
+//                    picIndex = null
+//                )
+//            }
+//        }
     }
 
     fun getRandomPic() {
         viewModelScope.launch {
             try {
-                var randomPic = picsRepository.getRandomPic()
-                if(randomPic == appState.value.pic) randomPic = picsRepository.getRandomPic()
-                _appState.update { it.copy(
-                    pic = randomPic,
-                )}
+                useCases.getRandomPic()
+//                var randomPic = picsRepository.getRandomPic()
+//                if(randomPic == appState.value.pic) randomPic = picsRepository.getRandomPic()
+//                _appState.update { it.copy(
+//                    pic = randomPic,
+//                )}
             } catch (e: Exception) {
                 Log.e(TAG, "getRandomPic: ", e)
             }
@@ -412,58 +426,40 @@ class MainViewModel @Inject constructor (
 
     /*** BACKSTACK / NAVIGATION */
 
-    fun saveNewStateSnapshot(topBarCaption: String?) {
-        viewModelScope.launch {
-            useCases.saveSnapshot(
-                picsList = appState.value.picsList,
-                pic = appState.value.pic,
-                picIndex = appState.value.picIndex,
-                topBarCaption = topBarCaption,
-            )
-        }
-//
-//        stateHistory.add(
-//            StateSnapshot(
-//                appState.value.picsList,
-//                appState.value.pic,
-//                appState.value.picIndex,
-//                appState.value.topBarCaption,
+//    fun saveNewStateSnapshot(topBarCaption: String?) {
+//        viewModelScope.launch {
+//            useCases.saveSnapshot(
+//                picsList = appState.value.picsList,
+//                pic = appState.value.pic,
+//                picIndex = appState.value.picIndex,
+//                topBarCaption = topBarCaption,
 //            )
-//        )
-    }
-
-    fun loadStateSnapshot(): String {
-        viewModelScope.launch {
-            val snapshot = useCases.loadSnapshot()
-            _appState.update { it.copy(
-                picsList = snapshot.picsList,
-                pic = snapshot.pic,
-                picIndex = snapshot.picIndex
-            ) }
-        }
-
-//        if (stateHistory.isNotEmpty()) Log.d(TAG, "loadStateSnapshot 111: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
-//        stateHistory.removeLast()
-//        if (stateHistory.isNotEmpty()) {
-//            val last = stateHistory.last()
-//            _appState.update { it.copy(
-//                picsList = last.picsList,
-//                pic = last.pic,
-//                picIndex = last.picIndex,
-//                topBarCaption = last.topBarCaption
-//            ) }
-//            Log.d(TAG, "loadStateSnapshot 222: ${stateHistory.last().topBarCaption}, ${appState.value.topBarCaption}")
 //        }
-//        return appState.value.topBarCaption
-        return "testLoad" // todo
+//    }
+
+    fun saveStateSnapshot(
+        replaceExisting: Boolean,
+        picsList: List<Pic>? = null,
+        pic: Pic? = null,
+        picIndex: Int? = null,
+        topBarCaption: String? = null
+    ) {
+        viewModelScope.launch {
+            useCases.updateSnapshot(replaceExisting, picsList, pic, picIndex, topBarCaption)
+//            useCases.updatePic(appState.value.pic, appState.value.picIndex)
+        }
     }
 
-    fun updateStateSnapshot() {
+    fun loadStateSnapshot() {
         viewModelScope.launch {
-            useCases.updatePicUseCase(appState.value.pic, appState.value.picIndex)
+            useCases.loadSnapshot()
+//            val snapshot = useCases.loadSnapshot()
+//            _appState.update { it.copy(
+//                picsList = snapshot.picsList,
+//                pic = snapshot.pic,
+//                picIndex = snapshot.picIndex
+//            ) }
         }
-//        stateHistory.last().pic = appState.value.pic
-//        stateHistory.last().picIndex = appState.value.picIndex
     }
 
     fun rememberToGetBackAfterLoggingIn(value: Boolean? = null) {
@@ -536,7 +532,7 @@ class MainViewModel @Inject constructor (
 //    }
 
     private fun clearPicsList() {
-        _appState.update { it.copy(
+        _state.update { it.copy(
             picsList = emptyList(),
             picIndex = null,
         )}

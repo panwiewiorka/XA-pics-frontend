@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import xapics.app.Pic
+import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.screens.picScreen.components.PicDetails
@@ -25,12 +27,19 @@ import xapics.app.presentation.screens.picScreen.components.PicTags
 @Composable
 fun PicPortraitLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (String) -> Unit,
+    saveStateSnapshot: (
+        replaceExisting: Boolean,
+        picsList: List<Pic>?,
+        pic: Pic?,
+        picIndex: Int?,
+        topBarCaption: String?
+    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
     appState: AppState,
+    state: StateSnapshot,
     pagerState: PagerState,
     goToPicsListScreen: () -> Unit,
     goToAuthScreen: () -> Unit
@@ -79,7 +88,7 @@ fun PicPortraitLayout(
                 beyondBoundsPageCount = 1,
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
             ) {index ->
-                val pic = appState.picsList[index]
+                val pic = state.picsList[index]
                 Box {
                     AsyncPic(
                         url = pic.imageUrl,
@@ -107,6 +116,7 @@ fun PicPortraitLayout(
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     blurContent = {},
                     appState = appState,
+                    state = state,
                     picDetailsWidth = 1.dp,
                     goToAuthScreen = goToAuthScreen,
                     goToPicsListScreen = {}
@@ -117,6 +127,7 @@ fun PicPortraitLayout(
                     saveStateSnapshot = saveStateSnapshot,
                     getCollection = getCollection,
                     appState = appState,
+                    state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen
                 )
