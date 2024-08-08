@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.layouts
+package xapics.app.presentation.screens.home.layouts
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,8 +22,8 @@ import xapics.app.TagState
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
-import xapics.app.presentation.screens.homeScreen.components.RandomPic
-import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
+import xapics.app.presentation.screens.home.components.RandomPic
+import xapics.app.presentation.screens.home.components.rollCardsGrid
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -44,19 +44,21 @@ fun HomePortraitCompactLayout(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        item(
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
-            Box(
-                modifier = Modifier.height((maxWidth.value / 1.5).dp)
+        state.pic?.let {
+            item(
+                span = { GridItemSpan(maxLineSpan) }
             ) {
-                RandomPic(
-                    pic = state.pic,
-                    getRandomPic = getRandomPic,
-                    updateAndGoToPicScreen = updateAndGoToPicScreen,
-                    modifier = Modifier.fillMaxWidth(),
-                    paddingModifier = Modifier
-                )
+                Box(
+                    modifier = Modifier.height((maxWidth.value / 1.5).dp)
+                ) {
+                    RandomPic(
+                        pic = it,
+                        getRandomPic = getRandomPic,
+                        updateAndGoToPicScreen = updateAndGoToPicScreen,
+                        modifier = Modifier.fillMaxWidth(),
+                        paddingModifier = Modifier
+                    )
+                }
             }
         }
 

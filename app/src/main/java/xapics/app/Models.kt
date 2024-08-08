@@ -1,9 +1,20 @@
 package xapics.app
 
+import androidx.annotation.StringRes
+
 
 enum class TagState { DISABLED, ENABLED, SELECTED }
 
 enum class OnPicsListScreenRefresh { SEARCH, GET_COLLECTION }
+
+enum class NavList(@StringRes val title: Int) {
+    HomeScreen(title = R.string.home_screen),
+    PicsListScreen(title = R.string.pics_list_screen),
+    PicScreen(title = R.string.pic_screen),
+    SearchScreen(title = R.string.search_screen),
+    AuthScreen(title = R.string.auth_screen),
+    ProfileScreen(title = R.string.profile_screen),
+}
 
 
 data class Pic(
@@ -31,10 +42,3 @@ data class Tag(
     val value: String,
     var state: TagState = TagState.ENABLED
 )
-
-//data class StateSnapshot(
-//    val picsList: List<Pic>,
-//    var pic: Pic?,
-//    var picIndex: Int?,
-//    val topBarCaption: String
-//)

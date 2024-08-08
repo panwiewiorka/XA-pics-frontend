@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.layouts
+package xapics.app.presentation.screens.home.layouts
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -32,8 +32,8 @@ import xapics.app.TagState
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
-import xapics.app.presentation.screens.homeScreen.components.RandomPic
-import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
+import xapics.app.presentation.screens.home.components.RandomPic
+import xapics.app.presentation.screens.home.components.rollCardsGrid
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
@@ -89,16 +89,18 @@ fun HomeLandscapeCompactLayout(
                 .fillMaxSize()
                 .padding(bottom = padding)
         ) {
-            item(
-                span = { GridItemSpan(maxLineSpan) }
-            ) {
-                RandomPic(
-                    pic = state.pic,
-                    getRandomPic = getRandomPic,
-                    updateAndGoToPicScreen = updateAndGoToPicScreen,
-                    modifier = Modifier.fillMaxHeight(),
-                    paddingModifier = Modifier.padding(start = 8.dp, end = 32.dp, top = 1.dp)
-                )
+            state.pic?.let {
+                item(
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
+                    RandomPic(
+                        pic = it,
+                        getRandomPic = getRandomPic,
+                        updateAndGoToPicScreen = updateAndGoToPicScreen,
+                        modifier = Modifier.fillMaxHeight(),
+                        paddingModifier = Modifier.padding(start = 8.dp, end = 32.dp, top = 1.dp)
+                    )
+                }
             }
 
             rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, false, Modifier)

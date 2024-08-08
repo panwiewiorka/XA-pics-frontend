@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.profileScreen.components
+package xapics.app.presentation.screens.profile.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

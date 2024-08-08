@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.layouts
+package xapics.app.presentation.screens.home.layouts
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.homeScreen.components.RandomPic
-import xapics.app.presentation.screens.homeScreen.components.TagsCloud
-import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
+import xapics.app.presentation.screens.home.components.RandomPic
+import xapics.app.presentation.screens.home.components.TagsCloud
+import xapics.app.presentation.screens.home.components.rollCardsGrid
 
 @Composable
 fun HomePortraitMediumLayout(
@@ -52,13 +52,15 @@ fun HomePortraitMediumLayout(
                     .height(maxWidth / 3)
             ) {
                 Row {
-                    RandomPic(
-                        pic = state.pic,
-                        getRandomPic = getRandomPic,
-                        updateAndGoToPicScreen = updateAndGoToPicScreen,
-                        modifier = Modifier.weight(1f),
-                        paddingModifier = Modifier,
-                    )
+                    state.pic?.let {
+                        RandomPic(
+                            pic = it,
+                            getRandomPic = getRandomPic,
+                            updateAndGoToPicScreen = updateAndGoToPicScreen,
+                            modifier = Modifier.weight(1f),
+                            paddingModifier = Modifier,
+                        )
+                    }
 
                     Box(
                         modifier = Modifier

@@ -1,56 +1,40 @@
 package xapics.app.presentation.screens
 
 import android.annotation.SuppressLint
-import android.os.Build
-import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import xapics.app.R
+import xapics.app.NavList
 import xapics.app.presentation.MainViewModel
-import xapics.app.presentation.screens.homeScreen.HomeScreen
-import xapics.app.presentation.screens.picScreen.PicScreen
-import xapics.app.presentation.screens.profileScreen.ProfileScreen
+import xapics.app.presentation.screens.home.HomeScreen
+import xapics.app.presentation.screens.pic.PicScreen
+import xapics.app.presentation.screens.pic.PicViewModel
+import xapics.app.presentation.screens.picsList.PicsListScreen
+import xapics.app.presentation.screens.picsList.PicsListViewModel
+import xapics.app.presentation.screens.profile.ProfileScreen
+import xapics.app.presentation.screens.search.SearchScreen
+import xapics.app.presentation.screens.search.SearchViewModel
 import xapics.app.presentation.topBar.TopBar
 import xapics.app.presentation.topBar.TopBarViewModel
 
-enum class NavList(@StringRes val title: Int) {
-    HomeScreen(title = R.string.home_screen),
-    PicsListScreen(title = R.string.pics_list_screen),
-    PicScreen(title = R.string.pic_screen),
-    SearchScreen(title = R.string.search_screen),
-    AuthScreen(title = R.string.auth_screen),
-    ProfileScreen(title = R.string.profile_screen),
-}
-
-val Int.nonScaledSp
-    @Composable
-    get() = (this / LocalDensity.current.fontScale).sp
 
 @SuppressLint("RestrictedApi")
 @Composable
 fun NavScreen(
     navController: NavHostController = rememberNavController(),
 ) {
-
     val viewModel: MainViewModel = hiltViewModel()
     val appState by viewModel.appState.collectAsState()
     val state by viewModel.state.collectAsState()
@@ -58,26 +42,6 @@ fun NavScreen(
     val currentScreen = NavList.valueOf(
         backStackEntry?.destination?.route ?: NavList.HomeScreen.name
     )
-
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-        val controller = LocalView.current.windowInsetsController
-
-        LaunchedEffect(appState.isFullscreen) {
-            if (appState.isFullscreen) {
-                controller?.apply {
-                    hide(WindowInsetsCompat.Type.statusBars())
-                    hide(WindowInsetsCompat.Type.navigationBars())
-                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                }
-            } else {
-                controller?.apply {
-                    show(WindowInsetsCompat.Type.statusBars())
-                    show(WindowInsetsCompat.Type.navigationBars())
-                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
-                }
-            }
-        }
-    }
 
     Scaffold (
         modifier = Modifier.pointerInput(appState.showSearch) {
@@ -118,7 +82,7 @@ fun NavScreen(
             viewModel.loadStateSnapshot()
 
             when (backStackEntry?.destination?.route) {
-                NavList.PicsListScreen.name -> viewModel.showPicsList(false)
+//                NavList.PicsListScreen.name -> viewModel.showPicsList(false)
                 NavList.PicScreen.name -> viewModel.changeFullScreenMode(false)
             }
             navController.navigateUp()
@@ -148,15 +112,17 @@ fun NavScreen(
                 )
             }
             composable(route = NavList.PicsListScreen.name) {
+                val picsListViewModel: PicsListViewModel = hiltViewModel()
+                val picsListState by picsListViewModel.state.collectAsState()
                 PicsListScreen(
-                    showPicsList = viewModel::showPicsList,
+//                    showPicsList = viewModel::showPicsList,
                     search = viewModel::search,
                     getCollection = viewModel::getCollection,
                     showConnectionError = viewModel::showConnectionError,
-                    saveStateSnapshot = viewModel::saveStateSnapshot,
+                    saveStateSnapshot = picsListViewModel::saveStateSnapshot,
                     toDo = viewModel.onPicsListScreenRefresh,
                     appState = appState,
-                    state = state,
+                    state = picsListState,
                     goToPicScreen = { navController.navigate(NavList.PicScreen.name) },
                     goToAuthScreen = { navController.navigate(NavList.AuthScreen.name) },
                     goBack = { navController.navigateUp() },
@@ -164,26 +130,29 @@ fun NavScreen(
                 )
             }
             composable(route = NavList.PicScreen.name) {
+                val picViewModel: PicViewModel = hiltViewModel()
+                val picState by picViewModel.state.collectAsState() // todo two states??? vv
+                val picScreenState by picViewModel.picScreenState.collectAsState()
                 PicScreen(
-                    search = viewModel::search,
-                    saveStateSnapshot = viewModel::saveStateSnapshot,
-//                    getPicCollections = viewModel::getPicCollections,
-                    getCollection = viewModel::getCollection,
-                    editCollection = viewModel::editCollection,
-                    updateCollectionToSaveTo = viewModel::updateCollectionToSaveTo,
-                    changeFullScreenMode = viewModel::changeFullScreenMode,
-                    showConnectionError = viewModel::showConnectionError,
-                    appState = appState,
-                    state = state,
+                    search = picViewModel::search,
+                    saveStateSnapshot = picViewModel::saveStateSnapshot,
+                    getCollection = picViewModel::getCollection,
+                    editCollection = picViewModel::editCollection,
+                    updateCollectionToSaveTo = picViewModel::updateCollectionToSaveTo,
+                    changeFullScreenMode = picViewModel::changeFullScreenMode,
+                    showConnectionError = picViewModel::showConnectionError,
+                    picScreenState = picScreenState,
+                    state = picState,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) }
                 ) { navController.navigate(NavList.AuthScreen.name) }
             }
             composable(route = NavList.SearchScreen.name) {
+                val searchViewModel: SearchViewModel = hiltViewModel()
                 SearchScreen(
-                    search = viewModel::search,
-                    getAllTags = viewModel::getAllTags,
-                    getFilteredTags = viewModel::getFilteredTags,
-                    appState = appState,
+                    search = searchViewModel::search,
+                    getAllTags = searchViewModel::getAllTags,
+                    getFilteredTags = searchViewModel::getFilteredTags,
+                    tags = searchViewModel.tags,
                     goToPicsListScreen = { navController.navigate(NavList.PicsListScreen.name) },
                 )
             }

@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens
+package xapics.app.presentation.screens.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.theme.myTextButtonColors
 
@@ -26,7 +25,7 @@ fun SearchScreen(
     search: (String) -> Unit,
     getAllTags: () -> Unit,
     getFilteredTags: (Tag) -> Unit,
-    appState: AppState,
+    tags: List<Tag>,
     goToPicsListScreen: () -> Unit,
 ) {
     Column(
@@ -39,10 +38,10 @@ fun SearchScreen(
                 .fillMaxWidth()
         ) {
             TextButton(
-                enabled = appState.tags.any { it.state == TagState.SELECTED },
+                enabled = tags.any { it.state == TagState.SELECTED },
                 colors = myTextButtonColors(),
                 onClick = {
-                    val filters = appState.tags.filter { it.state == TagState.SELECTED }
+                    val filters = tags.filter { it.state == TagState.SELECTED }
                         .map { "${it.type} = ${it.value}" }
                         .toString().drop(1).dropLast(1)
                     search(filters)
@@ -53,7 +52,7 @@ fun SearchScreen(
             }
 
             TextButton(
-                enabled = appState.tags.any { it.state == TagState.SELECTED },
+                enabled = tags.any { it.state == TagState.SELECTED },
                 colors = myTextButtonColors(),
                 onClick = { getAllTags() }
             ) {
@@ -64,7 +63,7 @@ fun SearchScreen(
         FlowRow(
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            appState.tags.forEach {
+            tags.forEach {
                 PicTag(it) {
                     getFilteredTags(it)
                 }

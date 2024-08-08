@@ -7,7 +7,7 @@ import xapics.app.data.db.XaDao
 class GetSnapshotFlowUseCase(
     private val dao: XaDao,
 ) {
-    operator fun invoke(): Flow<StateSnapshot> {
+    operator fun invoke(): Flow<StateSnapshot?> {
         return dao.getSnapshotFlow()
     }
 }

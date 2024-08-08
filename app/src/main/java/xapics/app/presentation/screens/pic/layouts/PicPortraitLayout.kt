@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.picScreen.layouts
+package xapics.app.presentation.screens.pic.layouts
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -16,29 +16,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import xapics.app.Pic
 import xapics.app.data.db.StateSnapshot
-import xapics.app.presentation.AppState
 import xapics.app.presentation.components.AsyncPic
-import xapics.app.presentation.screens.picScreen.components.PicDetails
-import xapics.app.presentation.screens.picScreen.components.PicTags
+import xapics.app.presentation.screens.pic.PicScreenState
+import xapics.app.presentation.screens.pic.components.PicDetails
+import xapics.app.presentation.screens.pic.components.PicTags
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicPortraitLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (
-        replaceExisting: Boolean,
-        picsList: List<Pic>?,
-        pic: Pic?,
-        picIndex: Int?,
-        topBarCaption: String?
-    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
-    appState: AppState,
+    picScreenState: PicScreenState,
     state: StateSnapshot,
     pagerState: PagerState,
     goToPicsListScreen: () -> Unit,
@@ -48,10 +40,10 @@ fun PicPortraitLayout(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxSize()
-            .background(if (appState.isFullscreen) Color.Black else Color.Transparent)
+            .background(if (picScreenState.isFullscreen) Color.Black else Color.Transparent)
             .padding(vertical = 32.dp)
     ) {
-        if (appState.isFullscreen) {
+        if (picScreenState.isFullscreen) {
             Spacer(modifier = Modifier.weight(1f))
         }
 
@@ -75,7 +67,7 @@ fun PicPortraitLayout(
             }
         }
 
-        if (appState.isFullscreen) {
+        if (picScreenState.isFullscreen) {
             Spacer(modifier = Modifier.weight(1f))
         } else {
             Column(
@@ -84,23 +76,20 @@ fun PicPortraitLayout(
             ) {
                 PicDetails(
                     search = search,
-                    saveStateSnapshot = saveStateSnapshot,
                     getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     blurContent = {},
-                    appState = appState,
+                    picScreenState = picScreenState,
                     state = state,
                     picDetailsWidth = 1.dp,
-                    goToAuthScreen = goToAuthScreen,
-                    goToPicsListScreen = {}
-                )
+                    goToAuthScreen = goToAuthScreen
+                ) {}
 
                 PicTags(
                     search = search,
-                    saveStateSnapshot = saveStateSnapshot,
                     getCollection = getCollection,
-                    appState = appState,
+                    picScreenState = picScreenState,
                     state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen

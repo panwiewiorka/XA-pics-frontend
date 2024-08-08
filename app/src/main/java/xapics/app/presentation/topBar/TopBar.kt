@@ -47,12 +47,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import xapics.app.NavList
 import xapics.app.R
 import xapics.app.TagState
 import xapics.app.data.db.StateSnapshot
+import xapics.app.nonScaledSp
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.NavList
-import xapics.app.presentation.screens.nonScaledSp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -125,8 +125,9 @@ fun TopBar(
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-                    loadStateSnapshot()
-                    if (page == NavList.PicsListScreen.name) showPicsList(false)
+//                    loadStateSnapshot()
+//                    if (page == NavList.PicsListScreen.name) showPicsList(false)
+                    if (page == NavList.PicsListScreen.name || page == NavList.PicScreen.name) loadStateSnapshot()
                     goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
@@ -174,7 +175,7 @@ fun TopBar(
                             modifier = Modifier
                                 .basicMarquee()
                                 .weight(1f)
-                                .clickable(enabled = page == NavList.PicScreen.name && state.picsList.size > 1) { goToPicsListScreen() }
+//                                .clickable(enabled = page == NavList.PicScreen.name && state.picsList.size > 1) { goToPicsListScreen() }
                         )
                     }
 

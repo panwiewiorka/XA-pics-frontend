@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.picScreen.layouts
+package xapics.app.presentation.screens.pic.layouts
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,28 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import xapics.app.Pic
 import xapics.app.data.db.StateSnapshot
-import xapics.app.presentation.AppState
 import xapics.app.presentation.components.AsyncPic
-import xapics.app.presentation.screens.picScreen.components.PicDetails
+import xapics.app.presentation.screens.pic.PicScreenState
+import xapics.app.presentation.screens.pic.components.PicDetails
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicLandscapeLayout(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (
-        replaceExisting: Boolean,
-        picsList: List<Pic>?,
-        pic: Pic?,
-        picIndex: Int?,
-        topBarCaption: String?
-    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
-    appState: AppState,
+    picScreenState: PicScreenState,
     state: StateSnapshot,
     pagerState: PagerState,
     goToPicsListScreen: () -> Unit,
@@ -66,7 +58,7 @@ fun PicLandscapeLayout(
         modifier = Modifier
             .fillMaxSize()
             .blur(blurAmount)
-            .background(if (appState.isFullscreen) Color.Black else Color.Transparent)
+            .background(if (picScreenState.isFullscreen) Color.Black else Color.Transparent)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -92,15 +84,14 @@ fun PicLandscapeLayout(
             }
         }
 
-        if (!appState.isFullscreen) {
+        if (!picScreenState.isFullscreen) {
             PicDetails(
                 search = search,
-                saveStateSnapshot = saveStateSnapshot,
                 getCollection = getCollection,
                 editCollection = editCollection,
                 updateCollectionToSaveTo = updateCollectionToSaveTo,
                 blurContent = ::blurContent,
-                appState = appState,
+                picScreenState = picScreenState,
                 state = state,
                 picDetailsWidth = picDetailsWidth,
                 goToAuthScreen = goToAuthScreen,

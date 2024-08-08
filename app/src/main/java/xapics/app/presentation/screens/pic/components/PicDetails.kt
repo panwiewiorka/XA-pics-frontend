@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.picScreen.components
+package xapics.app.presentation.screens.pic.components
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -30,29 +30,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.Pic
 import xapics.app.R
 import xapics.app.TAG
 import xapics.app.data.db.StateSnapshot
-import xapics.app.presentation.AppState
 import xapics.app.presentation.components.CollectionsDropDownMenu
+import xapics.app.presentation.screens.pic.PicScreenState
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
     search: (query: String) -> Unit,
-    saveStateSnapshot: (
-        replaceExisting: Boolean,
-        picsList: List<Pic>?,
-        pic: Pic?,
-        picIndex: Int?,
-        topBarCaption: String?
-    ) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
     blurContent: (Boolean) -> Unit,
-    appState: AppState,
+    picScreenState: PicScreenState,
     state: StateSnapshot,
     picDetailsWidth: Dp,
     goToAuthScreen: () -> Unit,
@@ -81,9 +73,8 @@ fun PicDetails(
             confirmButton = {
                 PicTags(
                     search = search,
-                    saveStateSnapshot = saveStateSnapshot,
                     getCollection = getCollection,
-                    appState = appState,
+                    picScreenState = picScreenState,
                     state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen
@@ -127,9 +118,9 @@ fun PicDetails(
 
                 Box {
                     CollectionsDropDownMenu(
-                        userCollections = appState.userCollections,
-                        picCollections = appState.picCollections,
-                        collectionToSaveTo = appState.collectionToSaveTo,
+                        userCollections = picScreenState.userCollections,
+                        picCollections = picScreenState.picCollections,
+                        collectionToSaveTo = picScreenState.collectionToSaveTo,
                         picId = state.pic.id,
                         editCollection = editCollection,
                         updateCollectionToSaveTo = updateCollectionToSaveTo,
@@ -141,15 +132,15 @@ fun PicDetails(
                 IconButton(
                     onClick = {
                         editCollection(
-                            appState.collectionToSaveTo,
+                            picScreenState.collectionToSaveTo,
                             state.pic.id,
                             goToAuthScreen
                         )
                     },
                 ) {
-                    val collection = appState.collectionToSaveTo
-                    val picInCollection = appState.picCollections.contains(collection)
-                    Log.d(TAG, "PicDetails: collectionToSaveTo = $collection, picCollections: ${appState.picCollections}")
+                    val collection = picScreenState.collectionToSaveTo
+                    val picInCollection = picScreenState.picCollections.contains(collection)
+                    Log.d(TAG, "PicDetails: collectionToSaveTo = $collection, picCollections: ${picScreenState.picCollections}")
                     if (collection == stringResource(R.string.fav_collection)) {
                         if (picInCollection) {
                             Icon(Icons.Filled.Favorite, "Remove from $collection")

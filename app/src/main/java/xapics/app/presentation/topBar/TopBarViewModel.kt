@@ -29,7 +29,7 @@ class TopBarViewModel @Inject constructor (
     init {
         viewModelScope.launch {
             useCases.getSnapshotFlow().collect { value ->
-                _state.value = value
+                value?.let { _state.value = value }
             }
         }
     }

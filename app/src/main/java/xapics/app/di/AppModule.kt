@@ -42,12 +42,6 @@ object AppModule {
             .create(PicsApi::class.java)
     }
 
-//    @Provides
-//    @Singleton
-//    fun provideSharedPref(app: Application): SharedPreferences {
-//        return app.getSharedPreferences("prefs", MODE_PRIVATE)
-//    }
-
     @Provides
     @Singleton
     fun provideEncryptedSharedPref(impl: EncryptedSharedPrefsImpl): EncryptedSharedPrefs {

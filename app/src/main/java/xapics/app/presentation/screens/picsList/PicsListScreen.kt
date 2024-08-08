@@ -1,6 +1,5 @@
-package xapics.app.presentation.screens
+package xapics.app.presentation.screens.picsList
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
@@ -26,29 +25,26 @@ import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.OnPicsListScreenRefresh
-import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
-import xapics.app.TAG
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.components.AsyncPic
-import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicsListScreen(
-    showPicsList: (Boolean) -> Unit,
+//    showPicsList: (Boolean) -> Unit,
     search: (query: String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
     saveStateSnapshot: (
-        replaceExisting: Boolean,
-        picsList: List<Pic>?,
-        pic: Pic?,
-        picIndex: Int?,
-        topBarCaption: String?
+//        replaceExisting: Boolean,
+//        picsList: List<Pic>?,
+        pic: Pic,
+        picIndex: Int,
+//        topBarCaption: String?
             ) -> Unit,
     toDo: Pair<OnPicsListScreenRefresh, String>,
     appState: AppState,
@@ -61,7 +57,7 @@ fun PicsListScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        showPicsList(true)
+//        showPicsList(true)
     }
 
     LaunchedEffect(state.picsList) {
@@ -86,16 +82,16 @@ fun PicsListScreen(
     ) {
         when {
             appState.showConnectionError -> {
-                ConnectionErrorButton {
-                    if (toDo.first == SEARCH) {
-                        search(toDo.second)
-                    } else {
-                        getCollection(toDo.second, goToAuthScreen)
-                    }
-                    showConnectionError(false)
-                }
+//                ConnectionErrorButton {
+//                    if (toDo.first == SEARCH) {
+//                        search(toDo.second)
+//                    } else {
+//                        getCollection(toDo.second, goToAuthScreen)
+//                    }
+//                    showConnectionError(false)
+//                }
             }
-            !appState.showPicsList -> { }
+//            !appState.showPicsList -> { }
             state.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
             state.picsList.size == 1 -> {} // going to PicScreen
             else -> {
@@ -107,7 +103,7 @@ fun PicsListScreen(
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
-                            saveStateSnapshot(false, null, state.picsList[index], index, null)
+                            saveStateSnapshot(state.picsList[index], index)
                             goToPicScreen()
                         }
                     )

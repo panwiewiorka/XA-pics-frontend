@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.profileScreen
+package xapics.app.presentation.screens.profile
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import xapics.app.Thumb
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.ConnectionErrorButton
-import xapics.app.presentation.screens.profileScreen.components.UserView
+import xapics.app.presentation.screens.profile.components.UserView
 
 @Composable
 fun ProfileScreen(

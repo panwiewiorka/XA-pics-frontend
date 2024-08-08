@@ -1,6 +1,9 @@
 package xapics.app
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.sp
 import xapics.app.presentation.theme.AlphaGray
 import xapics.app.presentation.theme.CollectionTag
 import xapics.app.presentation.theme.DefaultTag
@@ -10,6 +13,10 @@ import xapics.app.presentation.theme.RollTag
 import xapics.app.presentation.theme.YearTag
 
 const val TAG = "mytag"
+
+val Int.nonScaledSp
+    @Composable
+    get() = (this / LocalDensity.current.fontScale).sp
 
 fun String.toTagsList(): List<Tag> {
     val list = this.split(", ").toMutableList()

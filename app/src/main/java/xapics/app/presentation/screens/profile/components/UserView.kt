@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.profileScreen.components
+package xapics.app.presentation.screens.profile.components
 
 import android.content.Context
 import android.widget.Toast

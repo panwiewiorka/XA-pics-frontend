@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen.layouts
+package xapics.app.presentation.screens.home.layouts
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
-import xapics.app.presentation.screens.homeScreen.components.RandomPic
-import xapics.app.presentation.screens.homeScreen.components.TagsCloud
-import xapics.app.presentation.screens.homeScreen.components.rollCardsGrid
+import xapics.app.presentation.screens.home.components.RandomPic
+import xapics.app.presentation.screens.home.components.TagsCloud
+import xapics.app.presentation.screens.home.components.rollCardsGrid
 
 @Composable
 fun HomeLandscapeMediumLayout(
@@ -57,7 +57,15 @@ fun HomeLandscapeMediumLayout(
                     .width((maxHeight.value * 0.75).dp)
             ) {
                 Column {
-                    RandomPic(state.pic, getRandomPic, updateAndGoToPicScreen, Modifier, Modifier)
+                    state.pic?.let {
+                        RandomPic(
+                            pic = it,
+                            getRandomPic = getRandomPic,
+                            updateAndGoToPicScreen = updateAndGoToPicScreen,
+                            modifier = Modifier,
+                            paddingModifier = Modifier
+                        )
+                    }
 
                     Box {
                         TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)

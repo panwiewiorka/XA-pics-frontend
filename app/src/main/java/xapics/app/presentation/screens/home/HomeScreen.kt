@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens.homeScreen
+package xapics.app.presentation.screens.home
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +14,10 @@ import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.components.ConnectionErrorButton
-import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeCompactLayout
-import xapics.app.presentation.screens.homeScreen.layouts.HomeLandscapeMediumLayout
-import xapics.app.presentation.screens.homeScreen.layouts.HomePortraitCompactLayout
-import xapics.app.presentation.screens.homeScreen.layouts.HomePortraitMediumLayout
+import xapics.app.presentation.screens.home.layouts.HomeLandscapeCompactLayout
+import xapics.app.presentation.screens.home.layouts.HomeLandscapeMediumLayout
+import xapics.app.presentation.screens.home.layouts.HomePortraitCompactLayout
+import xapics.app.presentation.screens.home.layouts.HomePortraitMediumLayout
 import xapics.app.presentation.windowInfo
 
 @Composable

@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,9 +16,6 @@ import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
 import xapics.app.TAG
 import xapics.app.Tag
-import xapics.app.TagState.DISABLED
-import xapics.app.TagState.ENABLED
-import xapics.app.TagState.SELECTED
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
 import xapics.app.data.db.StateSnapshot
@@ -52,13 +47,13 @@ class MainViewModel @Inject constructor (
     var onPicsListScreenRefresh = Pair(SEARCH, "")
 
     init {
-        CoroutineScope(Dispatchers.Default).launch {
-            useCases.populateStateDb()
-        }
+//        CoroutineScope(Dispatchers.Default).launch {
+//        }
 
         viewModelScope.launch {
+            useCases.populateStateDb()
             useCases.getSnapshotFlow().collect { value ->
-                _state.value = value
+                value?.let { _state.value = value }
             }
         }
 
@@ -332,38 +327,8 @@ class MainViewModel @Inject constructor (
             try {
                 updateLoadingState(true)
 
-                var selectedTags = appState.value.tags.filter { it.state == SELECTED }
-
-                selectedTags = if (clickedTag.state == SELECTED) {
-                    selectedTags.minus(clickedTag)
-                } else {
-                    selectedTags.plus(clickedTag)
-                }
-
-                val query = selectedTags.map {
-                    "${it.type} = ${it.value}"
-                }.toString().drop(1).dropLast(1)
-
-                val filteredTags = if (query.isEmpty()) {
-                    picsRepository.getAllTags()
-                } else {
-                    picsRepository.getFilteredTags(query)
-                }
-
-                val refreshedTags = appState.value.tags.toMutableList()
-                refreshedTags.forEach { tag ->
-                    val isClickedTag = clickedTag.type == tag.type && clickedTag.value == tag.value
-                    val shouldBeEnabled = filteredTags.any { it.type == tag.type && it.value == tag.value }
-
-                    when {
-                        isClickedTag -> if (clickedTag.state == SELECTED) tag.state = ENABLED else tag.state = SELECTED
-                        shouldBeEnabled -> if (tag.state != SELECTED) tag.state = ENABLED
-                        else -> if (selectedTags.none { it.type == tag.type }) tag.state = DISABLED
-                    }
-                }
-
                 _appState.update { it.copy(
-                    tags = refreshedTags,
+                    tags = picsRepository.getFilteredTags(clickedTag, appState.value.tags),
                     isLoading = false
                 )}
 
