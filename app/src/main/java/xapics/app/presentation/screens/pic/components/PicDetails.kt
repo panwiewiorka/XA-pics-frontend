@@ -140,7 +140,6 @@ fun PicDetails(
                 ) {
                     val collection = picScreenState.collectionToSaveTo
                     val picInCollection = picScreenState.picCollections.contains(collection)
-                    Log.d(TAG, "PicDetails: collectionToSaveTo = $collection, picCollections: ${picScreenState.picCollections}")
                     if (collection == stringResource(R.string.fav_collection)) {
                         if (picInCollection) {
                             Icon(Icons.Filled.Favorite, "Remove from $collection")

@@ -51,7 +51,7 @@ fun PicPortraitLayout(
             HorizontalPager(
                 state = pagerState,
                 pageSize = PageSize.Fill,
-                beyondBoundsPageCount = 1,
+                beyondViewportPageCount = 1,
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
             ) {index ->
                 val pic = state.picsList[index]

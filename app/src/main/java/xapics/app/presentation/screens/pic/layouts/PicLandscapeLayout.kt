@@ -63,7 +63,7 @@ fun PicLandscapeLayout(
         HorizontalPager(
             state = pagerState,
             pageSize = PageSize.Fill,
-            beyondBoundsPageCount = 1,
+            beyondViewportPageCount = 1,
             modifier = Modifier
                 .weight(1f)
                 .aspectRatio(3 / 2f)

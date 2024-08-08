@@ -37,6 +37,7 @@ import xapics.app.presentation.windowInfo
 fun PicsListScreen(
 //    showPicsList: (Boolean) -> Unit,
     search: (query: String) -> Unit,
+    query: String,
     getCollection: (collection: String, () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
     saveStateSnapshot: (
@@ -49,6 +50,7 @@ fun PicsListScreen(
     toDo: Pair<OnPicsListScreenRefresh, String>,
     appState: AppState,
     state: StateSnapshot,
+    picsList: List<Pic>,
     goToPicScreen: () -> Unit,
     goToAuthScreen: () -> Unit,
     goBack: () -> Unit,
@@ -58,14 +60,15 @@ fun PicsListScreen(
 
     LaunchedEffect(Unit) {
 //        showPicsList(true)
+        search(query)
     }
 
-    LaunchedEffect(state.picsList) {
-        if (state.picsList.size == 1) {
+    LaunchedEffect(picsList) {
+        if (picsList.size == 1) {
             goBack()
             if (previousPage != "PicScreen") goToPicScreen()
         } else {
-            state.picsList.forEach {// preloading images
+            picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)
                     .data(it.imageUrl)
                     // Optional, but setting a ViewSizeResolver will conserve memory by limiting the size the image should be preloaded into memory at.
@@ -92,18 +95,18 @@ fun PicsListScreen(
 //                }
             }
 //            !appState.showPicsList -> { }
-            state.picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
-            state.picsList.size == 1 -> {} // going to PicScreen
+            picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
+            picsList.size == 1 -> {} // going to PicScreen
             else -> {
                 @Composable
                 fun picItem(index: Int, modifier: Modifier = Modifier) {
-                    val pic = state.picsList[index]
+                    val pic = picsList[index]
                     AsyncPic(
                         url = pic.imageUrl,
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
-                            saveStateSnapshot(state.picsList[index], index)
+                            saveStateSnapshot(picsList[index], index)
                             goToPicScreen()
                         }
                     )
@@ -125,8 +128,8 @@ fun PicsListScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(
-                            count = state.picsList.size,
-                            key = { state.picsList[it].id },
+                            count = picsList.size,
+                            key = { picsList[it].id },
                         ) {
                             picItem(
                                 index = it,
@@ -153,8 +156,8 @@ fun PicsListScreen(
                             .padding(bottom = if (isCompact) 32.dp else 0.dp)
                     ) {
                         items(
-                            count = state.picsList.size,
-                            key = { state.picsList[it].id },
+                            count = picsList.size,
+                            key = { picsList[it].id },
                         ) {
                             picItem(
                                 index = it,

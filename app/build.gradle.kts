@@ -4,16 +4,17 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     id ("kotlin-kapt")
     id ("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 android {
     namespace = "xapics.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "xapics.app"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -72,8 +73,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
 //    implementation(libs.androidx.compose.animation)
-//    implementation(libs.androidx.navigation.compose)
-
+    implementation(libs.androidx.navigation.compose)
+    implementation (libs.kotlinx.serialization.json)
     // Coil
     implementation (libs.coil.compose)
 

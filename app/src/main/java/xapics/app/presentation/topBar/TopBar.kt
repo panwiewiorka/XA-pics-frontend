@@ -1,6 +1,5 @@
 package xapics.app.presentation.topBar
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -40,15 +39,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import xapics.app.NavList
 import xapics.app.R
+import xapics.app.Screen
 import xapics.app.TagState
 import xapics.app.data.db.StateSnapshot
 import xapics.app.nonScaledSp
@@ -69,21 +67,28 @@ fun TopBar(
     goToProfileScreen: () -> Unit,
     goToPicsListScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
-    page: String?,
-    previousPage: String?,
-    @StringRes pageName: Int,
+    page: String,
+    previousPage: String,
+//    pageName: String,
+//    @StringRes pageName: Int,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val focusRequester = remember { FocusRequester() }
-        val text = when (page) {
-            NavList.PicsListScreen.name -> state.topBarCaption
-            NavList.PicScreen.name -> state.topBarCaption
-            NavList.AuthScreen.name -> state.topBarCaption
-            NavList.ProfileScreen.name -> appState.userName ?: ""
-            else -> stringResource(id = pageName)
+//        val text = when (page) {
+//            NavList.PicsListScreen.name -> state.topBarCaption
+//            NavList.PicScreen.name -> state.topBarCaption
+//            NavList.AuthScreen.name -> state.topBarCaption
+//            NavList.ProfileScreen.name -> appState.userName ?: ""
+//            else -> stringResource(id = pageName)
+//        }
+        val text = when(page) {
+            Screen.Home.toString() -> "XA pics"
+            Screen.Search.toString() -> "Search"
+            Screen.Profile.toString() -> appState.userName
+            else -> state.topBarCaption
         }
         val searchText = ""
         var query by remember { mutableStateOf (
@@ -103,7 +108,8 @@ fun TopBar(
                 .toString().drop(1).dropLast(1)
 
             when {
-                page == NavList.SearchScreen.name && filters.isNotBlank() -> {
+                page == Screen.Search.toString() && filters.isNotBlank() -> {
+//                page == NavList.SearchScreen.name && filters.isNotBlank() -> {
                     val prefix = if (formattedQuery.isBlank()) "" else "search = $formattedQuery, "
                     search(prefix + filters)
                     goToPicsListScreen()
@@ -119,15 +125,13 @@ fun TopBar(
 
         @Composable
         fun HomeOrBackButton() {
-            if (page == NavList.HomeScreen.name) {
+            if (page == Screen.Home.toString()) {
                 IconButton(enabled = false, onClick = {  }) {
                     Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-//                    loadStateSnapshot()
-//                    if (page == NavList.PicsListScreen.name) showPicsList(false)
-                    if (page == NavList.PicsListScreen.name || page == NavList.PicScreen.name) loadStateSnapshot()
+                    if (page == Screen.PicsList.toString() || page == Screen.Pic.toString()) loadStateSnapshot()
                     goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
@@ -179,7 +183,7 @@ fun TopBar(
                         )
                     }
 
-                    if (page != NavList.SearchScreen.name && appState.showSearch) {
+                    if (page != Screen.Search.toString() && appState.showSearch) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -209,7 +213,7 @@ fun TopBar(
 
         @Composable
         fun ProfileOrLogOutButton() {
-            if(page == NavList.ProfileScreen.name) {
+            if(page == Screen.Profile.toString()) {
                 IconButton(onClick = {
                     logOut()
                     goToAuthScreen()
@@ -218,7 +222,7 @@ fun TopBar(
                 }
             } else {
                 IconButton(
-                    enabled = page != NavList.AuthScreen.name,
+                    enabled = page != Screen.Auth.toString(),
                     onClick = {
                         when (appState.userName) {
                             null -> goToAuthScreen()
@@ -233,7 +237,7 @@ fun TopBar(
 
 
 
-        if (page == NavList.ProfileScreen.name && page == previousPage) goBack()
+        if (page == Screen.Profile.toString() && page == previousPage) goBack()
 
         HomeOrBackButton()
 

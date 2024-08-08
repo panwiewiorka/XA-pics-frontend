@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ class PicViewModel @Inject constructor (
 
     init {
         viewModelScope.launch {
-            useCases.getSnapshotFlow().collect { value ->
+            useCases.getSnapshotFlow().collectLatest { value ->
                 value?.let { _state.value = value }
             }
         }
@@ -70,7 +71,7 @@ class PicViewModel @Inject constructor (
 //        topBarCaption: String? = null
     ) {
         viewModelScope.launch {
-            useCases.saveSnapshot(false, null, pic, picIndex, null)
+            useCases.saveSnapshot(true, null, pic, picIndex, null)
 //            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
         }
     }

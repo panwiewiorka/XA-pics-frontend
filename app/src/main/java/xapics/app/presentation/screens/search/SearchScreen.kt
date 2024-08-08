@@ -26,7 +26,7 @@ fun SearchScreen(
     getAllTags: () -> Unit,
     getFilteredTags: (Tag) -> Unit,
     tags: List<Tag>,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -44,8 +44,8 @@ fun SearchScreen(
                     val filters = tags.filter { it.state == TagState.SELECTED }
                         .map { "${it.type} = ${it.value}" }
                         .toString().drop(1).dropLast(1)
-                    search(filters)
-                    goToPicsListScreen()
+//                    search(filters)
+                    goToPicsListScreen(filters)
                 }
             ) {
                 Text(text = "Show filtered pics", fontWeight = FontWeight.Bold, fontSize = 16.sp)
