@@ -13,6 +13,7 @@ sealed class Screen {
     @Serializable
     data class PicsList(val searchQuery: String): Screen() {
         companion object {
+            const val NAME = "PicsList"
             fun from(savedStateHandle: SavedStateHandle) = savedStateHandle.toRoute<PicsList>()
         }
     }
@@ -20,6 +21,7 @@ sealed class Screen {
     @Serializable
     data class Pic(val picIndex: Int): Screen() {
         companion object {
+            const val NAME = "Pic"
             fun from(savedStateHandle: SavedStateHandle) = savedStateHandle.toRoute<Pic>()
         }
     }

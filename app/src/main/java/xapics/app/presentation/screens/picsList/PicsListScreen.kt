@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
 import xapics.app.Pic
+import xapics.app.Screen
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.components.AsyncPic
@@ -51,7 +52,7 @@ fun PicsListScreen(
     LaunchedEffect(picsList) {
         if (picsList.size == 1) {
             goBack()
-            if (previousPage != "PicScreen") goToPicScreen(0)
+            if (previousPage != Screen.Pic.toString()) goToPicScreen(0)
         } else {
             picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)

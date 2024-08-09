@@ -2,6 +2,7 @@ package xapics.app.presentation.screens
 
 //import xapics.app.NavList
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.Screen
+import xapics.app.TAG
 import xapics.app.presentation.MainViewModel
 import xapics.app.presentation.screens.home.HomeScreen
 import xapics.app.presentation.screens.pic.PicScreen
@@ -38,10 +40,10 @@ fun NavScreen(
 ) {
     val viewModel: MainViewModel = hiltViewModel()
     val appState by viewModel.appState.collectAsState()
-//    val state by viewModel.state.collectAsState()
+
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = backStackEntry?.destination?.route?.substringAfterLast('.') ?: "XA pics"
-    val prevScreen = navController.previousBackStackEntry?.destination?.route?.substringAfterLast('.') ?: "XA pics"
+    val currentScreen = backStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
+    val prevScreen = navController.previousBackStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
 
     Scaffold (
         modifier = Modifier.pointerInput(appState.showSearch) {
@@ -73,13 +75,13 @@ fun NavScreen(
         },
     ) { innerPadding ->
         BackHandler(
-            enabled = backStackEntry?.destination?.route == Screen.PicsList.toString()
-                    || backStackEntry?.destination?.route == Screen.Pic.toString()
+            enabled = currentScreen == Screen.PicsList.NAME
+                    || currentScreen == Screen.Pic.NAME
         ) {
             viewModel.loadStateSnapshot()
 
-            when (backStackEntry?.destination?.route) {
-                Screen.Pic.toString() -> viewModel.changeFullScreenMode(false)
+            when (currentScreen) {
+                Screen.Pic.NAME -> viewModel.changeFullScreenMode(false)
             }
             navController.navigateUp()
         }
@@ -89,6 +91,7 @@ fun NavScreen(
             startDestination = Screen.Home,
             modifier = Modifier.padding(innerPadding)
         ) {
+            Log.d(TAG, "NavScreen: $currentScreen")
             composable<Screen.Home> {
                 HomeScreen(
                     authenticate = viewModel::authenticate,
@@ -119,7 +122,7 @@ fun NavScreen(
                     goToPicScreen = { picIndex -> navController.navigate(Screen.Pic(picIndex)) },
                     goToAuthScreen = { navController.navigate(Screen.Auth) },
                     goBack = { navController.navigateUp() },
-                    previousPage = navController.previousBackStackEntry?.destination?.route,
+                    previousPage = prevScreen,
                 )
             }
             composable<Screen.Pic> {

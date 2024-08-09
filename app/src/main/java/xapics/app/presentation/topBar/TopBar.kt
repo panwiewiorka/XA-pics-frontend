@@ -114,7 +114,7 @@ fun TopBar(
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-                    if (page == Screen.PicsList.toString() || page == Screen.Pic.toString()) loadStateSnapshot()
+                    if (page == Screen.PicsList.NAME || page == Screen.Pic.NAME) loadStateSnapshot()
                     goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
