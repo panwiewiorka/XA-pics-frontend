@@ -1,6 +1,5 @@
 package xapics.app.presentation.topBar
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -52,38 +51,27 @@ import xapics.app.data.db.StateSnapshot
 import xapics.app.nonScaledSp
 import xapics.app.presentation.AppState
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopBar(
-    search: (query: String) -> Unit,
     showSearch: (Boolean) -> Unit,
     loadStateSnapshot: () -> Unit,
-    showPicsList: (Boolean) -> Unit,
     logOut: () -> Unit,
     appState: AppState,
     state: StateSnapshot,
     goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (query: String) -> Unit,
     goToSearchScreen: () -> Unit,
     page: String,
     previousPage: String,
-//    pageName: String,
-//    @StringRes pageName: Int,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val focusRequester = remember { FocusRequester() }
-//        val text = when (page) {
-//            NavList.PicsListScreen.name -> state.topBarCaption
-//            NavList.PicScreen.name -> state.topBarCaption
-//            NavList.AuthScreen.name -> state.topBarCaption
-//            NavList.ProfileScreen.name -> appState.userName ?: ""
-//            else -> stringResource(id = pageName)
-//        }
+
         val text = when(page) {
             Screen.Home.toString() -> "XA pics"
             Screen.Search.toString() -> "Search"
@@ -109,15 +97,10 @@ fun TopBar(
 
             when {
                 page == Screen.Search.toString() && filters.isNotBlank() -> {
-//                page == NavList.SearchScreen.name && filters.isNotBlank() -> {
                     val prefix = if (formattedQuery.isBlank()) "" else "search = $formattedQuery, "
-                    search(prefix + filters)
-                    goToPicsListScreen()
+                    goToPicsListScreen(prefix + filters)
                 }
-                formattedQuery.isNotBlank() -> {
-                    search("search = $formattedQuery")
-                    goToPicsListScreen()
-                }
+                formattedQuery.isNotBlank() -> goToPicsListScreen("search = $formattedQuery")
                 else -> {}
             }
             showSearch(false)
@@ -179,7 +162,6 @@ fun TopBar(
                             modifier = Modifier
                                 .basicMarquee()
                                 .weight(1f)
-//                                .clickable(enabled = page == NavList.PicScreen.name && state.picsList.size > 1) { goToPicsListScreen() }
                         )
                     }
 

@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.screens.home.components.RandomPic
 import xapics.app.presentation.screens.home.components.TagsCloud
@@ -29,10 +28,8 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomeLandscapeMediumLayout(
     getRandomPic: () -> Unit,
-    search: (query: String) -> Unit,
     appState: AppState,
-    state: StateSnapshot,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
     maxHeight: Dp,
@@ -57,7 +54,7 @@ fun HomeLandscapeMediumLayout(
                     .width((maxHeight.value * 0.75).dp)
             ) {
                 Column {
-                    state.pic?.let {
+                    appState.randomPic?.let {
                         RandomPic(
                             pic = it,
                             getRandomPic = getRandomPic,
@@ -68,7 +65,13 @@ fun HomeLandscapeMediumLayout(
                     }
 
                     Box {
-                        TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)
+                        TagsCloud(
+                            scrollState = tagsScrollState,
+                            tags = appState.tags,
+                            goToPicsListScreen = goToPicsListScreen,
+                            goToSearchScreen = goToSearchScreen,
+                            padding = padding
+                        )
                     }
                 }
 
@@ -84,7 +87,12 @@ fun HomeLandscapeMediumLayout(
             }
         }
 
-        rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, false, Modifier.padding(bottom = padding))
+        rollCardsGrid(
+            rollThumbnails = appState.rollThumbnails,
+            goToPicsListScreen = goToPicsListScreen,
+            isPortrait = false,
+            modifier = Modifier.padding(bottom = padding)
+        )
 
         item {
             Spacer(modifier = Modifier.width(1.dp))

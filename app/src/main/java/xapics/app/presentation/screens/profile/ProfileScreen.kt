@@ -21,7 +21,7 @@ fun ProfileScreen(
     renameOrDeleteCollection: (String, String?, () -> Unit) -> Unit,
     appState: AppState,
     goToAuthScreen: () -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -35,7 +35,7 @@ fun ProfileScreen(
         contentAlignment = Alignment.Center
     ) {
         when {
-            appState.showConnectionError -> {
+            appState.connectionError -> {
                 ConnectionErrorButton {
                     showConnectionError(false)
                     getUserInfo(goToAuthScreen)

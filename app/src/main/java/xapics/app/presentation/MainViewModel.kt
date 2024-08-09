@@ -8,18 +8,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.OnPicsListScreenRefresh.GET_COLLECTION
-import xapics.app.OnPicsListScreenRefresh.SEARCH
 import xapics.app.Pic
 import xapics.app.TAG
-import xapics.app.Tag
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
-import xapics.app.data.db.StateSnapshot
 import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
@@ -39,23 +34,11 @@ class MainViewModel @Inject constructor (
     private val resultChannel = Channel<AuthResult<String?>>()
     val authResults = resultChannel.receiveAsFlow()
 
-    private val _state = MutableStateFlow(StateSnapshot())
-    val state = _state.asStateFlow()
-
-//    val mergedFlow = merge(appState, state)
-
-
-    var onPicsListScreenRefresh = Pair(SEARCH, "")
 
     init {
-//        CoroutineScope(Dispatchers.Default).launch {
-//        }
-
         viewModelScope.launch {
-            useCases.populateStateDb()
-            useCases.getSnapshotFlow().collectLatest { value ->
-                value?.let { _state.value = value }
-            }
+            val initRandomPic = useCases.populateStateDb() // todo ERRORS!
+            _appState.update { it.copy(randomPic = initRandomPic) }
         }
 
         authenticate()
@@ -198,7 +181,6 @@ class MainViewModel @Inject constructor (
     }
 
     fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
-        clearPicsList()
         updateLoadingState(true)
         viewModelScope.launch {
             try {
@@ -209,7 +191,6 @@ class MainViewModel @Inject constructor (
                 }
                 updateLoadingState(false)
             } catch (e: Exception) {
-                onPicsListScreenRefresh = Pair(GET_COLLECTION, collection)
                 showConnectionError(true)
                 updateLoadingState(false)
                 Log.e(TAG, "getCollection: ", e)
@@ -221,18 +202,6 @@ class MainViewModel @Inject constructor (
         _appState.update { it.copy(
             userCollections = userCollections,
         ) }
-    }
-
-    fun updateCollectionToSaveTo(collection: String) {
-        val isNewCollection = appState.value.userCollections?.firstOrNull { it.title == collection } == null
-        _appState.update { it.copy(
-            collectionToSaveTo = collection,
-        ) }
-        if(isNewCollection) {
-            _appState.update { it.copy(
-                userCollections = appState.value.userCollections?.plus(Thumb(collection, state.value.pic!!.imageUrl)),
-            )}
-        }
     }
 
     private fun getPicCollections(picId: Int) {
@@ -273,25 +242,10 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun search(query: String) {
-        updateLoadingState(true)
-        clearPicsList()
-        viewModelScope.launch {
-            try {
-                useCases.searchPics(query)
-                updateLoadingState(false)
-            } catch (e: Exception) { // TODO if error 500 -> custom error message
-                Log.e(TAG, "search: ", e)
-                onPicsListScreenRefresh = Pair(SEARCH, query)
-                showConnectionError(true)
-                updateLoadingState(false)
-            }
-        }
-    }
-
     fun getRandomPic() {
         viewModelScope.launch {
             try {
+                _appState.update { it.copy(randomPic = useCases.getRandomPic()) }
                 useCases.getRandomPic()
 //                var randomPic = picsRepository.getRandomPic()
 //                if(randomPic == appState.value.pic) randomPic = picsRepository.getRandomPic()
@@ -318,23 +272,6 @@ class MainViewModel @Inject constructor (
 
             } catch (e: Exception) {
                 Log.e(TAG, "getAllTags: ", e)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun getFilteredTags(clickedTag: Tag) {
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
-
-                _appState.update { it.copy(
-                    tags = picsRepository.getFilteredTags(clickedTag, appState.value.tags),
-                    isLoading = false
-                )}
-
-            } catch (e: Exception) {
-                Log.e(TAG, "getFilteredTags: ", e)
                 updateLoadingState(false)
             }
         }
@@ -383,25 +320,12 @@ class MainViewModel @Inject constructor (
 
     fun showConnectionError(show: Boolean){
         _appState.update { it.copy(
-            showConnectionError = show
+            connectionError = show
         )}
     }
 
     fun showSearch(show: Boolean) {
         _appState.update { it.copy(showSearch = show) }
-    }
-
-    fun showPicsList(show: Boolean) {
-        _appState.update { it.copy(
-            showPicsList = show
-        ) }
-    }
-
-    private fun clearPicsList() {
-        _state.update { it.copy(
-            picsList = emptyList(),
-            picIndex = null,
-        )}
     }
 
     fun changeFullScreenMode(fullscreen: Boolean? = null) {

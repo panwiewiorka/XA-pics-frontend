@@ -20,7 +20,13 @@ import xapics.app.presentation.theme.AlmostWhite
 import xapics.app.presentation.theme.AlphaBlack
 
 @Composable
-fun RandomPic(pic: Pic, getRandomPic: () -> Unit, updateAndGoToPicScreen: () -> Unit, modifier: Modifier, paddingModifier: Modifier) {
+fun RandomPic(
+    pic: Pic,
+    getRandomPic: () -> Unit,
+    updateAndGoToPicScreen: () -> Unit,
+    modifier: Modifier,
+    paddingModifier: Modifier
+) {
     Box {
         AsyncPic(
             url = pic.imageUrl,

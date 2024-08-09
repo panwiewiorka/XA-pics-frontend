@@ -6,7 +6,7 @@ import xapics.app.data.db.XaDao
 class GetSnapshotUseCase(
     private val dao: XaDao,
 ) {
-    operator fun invoke(): StateSnapshot {
+    suspend operator fun invoke(): StateSnapshot {
         return dao.getSnapshot()
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.screens.home.components.RandomPic
 import xapics.app.presentation.screens.home.components.TagsCloud
@@ -26,10 +25,8 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomePortraitMediumLayout(
     getRandomPic: () -> Unit,
-    search: (query: String) -> Unit,
     appState: AppState,
-    state: StateSnapshot,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
     maxWidth: Dp,
@@ -52,7 +49,7 @@ fun HomePortraitMediumLayout(
                     .height(maxWidth / 3)
             ) {
                 Row {
-                    state.pic?.let {
+                    appState.randomPic?.let {
                         RandomPic(
                             pic = it,
                             getRandomPic = getRandomPic,
@@ -67,7 +64,13 @@ fun HomePortraitMediumLayout(
                             .weight(1f)
                             .height(maxWidth / 3)
                     ) {
-                        TagsCloud(tagsScrollState, appState.tags, search, goToPicsListScreen, goToSearchScreen, padding)
+                        TagsCloud(
+                            scrollState = tagsScrollState,
+                            tags = appState.tags,
+                            goToPicsListScreen = goToPicsListScreen,
+                            goToSearchScreen = goToSearchScreen,
+                            padding = padding
+                        )
                     }
                 }
 
@@ -78,6 +81,6 @@ fun HomePortraitMediumLayout(
             }
         }
 
-        rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, true, Modifier.padding(padding))
+        rollCardsGrid(appState.rollThumbnails, goToPicsListScreen, true, Modifier.padding(padding))
     }
 }

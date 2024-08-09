@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.screens.home.components.RandomPic
@@ -39,10 +38,8 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomeLandscapeCompactLayout(
     getRandomPic: () -> Unit,
-    search: (query: String) -> Unit,
     appState: AppState,
-    state: StateSnapshot,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     padding: Dp,
     gridState: LazyGridState,
@@ -89,7 +86,7 @@ fun HomeLandscapeCompactLayout(
                 .fillMaxSize()
                 .padding(bottom = padding)
         ) {
-            state.pic?.let {
+            appState.randomPic?.let {
                 item(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {
@@ -103,7 +100,7 @@ fun HomeLandscapeCompactLayout(
                 }
             }
 
-            rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, false, Modifier)
+            rollCardsGrid(appState.rollThumbnails, goToPicsListScreen, false, Modifier)
 
             if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
                 item(
@@ -133,8 +130,7 @@ fun HomeLandscapeCompactLayout(
                     ) {
                         items(tags.size) {
                             PicTag(tags[it]) {
-                                search("${tags[it].type} = ${tags[it].value}")
-                                goToPicsListScreen()
+                                goToPicsListScreen("${tags[it].type} = ${tags[it].value}")
                             }
                         }
                     }

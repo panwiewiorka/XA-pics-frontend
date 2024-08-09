@@ -11,7 +11,7 @@ class SearchPicsUseCase(
     private val api: PicsApi
 ) {
     suspend operator fun invoke(query: String): List<Pic> {
-        val state = dao.loadSnapshot()
+        val state = dao.getSnapshot()
         val picsList = api.search(query)
 
         dao.saveSnapshot(

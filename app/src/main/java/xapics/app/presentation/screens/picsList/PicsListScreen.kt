@@ -24,49 +24,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
-import xapics.app.OnPicsListScreenRefresh
 import xapics.app.Pic
-import xapics.app.data.db.StateSnapshot
-import xapics.app.presentation.AppState
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.components.AsyncPic
+import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicsListScreen(
-//    showPicsList: (Boolean) -> Unit,
-    search: (query: String) -> Unit,
+    isLoading: Boolean,
+    search: () -> Unit,
     query: String,
     getCollection: (collection: String, () -> Unit) -> Unit,
+    connectionErrorIsShown: Boolean,
     showConnectionError: (Boolean) -> Unit,
-    saveStateSnapshot: (
-//        replaceExisting: Boolean,
-//        picsList: List<Pic>?,
-        pic: Pic,
-        picIndex: Int,
-//        topBarCaption: String?
-            ) -> Unit,
-    toDo: Pair<OnPicsListScreenRefresh, String>,
-    appState: AppState,
-    state: StateSnapshot,
+    saveStateSnapshot: (pic: Pic, picIndex: Int) -> Unit,
     picsList: List<Pic>,
-    goToPicScreen: () -> Unit,
+    goToPicScreen: (picIndex: Int) -> Unit,
     goToAuthScreen: () -> Unit,
     goBack: () -> Unit,
     previousPage: String?
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-//        showPicsList(true)
-        search(query)
-    }
-
     LaunchedEffect(picsList) {
         if (picsList.size == 1) {
             goBack()
-            if (previousPage != "PicScreen") goToPicScreen()
+            if (previousPage != "PicScreen") goToPicScreen(0)
         } else {
             picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)
@@ -84,18 +69,25 @@ fun PicsListScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         when {
-            appState.showConnectionError -> {
-//                ConnectionErrorButton {
-//                    if (toDo.first == SEARCH) {
-//                        search(toDo.second)
+            connectionErrorIsShown -> {
+                ConnectionErrorButton {
+//                    if (query.contains(what? collection?)) {
+//                        getCollection(query, goToAuthScreen)
 //                    } else {
-//                        getCollection(toDo.second, goToAuthScreen)
+                        search()  // todo merge with getCollection?
 //                    }
-//                    showConnectionError(false)
-//                }
+                    showConnectionError(false)
+                }
             }
-//            !appState.showPicsList -> { }
-            picsList.isEmpty() && !appState.isLoading -> Text("Nothing found :(")
+            picsList.isEmpty() && isLoading -> {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            picsList.isEmpty() -> Text("Nothing found :(")
             picsList.size == 1 -> {} // going to PicScreen
             else -> {
                 @Composable
@@ -107,7 +99,7 @@ fun PicsListScreen(
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
                             saveStateSnapshot(picsList[index], index)
-                            goToPicScreen()
+                            goToPicScreen(index)
                         }
                     )
                 }
@@ -136,7 +128,7 @@ fun PicsListScreen(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                             )
                         }
-                        if (appState.isLoading) item {
+                        if (isLoading && picsList.isNotEmpty()) item {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -164,7 +156,7 @@ fun PicsListScreen(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                             )
                         }
-                        if (appState.isLoading) item {
+                        if (isLoading && picsList.isNotEmpty()) item {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxHeight()

@@ -12,7 +12,7 @@ class GetRandomPicUseCase(
     suspend operator fun invoke(): Pic {
 
         var pic = api.getRandomPic()
-        val snapshot = dao.loadSnapshot()
+        val snapshot = dao.getSnapshot()
 
         if (snapshot.pic != null && snapshot.pic == pic) {
             pic = api.getRandomPic()

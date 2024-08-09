@@ -1,6 +1,5 @@
 package xapics.app.presentation.screens.pic.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,26 +30,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.R
-import xapics.app.TAG
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.components.CollectionsDropDownMenu
 import xapics.app.presentation.screens.pic.PicScreenState
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
-    search: (query: String) -> Unit,
+    picIndex: Int,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
     blurContent: (Boolean) -> Unit,
     picScreenState: PicScreenState,
-    state: StateSnapshot,
     picDetailsWidth: Dp,
     goToAuthScreen: () -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
 ) {
     var showTags by remember { mutableStateOf(false) }
+    val pic = picScreenState.picsList[picIndex]
     
     if (showTags) {
         AlertDialog(
@@ -62,7 +59,7 @@ fun PicDetails(
                 Row {
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = state.pic?.description ?: "",
+                        text = pic.description,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         )
@@ -72,10 +69,9 @@ fun PicDetails(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             confirmButton = {
                 PicTags(
-                    search = search,
+                    picIndex = picIndex,
                     getCollection = getCollection,
                     picScreenState = picScreenState,
-                    state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen
                 )
@@ -83,78 +79,76 @@ fun PicDetails(
         )
     }
     
-    if (state.picIndex != null && state.pic != null) { // TODO
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .padding(start = 32.dp, end = 16.dp)
+                .then(
+                    if (!windowInfo().isPortraitOrientation) Modifier.width(picDetailsWidth) else Modifier
+                )
         ) {
-            Row(
-                modifier = Modifier
-                    .padding(start = 32.dp, end = 16.dp)
-                    .then(
-                        if (!windowInfo().isPortraitOrientation) Modifier.width(picDetailsWidth) else Modifier
-                    )
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "${state.picIndex + 1} / ${state.picsList.size}")
-                    Text(
-                        text = state.pic.description,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                
-                if (!windowInfo().isPortraitOrientation) {
-                    IconButton(
-                        onClick = {
-                            showTags = true
-                            blurContent(true)
-                                  },
-                        modifier = Modifier.offset(4.dp, 0.dp)
-                    ) {
-                        Icon(painterResource(R.drawable.tag_black_24dp), "show tags")
-                    }
-                }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "${picIndex + 1} / ${picScreenState.picsList.size}")
+                Text(
+                    text = pic.description,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
-                Box {
-                    CollectionsDropDownMenu(
-                        userCollections = picScreenState.userCollections,
-                        picCollections = picScreenState.picCollections,
-                        collectionToSaveTo = picScreenState.collectionToSaveTo,
-                        picId = state.pic.id,
-                        editCollection = editCollection,
-                        updateCollectionToSaveTo = updateCollectionToSaveTo,
-                        blurContent = blurContent,
-                        goToAuthScreen = goToAuthScreen
-                    )
-                }
-
+            if (!windowInfo().isPortraitOrientation) {
                 IconButton(
                     onClick = {
-                        editCollection(
-                            picScreenState.collectionToSaveTo,
-                            state.pic.id,
-                            goToAuthScreen
-                        )
-                    },
+                        showTags = true
+                        blurContent(true)
+                              },
+                    modifier = Modifier.offset(4.dp, 0.dp)
                 ) {
-                    val collection = picScreenState.collectionToSaveTo
-                    val picInCollection = picScreenState.picCollections.contains(collection)
-                    if (collection == stringResource(R.string.fav_collection)) {
-                        if (picInCollection) {
-                            Icon(Icons.Filled.Favorite, "Remove from $collection")
-                        } else {
-                            Icon(Icons.Outlined.FavoriteBorder, "Add to $collection")
-                        }
+                    Icon(painterResource(R.drawable.tag_black_24dp), "show tags")
+                }
+            }
+
+            Box {
+                CollectionsDropDownMenu(
+                    userCollections = picScreenState.userCollections,
+                    picCollections = picScreenState.picCollections,
+                    collectionToSaveTo = picScreenState.collectionToSaveTo,
+                    picId = pic.id,
+                    editCollection = editCollection,
+                    updateCollectionToSaveTo = updateCollectionToSaveTo,
+                    blurContent = blurContent,
+                    goToAuthScreen = goToAuthScreen
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    editCollection(
+                        picScreenState.collectionToSaveTo,
+                        pic.id,
+                        goToAuthScreen
+                    )
+                },
+            ) {
+                val collection = picScreenState.collectionToSaveTo
+                val picInCollection = picScreenState.picCollections.contains(collection)
+                if (collection == stringResource(R.string.fav_collection)) {
+                    if (picInCollection) {
+                        Icon(Icons.Filled.Favorite, "Remove from $collection")
                     } else {
-                        if (picInCollection) {
-                            Icon(Icons.Filled.Star, "Remove from $collection")
-                        } else {
-                            Icon(
-                                painterResource(id = R.drawable.star_border),
-                                "Add to $collection"
-                            )
-                        }
+                        Icon(Icons.Outlined.FavoriteBorder, "Add to $collection")
+                    }
+                } else {
+                    if (picInCollection) {
+                        Icon(Icons.Filled.Star, "Remove from $collection")
+                    } else {
+                        Icon(
+                            painterResource(id = R.drawable.star_border),
+                            "Add to $collection"
+                        )
                     }
                 }
             }

@@ -167,7 +167,7 @@ class AuthRepositoryImpl(
         return runOrRefreshTokensAndRun { token ->
             try {
                 val picsList = api.getCollection("Bearer $token", collection).reversed()
-                val state = dao.loadSnapshot()
+                val state = dao.getSnapshot()
 
                 dao.saveSnapshot(
                     StateSnapshot(

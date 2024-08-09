@@ -1,6 +1,5 @@
 package xapics.app.presentation.screens.pic.layouts
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,24 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.screens.pic.PicScreenState
 import xapics.app.presentation.screens.pic.components.PicDetails
 import xapics.app.presentation.screens.pic.components.PicTags
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicPortraitLayout(
-    search: (query: String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
     picScreenState: PicScreenState,
-    state: StateSnapshot,
     pagerState: PagerState,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     goToAuthScreen: () -> Unit
 ) {
     Column(
@@ -54,7 +49,7 @@ fun PicPortraitLayout(
                 beyondViewportPageCount = 1,
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
             ) {index ->
-                val pic = state.picsList[index]
+                val pic = picScreenState.picsList[index]
                 Box {
                     AsyncPic(
                         url = pic.imageUrl,
@@ -75,22 +70,20 @@ fun PicPortraitLayout(
                 modifier = Modifier.fillMaxSize()
             ) {
                 PicDetails(
-                    search = search,
+                    picIndex = pagerState.currentPage, // todo pagerState.settledPage ?
                     getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     blurContent = {},
                     picScreenState = picScreenState,
-                    state = state,
                     picDetailsWidth = 1.dp,
                     goToAuthScreen = goToAuthScreen
                 ) {}
 
                 PicTags(
-                    search = search,
+                    picIndex = pagerState.currentPage,  // todo pagerState.settledPage ?  (also in landscape mode)
                     getCollection = getCollection,
                     picScreenState = picScreenState,
-                    state = state,
                     goToPicsListScreen = goToPicsListScreen,
                     goToAuthScreen = goToAuthScreen
                 )

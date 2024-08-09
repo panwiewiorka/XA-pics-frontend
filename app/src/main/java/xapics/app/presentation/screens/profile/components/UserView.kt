@@ -46,7 +46,7 @@ import xapics.app.presentation.windowInfo
 fun UserView(
     userCollections: List<Thumb>?,
     getCollection: (collection: String, onAuthError: () -> Unit) -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     goToAuthScreen: () -> Unit,
     renameOrDeleteCollection: (currentTitle: String, newTitle: String?, onAuthError: () -> Unit) -> Unit,
     context: Context,
@@ -97,8 +97,8 @@ fun UserView(
                         favs = favs,
                         isPortrait = true,
                         onClick = {
-                            getCollection(rollTitle, goToAuthScreen)
-                            goToPicsListScreen()
+                            getCollection(rollTitle, goToAuthScreen) // todo remove, add goToAuthScreen there: vvvv
+                            goToPicsListScreen(rollTitle)
                         },
                         onRenameCollection = {
                             renamedTitle = rollTitle
@@ -130,8 +130,8 @@ fun UserView(
                         favs = favs,
                         isPortrait = false,
                         onClick = {
-                            getCollection(rollTitle, goToAuthScreen)
-                            goToPicsListScreen()
+                            getCollection(rollTitle, goToAuthScreen) // todo remove, add goToAuthScreen there: vvvv
+                            goToPicsListScreen(rollTitle)
                         },
                         onRenameCollection = {
                             renamedTitle = rollTitle

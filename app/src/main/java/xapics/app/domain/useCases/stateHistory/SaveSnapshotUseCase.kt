@@ -15,7 +15,7 @@ class SaveSnapshotUseCase(
         picIndex: Int? = null,
         topBarCaption: String? = null
     ) {
-        val snapshot = dao.loadSnapshot()
+        val snapshot = dao.getSnapshot()
         val caption = topBarCaption?.transformTopBarCaption() ?: snapshot.topBarCaption
 
         dao.saveSnapshot(

@@ -18,9 +18,6 @@ class TopBarViewModel @Inject constructor (
     private val useCases: UseCases,
 ): ViewModel() {
 
-//    private val _state = MutableStateFlow(TopBarState())
-//    val state: StateFlow<TopBarState> = _state.asStateFlow()
-
 //    val topBarCaptionFlow = useCases.getTopBarCaptionFlow()
 
     private val _state = MutableStateFlow(StateSnapshot())
@@ -46,27 +43,6 @@ class TopBarViewModel @Inject constructor (
 //        _state.update { it.copy(
 //            topBarCaption = updateTopBarCaption(caption)
 //        ) }
-//    }
-    
-//    fun search(query: String) {
-//        clearPicsList()
-//        updateLoadingState(true)
-//        updateTopBarCaptionState(query)
-//        viewModelScope.launch {
-//            try {
-//                _state.update { it.copy(
-//                    picsList = picsRepository.search(query),
-//                    picIndex = 0,
-//                    isLoading = false
-//                )}
-//                saveStateSnapshot()
-//            } catch (e: Exception) { // TODO if error 500 -> custom error message
-//                Log.e(TAG, "search: ", e)
-//                onPicsListScreenRefresh = Pair(SEARCH, query)
-//                showConnectionError(true)
-//                updateLoadingState(false)
-//            }
-//        }
 //    }
 //
 //    fun loadStateSnapshot(): String {

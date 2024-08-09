@@ -17,13 +17,10 @@ interface XaDao {
     suspend fun saveSnapshot(stateSnapshot: StateSnapshot)
 
     @Query("SELECT * FROM StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
-    suspend fun loadSnapshot(): StateSnapshot
+    suspend fun getSnapshot(): StateSnapshot
 
     @Query("SELECT * from StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
     fun getSnapshotFlow(): Flow<StateSnapshot>
-
-    @Query("SELECT * from StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
-    fun getSnapshot(): StateSnapshot
 
     @Query("DELETE FROM StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
     suspend fun deleteSnapshot()

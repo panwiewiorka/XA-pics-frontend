@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.AppState
 import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.screens.home.components.RandomPic
@@ -29,10 +28,8 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomePortraitCompactLayout(
     getRandomPic: () -> Unit,
-    search: (query: String) -> Unit,
     appState: AppState,
-    state: StateSnapshot,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     maxWidth: Dp,
     padding: Dp,
@@ -44,7 +41,7 @@ fun HomePortraitCompactLayout(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        state.pic?.let {
+        appState.randomPic?.let {
             item(
                 span = { GridItemSpan(maxLineSpan) }
             ) {
@@ -68,7 +65,12 @@ fun HomePortraitCompactLayout(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        rollCardsGrid(appState.rollThumbnails, search, goToPicsListScreen, true, modifier = Modifier.padding(padding))
+        rollCardsGrid(
+            rollThumbnails = appState.rollThumbnails,
+            goToPicsListScreen = goToPicsListScreen,
+            isPortrait = true,
+            modifier = Modifier.padding(padding)
+        )
 
         if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
             item(
@@ -91,8 +93,7 @@ fun HomePortraitCompactLayout(
                 }
                 tags.forEach {
                     PicTag(it) {
-                        search("${it.type} = ${it.value}")
-                        goToPicsListScreen()
+                        goToPicsListScreen("${it.type} = ${it.value}")
                     }
                 }
             }

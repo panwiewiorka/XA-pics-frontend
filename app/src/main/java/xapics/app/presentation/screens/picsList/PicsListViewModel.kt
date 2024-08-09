@@ -6,16 +6,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import xapics.app.Pic
+import xapics.app.Screen
 import xapics.app.TAG
-import xapics.app.data.db.StateSnapshot
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
 
@@ -23,52 +21,50 @@ import javax.inject.Inject
 @HiltViewModel
 class PicsListViewModel @Inject constructor (
     private val useCases: UseCases,
+    savedStateHandle: SavedStateHandle
 ): ViewModel() {
+
+    val query = Screen.PicsList.from(savedStateHandle).searchQuery
 
     var isLoading by mutableStateOf(false)
         private set
 
-    private val _state = MutableStateFlow(StateSnapshot())
-    val state = _state.asStateFlow()
+    var connectionError by mutableStateOf(false)
+        private set
 
     var picsList = mutableStateListOf<Pic>()
         private set
 
     init {
         viewModelScope.launch {
-            useCases.getSnapshotFlow().collectLatest { value ->
-                value?.let { _state.value = value }
-            }
-
-//            picsList = useCases.getSnapshot().picsList.toMutableStateList()
+            search()
         }
     }
 
 
-    fun search(query: String) {
+    fun search() { // todo merge with getCollection?
         isLoading = true
-//        clearPicsList()
         viewModelScope.launch {
             try {
                 picsList = useCases.searchPics(query).toMutableStateList()
                 isLoading = false
             } catch (e: Exception) { // TODO if error 500 -> custom error message
-//                onPicsListScreenRefresh = Pair(OnPicsListScreenRefresh.SEARCH, query) // todo
-//                showConnectionError(true)
+                connectionError = true
                 isLoading = false
                 Log.e(TAG, "search: ", e)
             }
         }
     }
 
-    fun saveStateSnapshot(
-        pic: Pic,
-        picIndex: Int,
-    ) {
+    fun saveStateSnapshot(pic: Pic, picIndex: Int, ) {
         viewModelScope.launch {
             useCases.saveSnapshot(false, null, pic, picIndex, null)
 //            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
         }
+    }
+
+    fun showConnectionError(show: Boolean) {
+        connectionError = show
     }
 
 }

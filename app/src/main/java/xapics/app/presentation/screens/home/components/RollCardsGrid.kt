@@ -5,7 +5,12 @@ import androidx.compose.ui.Modifier
 import xapics.app.Thumb
 import xapics.app.presentation.components.RollCard
 
-fun LazyGridScope.rollCardsGrid(rollThumbnails: List<Thumb>?, search: (String) -> Unit, goToPicsListScreen: () -> Unit, isPortrait: Boolean, modifier: Modifier) {
+fun LazyGridScope.rollCardsGrid(
+    rollThumbnails: List<Thumb>?,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
+    isPortrait: Boolean,
+    modifier: Modifier
+) {
     items(rollThumbnails?.size ?: 0) {
         val imageUrl = rollThumbnails!![it].thumbUrl
         val rollTitle = rollThumbnails[it].title
@@ -15,8 +20,7 @@ fun LazyGridScope.rollCardsGrid(rollThumbnails: List<Thumb>?, search: (String) -
             isPortrait = isPortrait,
             modifier = modifier,
             onClick = {
-                search("roll = $rollTitle")
-                goToPicsListScreen()
+                goToPicsListScreen("roll = $rollTitle")
             }
         )
     }

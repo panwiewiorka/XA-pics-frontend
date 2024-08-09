@@ -9,6 +9,6 @@ class LoadSnapshotUseCase(
     suspend operator fun invoke(): StateSnapshot {
         dao.deleteSnapshot()
         //        if (snapshot.pic == null) snapshot.pic = dao.loadSnapshot().pic
-        return dao.loadSnapshot()
+        return dao.getSnapshot()
     }
 }

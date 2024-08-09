@@ -1,7 +1,6 @@
 package xapics.app.presentation.screens.pic.layouts
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -21,23 +20,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import xapics.app.data.db.StateSnapshot
 import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.screens.pic.PicScreenState
 import xapics.app.presentation.screens.pic.components.PicDetails
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PicLandscapeLayout(
-    search: (query: String) -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
     picScreenState: PicScreenState,
-    state: StateSnapshot,
     pagerState: PagerState,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     goToAuthScreen: () -> Unit
 ) {
     var picDetailsWidth by remember { mutableStateOf(1.dp) }
@@ -69,7 +64,7 @@ fun PicLandscapeLayout(
                 .aspectRatio(3 / 2f)
 //                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
         ) {index ->
-            val pic = state.picsList[index]
+            val pic = picScreenState.picsList[index]
             BoxWithConstraints {
                 AsyncPic(
                     url = pic.imageUrl,
@@ -86,13 +81,12 @@ fun PicLandscapeLayout(
 
         if (!picScreenState.isFullscreen) {
             PicDetails(
-                search = search,
+                picIndex = pagerState.currentPage,
                 getCollection = getCollection,
                 editCollection = editCollection,
                 updateCollectionToSaveTo = updateCollectionToSaveTo,
                 blurContent = ::blurContent,
                 picScreenState = picScreenState,
-                state = state,
                 picDetailsWidth = picDetailsWidth,
                 goToAuthScreen = goToAuthScreen,
                 goToPicsListScreen = goToPicsListScreen

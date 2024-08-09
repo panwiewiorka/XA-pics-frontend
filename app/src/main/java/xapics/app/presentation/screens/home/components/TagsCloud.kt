@@ -37,8 +37,7 @@ import xapics.app.presentation.theme.AlphaBlack
 fun TagsCloud(
     scrollState: ScrollState,
     tags: List<Tag>,
-    search: (String) -> Unit,
-    goToPicsListScreen: () -> Unit,
+    goToPicsListScreen: (searchQuery: String) -> Unit,
     goToSearchScreen: () -> Unit,
     padding: Dp,
 ) {
@@ -59,8 +58,7 @@ fun TagsCloud(
                     }
                     tagsMapped.forEach {
                         PicTag(it) {
-                            search("${it.type} = ${it.value}")
-                            goToPicsListScreen()
+                            goToPicsListScreen("${it.type} = ${it.value}")
                         }
                     }
                 }
