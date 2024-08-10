@@ -11,11 +11,11 @@ data class StateSnapshot(
     val id: Int = 1,
     @SerializedName("picsList")
     val picsList: List<Pic> = emptyList(),
-    @SerializedName("pic")
-    val pic: Pic? = null,
-    @SerializedName("picIndex")
-    val picIndex: Int? = null,
-    @SerializedName("topBarCaption")
-    val topBarCaption: String = "XA pics"
+//    @SerializedName("pic")
+//    val pic: Pic? = null,
+//    @SerializedName("picIndex")
+//    val picIndex: Int? = null,
+//    @SerializedName("topBarCaption")
+//    val topBarCaption: String = "XA pics"
 )
 

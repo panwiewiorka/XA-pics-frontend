@@ -7,6 +7,6 @@ class GetSnapshotUseCase(
     private val dao: XaDao,
 ) {
     suspend operator fun invoke(): StateSnapshot {
-        return dao.getSnapshot()
+        return dao.getStateSnapshot()
     }
 }

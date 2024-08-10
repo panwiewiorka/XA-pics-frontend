@@ -1,5 +1,6 @@
 package xapics.app.domain
 
+import xapics.app.Pic
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.Thumb
@@ -20,6 +21,10 @@ class PicsRepositoryImpl(
 
     override suspend fun getAllTags(): List<Tag> {
         return api.getAllTags().string.toTagsList()
+    }
+
+    override suspend fun getRandomPic(): Pic {
+        return api.getRandomPic()
     }
 
 

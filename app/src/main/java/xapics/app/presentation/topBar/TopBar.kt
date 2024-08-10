@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.Screen
 import xapics.app.TagState
-import xapics.app.data.db.StateSnapshot
 import xapics.app.nonScaledSp
 import xapics.app.presentation.AppState
 
@@ -57,7 +56,8 @@ fun TopBar(
     loadStateSnapshot: () -> Unit,
     logOut: () -> Unit,
     appState: AppState,
-    state: StateSnapshot,
+    caption: String,
+    saveCaption: (String) -> Unit,
     goBack: () -> Unit,
     goToAuthScreen: () -> Unit,
     goToProfileScreen: () -> Unit,
@@ -72,12 +72,7 @@ fun TopBar(
     ) {
         val focusRequester = remember { FocusRequester() }
 
-        val text = when(page) {
-            Screen.Home.toString() -> "XA pics"
-            Screen.Search.toString() -> "Search"
-            Screen.Profile.toString() -> appState.userName
-            else -> state.topBarCaption
-        }
+        val text =  caption
         val searchText = ""
         var query by remember { mutableStateOf (
             TextFieldValue (
@@ -86,7 +81,7 @@ fun TopBar(
             )
         ) }
 
-        fun filteredSearch() {
+        fun formattedSearch() {
             val formattedQuery = query.text
                 .replace(',', ' ')
                 .replace('=', ' ')
@@ -131,7 +126,7 @@ fun TopBar(
                 textStyle = TextStyle(fontSize = 16.nonScaledSp, color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { filteredSearch() }),
+                keyboardActions = KeyboardActions(onSearch = { formattedSearch() }),
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 6.dp, vertical = 4.dp)
@@ -155,7 +150,7 @@ fun TopBar(
                         SearchField()
                     } else {
                         Text(
-                            text = text ?: "XA pics",
+                            text = text,
                             fontSize = 18.nonScaledSp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -169,12 +164,12 @@ fun TopBar(
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
-                            modifier = Modifier.clickable { goToSearchScreen() }
+                            modifier = Modifier.clickable { goToSearchScreen() } // << caption also updates inside of here
                         )
                     }
 
                     IconButton(onClick = {
-                        if (appState.showSearch) filteredSearch() else showSearch(true)
+                        if (appState.showSearch) formattedSearch() else showSearch(true)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -198,6 +193,7 @@ fun TopBar(
             if(page == Screen.Profile.toString()) {
                 IconButton(onClick = {
                     logOut()
+//                    saveCaption("Log in")
                     goToAuthScreen()
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
@@ -207,8 +203,14 @@ fun TopBar(
                     enabled = page != Screen.Auth.toString(),
                     onClick = {
                         when (appState.userName) {
-                            null -> goToAuthScreen()
-                            else -> goToProfileScreen()
+                            null -> {
+//                                saveCaption("Log in")
+                                goToAuthScreen()
+                            }
+                            else -> {
+//                                saveCaption(appState.userName)
+                                goToProfileScreen()
+                            }
                         }
                     }
                 ) {
@@ -219,7 +221,7 @@ fun TopBar(
 
 
 
-        if (page == Screen.Profile.toString() && page == previousPage) goBack()
+        if (page == Screen.Profile.toString() && page == previousPage) goBack() // todo check double caption record in DB
 
         HomeOrBackButton()
 

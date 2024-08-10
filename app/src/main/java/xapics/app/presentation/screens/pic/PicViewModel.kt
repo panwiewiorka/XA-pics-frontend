@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.Pic
 import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
@@ -58,9 +57,9 @@ class PicViewModel @Inject constructor (
     }
 
 
-    fun saveStateSnapshot(pic: Pic, picIndex: Int) {
+    fun saveCaption() { // todo remove?
         viewModelScope.launch {
-            useCases.saveSnapshot(true, null, pic, picIndex, null)
+//            useCases.saveCaption(true, null)
 //            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
         }
     }

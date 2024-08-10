@@ -11,20 +11,37 @@ import kotlinx.coroutines.flow.Flow
 interface XaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun populateDB(stateSnapshot: StateSnapshot)
+    suspend fun populateCaptionTable(caption: Caption)
 
     @Upsert
-    suspend fun saveSnapshot(stateSnapshot: StateSnapshot)
+    suspend fun saveCaption(caption: Caption)
 
-    @Query("SELECT * FROM StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
-    suspend fun getSnapshot(): StateSnapshot
+    @Query("SELECT * FROM Caption WHERE id = (SELECT MAX(id) FROM Caption)")
+    suspend fun getCaption(): Caption
 
-    @Query("SELECT * from StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
-    fun getSnapshotFlow(): Flow<StateSnapshot>
+    @Query("SELECT * from Caption WHERE id = (SELECT MAX(id) FROM Caption)")
+    fun getCaptionFlow(): Flow<Caption>
 
-    @Query("DELETE FROM StateSnapshot WHERE id = (SELECT MAX(id) FROM StateSnapshot)")
-    suspend fun deleteSnapshot()
+    @Query("DELETE FROM Caption WHERE id = (SELECT MAX(id) FROM Caption)")
+    suspend fun deleteCaption()
+
+    @Query("DELETE from Caption")
+    suspend fun clearCaptionsTable()
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun populateStateTable(stateSnapshot: StateSnapshot)
+
+    @Upsert
+    suspend fun updateStateSnapshot(stateSnapshot: StateSnapshot)
+
+    @Query("SELECT * FROM StateSnapshot WHERE id = 1")
+    suspend fun getStateSnapshot(): StateSnapshot
+
+    @Query("SELECT * from StateSnapshot WHERE id = 1")
+    fun getStateSnapshotFlow(): Flow<StateSnapshot>
 
     @Query("DELETE from StateSnapshot")
-    suspend fun clearSnapshotsTable()
+    suspend fun clearStateSnapshot()
+
 }

@@ -8,7 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsCompat
-import xapics.app.Pic
 import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.screens.pic.layouts.PicLandscapeLayout
 import xapics.app.presentation.screens.pic.layouts.PicPortraitLayout
@@ -16,7 +15,7 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicScreen(
-    saveStateSnapshot: (pic: Pic, picIndex: Int) -> Unit,
+    saveCaption: () -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
@@ -48,7 +47,7 @@ fun PicScreen(
         }
     }
 
-    if (picScreenState.picIndex != null) {
+    if (picScreenState.picIndex != null && picScreenState.picsList.isNotEmpty()) {
         val pagerState = rememberPagerState(
             initialPage = picScreenState.picIndex,
             initialPageOffsetFraction = 0f
@@ -66,9 +65,9 @@ fun PicScreen(
 //            }
         }
 
-        LaunchedEffect(pagerState.currentPage) {
-            saveStateSnapshot(picScreenState.picsList[pagerState.currentPage], pagerState.currentPage)
-        }
+//        LaunchedEffect(pagerState.currentPage) {
+//            saveCaption(picScreenState.picsList[pagerState.currentPage], pagerState.currentPage)
+//        }
 
         when {
             picScreenState.connectionError -> {

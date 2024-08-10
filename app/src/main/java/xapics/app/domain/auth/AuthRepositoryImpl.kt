@@ -8,6 +8,7 @@ import xapics.app.data.EncryptedSharedPrefs
 import xapics.app.data.PicsApi
 import xapics.app.data.auth.AuthRequest
 import xapics.app.data.auth.AuthResult
+import xapics.app.data.db.Caption
 import xapics.app.data.db.StateSnapshot
 import xapics.app.data.db.XaDao
 import xapics.app.domain.transformTopBarCaption
@@ -167,15 +168,19 @@ class AuthRepositoryImpl(
         return runOrRefreshTokensAndRun { token ->
             try {
                 val picsList = api.getCollection("Bearer $token", collection).reversed()
-                val state = dao.getSnapshot()
+                val caption = dao.getCaption()
 
-                dao.saveSnapshot(
-                    StateSnapshot(
-                        id = state.id + 1,
-                        picsList = picsList,
-                        pic = if (picsList.size == 1) picsList[0] else null,
-                        picIndex = if (picsList.size == 1) 0 else null,
+                dao.saveCaption(
+                    Caption(
+                        id = caption.id + 1,
                         topBarCaption = collection.transformTopBarCaption()
+                    )
+                )
+
+                dao.updateStateSnapshot(
+                    StateSnapshot(
+                        id = 1,
+                        picsList = picsList
                     )
                 )
 

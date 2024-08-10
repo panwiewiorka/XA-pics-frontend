@@ -1,4 +1,4 @@
-package xapics.app.presentation.screens
+package xapics.app.presentation.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -42,18 +42,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
-import xapics.app.Pic
 import xapics.app.R
 import xapics.app.data.auth.AuthResult
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AuthScreen(
-    saveStateSnapshot: (
+    saveCaption: (
         replaceExisting: Boolean,
-        picsList: List<Pic>?,
-        pic: Pic?,
-        picIndex: Int?,
         topBarCaption: String?
     ) -> Unit,
     updateUserName: (String) -> Unit,
@@ -69,9 +65,9 @@ fun AuthScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) {
-        saveStateSnapshot(true, null, null, null, "Log in")
-    }
+//    LaunchedEffect(Unit) {
+//        saveCaption(true,"Log in")
+//    }
 
     LaunchedEffect(authResults, context) {
         authResults.collect { result ->
@@ -192,7 +188,7 @@ fun AuthScreen(
                 Text(text = questionText)
 
                 Text(text = changeModeText, textDecoration = TextDecoration.Underline, modifier = Modifier.clickable {
-                    saveStateSnapshot(true, null, null, null, changeModeText)
+                    saveCaption(true, changeModeText)
                     signupMode = !signupMode
                 })
             }

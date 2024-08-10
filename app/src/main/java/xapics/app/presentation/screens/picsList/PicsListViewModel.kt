@@ -56,9 +56,9 @@ class PicsListViewModel @Inject constructor (
         }
     }
 
-    fun saveStateSnapshot(pic: Pic, picIndex: Int, ) {
+    fun saveCaption() {
         viewModelScope.launch {
-            useCases.saveSnapshot(false, null, pic, picIndex, null)
+            useCases.saveCaption(false, null)
 //            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
         }
     }

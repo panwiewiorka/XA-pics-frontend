@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.Pic
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
@@ -36,12 +35,8 @@ class MainViewModel @Inject constructor (
 
 
     init {
-        viewModelScope.launch {
-            val initRandomPic = useCases.populateStateDb() // todo ERRORS!
-            _appState.update { it.copy(randomPic = initRandomPic) }
-        }
-
         authenticate()
+        getRandomPic()
         getRollThumbs()
         getAllTags()
     }
@@ -245,13 +240,11 @@ class MainViewModel @Inject constructor (
     fun getRandomPic() {
         viewModelScope.launch {
             try {
-                _appState.update { it.copy(randomPic = useCases.getRandomPic()) }
-                useCases.getRandomPic()
-//                var randomPic = picsRepository.getRandomPic()
-//                if(randomPic == appState.value.pic) randomPic = picsRepository.getRandomPic()
-//                _appState.update { it.copy(
-//                    pic = randomPic,
-//                )}
+                var pic = picsRepository.getRandomPic()
+                if (pic == appState.value.randomPic) pic = picsRepository.getRandomPic()
+                _appState.update { it.copy(
+                    randomPic = pic
+                ) }
             } catch (e: Exception) {
                 Log.e(TAG, "getRandomPic: ", e)
             }
@@ -279,29 +272,24 @@ class MainViewModel @Inject constructor (
 
     /*** BACKSTACK / NAVIGATION */
 
-
-    fun saveStateSnapshot(
-        replaceExisting: Boolean,
-        picsList: List<Pic>? = null,
-        pic: Pic? = null,
-        picIndex: Int? = null,
-        topBarCaption: String? = null
-    ) {
+    fun updateStateSnapshotWithListOfRandomPic() {
         viewModelScope.launch {
-            useCases.saveSnapshot(replaceExisting, picsList, pic, picIndex, topBarCaption)
-            if (pic != null) getPicCollections(pic.id)
+            useCases.updateStateSnapshot(listOf(appState.value.randomPic!!))
         }
     }
 
-    fun loadStateSnapshot() {
+    fun saveCaption(
+        replaceExisting: Boolean,
+        topBarCaption: String? = null
+    ) {
         viewModelScope.launch {
-            useCases.loadSnapshot()
-//            val snapshot = useCases.loadSnapshot()
-//            _appState.update { it.copy(
-//                picsList = snapshot.picsList,
-//                pic = snapshot.pic,
-//                picIndex = snapshot.picIndex
-//            ) }
+            useCases.saveCaption(replaceExisting, topBarCaption)
+        }
+    }
+
+    fun loadCaption() {
+        viewModelScope.launch {
+            useCases.loadCaption()
         }
     }
 

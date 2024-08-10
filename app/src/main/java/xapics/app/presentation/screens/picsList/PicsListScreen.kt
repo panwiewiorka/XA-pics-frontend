@@ -40,7 +40,7 @@ fun PicsListScreen(
     getCollection: (collection: String, () -> Unit) -> Unit,
     connectionErrorIsShown: Boolean,
     showConnectionError: (Boolean) -> Unit,
-    saveStateSnapshot: (pic: Pic, picIndex: Int) -> Unit,
+    saveCaption: () -> Unit,
     picsList: List<Pic>,
     goToPicScreen: (picIndex: Int) -> Unit,
     goToAuthScreen: () -> Unit,
@@ -99,7 +99,7 @@ fun PicsListScreen(
                         description = pic.description,
                         modifier = modifier.clip(RoundedCornerShape(2.dp)),
                         onClick = {
-                            saveStateSnapshot(picsList[index], index)
+                            saveCaption()
                             goToPicScreen(index)
                         }
                     )

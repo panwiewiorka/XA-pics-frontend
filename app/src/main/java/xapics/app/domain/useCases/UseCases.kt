@@ -1,17 +1,18 @@
 package xapics.app.domain.useCases
 
-import xapics.app.domain.useCases.stateHistory.GetSnapshotFlowUseCase
+import xapics.app.domain.useCases.stateHistory.GetCaptionFlowUseCase
 import xapics.app.domain.useCases.stateHistory.GetSnapshotUseCase
-import xapics.app.domain.useCases.stateHistory.LoadSnapshotUseCase
-import xapics.app.domain.useCases.stateHistory.PopulateStateDbUseCase
-import xapics.app.domain.useCases.stateHistory.SaveSnapshotUseCase
+import xapics.app.domain.useCases.stateHistory.LoadCaptionUseCase
+import xapics.app.domain.useCases.stateHistory.PopulateCaptionTableUseCase
+import xapics.app.domain.useCases.stateHistory.SaveCaptionUseCase
+import xapics.app.domain.useCases.stateHistory.UpdateStateSnapshotUseCase
 
 data class UseCases(
-    val populateStateDb: PopulateStateDbUseCase,
-    val getRandomPic: GetRandomPicUseCase,
-    val loadSnapshot: LoadSnapshotUseCase,
-    val getSnapshotFlow: GetSnapshotFlowUseCase,
+    val populateCaptionTable: PopulateCaptionTableUseCase,
+    val loadCaption: LoadCaptionUseCase,
+    val getCaptionFlow: GetCaptionFlowUseCase,
+    val saveCaption: SaveCaptionUseCase,
     val getSnapshot: GetSnapshotUseCase,
-    val saveSnapshot: SaveSnapshotUseCase,
     val searchPics: SearchPicsUseCase,
+    val updateStateSnapshot: UpdateStateSnapshotUseCase,
 )

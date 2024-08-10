@@ -1,12 +1,14 @@
 package xapics.app.presentation.topBar
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.data.db.StateSnapshot
+import xapics.app.TAG
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
@@ -18,15 +20,18 @@ class TopBarViewModel @Inject constructor (
     private val useCases: UseCases,
 ): ViewModel() {
 
-//    val topBarCaptionFlow = useCases.getTopBarCaptionFlow()
-
-    private val _state = MutableStateFlow(StateSnapshot())
-    val state = _state.asStateFlow()
+    private val _captionState = MutableStateFlow("XA pics")
+    val captionState = _captionState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            useCases.getSnapshotFlow().collect { value ->
-                value?.let { _state.value = value }
+            try {
+                useCases.populateCaptionTable()
+                useCases.getCaptionFlow().collect { value ->
+                    value?.let { _captionState.value = value.topBarCaption }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "topBarViewModel INIT: ", e)
             }
         }
     }
@@ -35,7 +40,22 @@ class TopBarViewModel @Inject constructor (
     fun logOut() {
         authRepository.logOut()
         viewModelScope.launch{
-            useCases.saveSnapshot(replaceExisting = true, topBarCaption = "Log in")
+            useCases.saveCaption(replaceExisting = true, topBarCaption = "Log in")
+        }
+    }
+
+    fun onGoToSearchScreen() {
+        _captionState.update { "Search" }
+        saveCaption("Search")
+    }
+
+    fun saveCaption(caption: String) {
+        viewModelScope.launch {
+            try {
+                useCases.saveCaption(false, caption)
+            } catch (e: Exception) {
+                Log.e(TAG, "saveCaption: ", e)
+            }
         }
     }
 
