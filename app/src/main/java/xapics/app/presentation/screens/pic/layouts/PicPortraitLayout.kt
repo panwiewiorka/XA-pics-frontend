@@ -26,6 +26,7 @@ fun PicPortraitLayout(
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
+    isFullscreen: Boolean,
     picScreenState: PicScreenState,
     pagerState: PagerState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
@@ -35,10 +36,10 @@ fun PicPortraitLayout(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .fillMaxSize()
-            .background(if (picScreenState.isFullscreen) Color.Black else Color.Transparent)
+            .background(if (isFullscreen) Color.Black else Color.Transparent)
             .padding(vertical = 32.dp)
     ) {
-        if (picScreenState.isFullscreen) {
+        if (isFullscreen) {
             Spacer(modifier = Modifier.weight(1f))
         }
 
@@ -62,7 +63,7 @@ fun PicPortraitLayout(
             }
         }
 
-        if (picScreenState.isFullscreen) {
+        if (isFullscreen) {
             Spacer(modifier = Modifier.weight(1f))
         } else {
             Column(

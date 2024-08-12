@@ -1,4 +1,4 @@
-package xapics.app.presentation
+package xapics.app.presentation.screens.home
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -18,14 +18,14 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class MainViewModel @Inject constructor (
+class HomeViewModel @Inject constructor (
     private val authRepository: AuthRepository,
     private val picsRepository: PicsRepository,
     private val useCases: UseCases,
 ): ViewModel() {
 
-    private val _appState = MutableStateFlow(AppState())
-    val appState: StateFlow<AppState> = _appState.asStateFlow()
+    private val _homeState = MutableStateFlow(HomeState())
+    val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
     init {
         authenticate()
@@ -39,19 +39,13 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                authRepository.authenticate(::updateUserName)
+                authRepository.authenticate()
                 updateLoadingState(false)
             } catch (e: Exception) {
                 Log.e(TAG, "viewModel authenticate(): ", e)
                 updateLoadingState(false)
             }
         }
-    }
-
-    fun updateUserName(userName: String?) {
-        _appState.update { it.copy(
-            userName = userName,
-        ) }
     }
 
     fun getCollection(collection: String, goToAuthScreen: (isAuthorized: Boolean) -> Unit) {
@@ -78,7 +72,7 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 updateLoadingState(true)
-                _appState.update { it.copy(
+                _homeState.update { it.copy(
                     rollThumbnails = picsRepository.getRollThumbs(),
                     isLoading = false
                 )}
@@ -94,8 +88,8 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 var pic = picsRepository.getRandomPic()
-                if (pic == appState.value.randomPic) pic = picsRepository.getRandomPic()
-                _appState.update { it.copy(
+                if (pic == homeState.value.randomPic) pic = picsRepository.getRandomPic()
+                _homeState.update { it.copy(
                     randomPic = pic
                 ) }
                 useCases.updateStateSnapshot(picsList = listOf(pic))
@@ -113,7 +107,7 @@ class MainViewModel @Inject constructor (
                 val tags = picsRepository.getAllTags()
                 useCases.updateStateSnapshot(tags = tags)
 
-                _appState.update { it.copy(
+                _homeState.update { it.copy(
                     tags = tags,
                     isLoading = false
                 )}
@@ -139,36 +133,26 @@ class MainViewModel @Inject constructor (
         }
     }
 
-    fun loadCaption() {
-        viewModelScope.launch {
-            try {
-                useCases.loadCaption()
-            } catch (e: Exception) {
-                Log.e(TAG, "loadCaption: ", e)
-            }
-        }
-    }
-
 
     /*** VISUALS (state update) */
 
     private fun updateLoadingState(loading: Boolean) {
-        _appState.update { it.copy(isLoading = loading) }
+        _homeState.update { it.copy(isLoading = loading) }
     }
 
     fun showConnectionError(show: Boolean){
-        _appState.update { it.copy(
+        _homeState.update { it.copy(
             connectionError = show
         )}
     }
 
     fun showSearch(show: Boolean) {
-        _appState.update { it.copy(showSearch = show) }
+        _homeState.update { it.copy(showSearch = show) }
     }
 
     fun changeFullScreenMode(fullscreen: Boolean? = null) {
-        _appState.update { it.copy(
-            isFullscreen = fullscreen ?: !appState.value.isFullscreen
+        _homeState.update { it.copy(
+            isFullscreen = fullscreen ?: !homeState.value.isFullscreen
         )}
     }
 }

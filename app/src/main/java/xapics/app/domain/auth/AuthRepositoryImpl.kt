@@ -76,11 +76,10 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<String?> {
+    override suspend fun authenticate(): AuthResult<String?> {
         return runOrRefreshTokensAndRun { token ->
             try {
                 val userName = api.authenticate("Bearer $token").string
-                updateUserName(userName)
                 AuthResult.Authorized(userName)
             } catch (e: HttpException) {
                 Log.e(TAG, "authenticate: ", e)

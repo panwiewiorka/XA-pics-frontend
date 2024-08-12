@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import xapics.app.Tag
 import xapics.app.TagState
-import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.home.HomeState
 import xapics.app.presentation.components.PicTag
 import xapics.app.presentation.screens.home.components.RandomPic
 import xapics.app.presentation.screens.home.components.rollCardsGrid
@@ -38,7 +38,7 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomeLandscapeCompactLayout(
     getRandomPic: () -> Unit,
-    appState: AppState,
+    homeState: HomeState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     padding: Dp,
@@ -47,7 +47,7 @@ fun HomeLandscapeCompactLayout(
     var tagsWidth by remember { mutableStateOf(0.dp) }
     var tagHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    val tags = appState.tags.map {
+    val tags = homeState.tags.map {
         Tag(it.type, it.value, TagState.ENABLED)
     }
 
@@ -86,7 +86,7 @@ fun HomeLandscapeCompactLayout(
                 .fillMaxSize()
                 .padding(bottom = padding)
         ) {
-            appState.randomPic?.let {
+            homeState.randomPic?.let {
                 item(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {
@@ -100,9 +100,9 @@ fun HomeLandscapeCompactLayout(
                 }
             }
 
-            rollCardsGrid(appState.rollThumbnails, goToPicsListScreen, false, Modifier)
+            rollCardsGrid(homeState.rollThumbnails, goToPicsListScreen, false, Modifier)
 
-            if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+            if (homeState.tags.isNotEmpty() && !homeState.rollThumbnails.isNullOrEmpty()) {
                 item(
                     span = { GridItemSpan(maxLineSpan) }
                 ) {

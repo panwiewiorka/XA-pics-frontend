@@ -52,8 +52,6 @@ fun AuthScreen(
         replaceExisting: Boolean,
         topBarCaption: String?
     ) -> Unit,
-    updateUserName: (String) -> Unit,
-//    rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
     authResults: Flow<AuthResult<String?>>,
     goBackAfterLogIn: Boolean,
@@ -65,15 +63,10 @@ fun AuthScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-//    LaunchedEffect(Unit) {
-//        saveCaption(true,"Log in")
-//    }
-
     LaunchedEffect(authResults, context) {
         authResults.collect { result ->
             val response = result.data.toString()
             if (result is AuthResult.Authorized) {
-                updateUserName(response)
                 saveCaption(false, response) // todo what if goBackAfterLogIn?
                 goBack()
                 if (! goBackAfterLogIn) goToProfileScreen(response)

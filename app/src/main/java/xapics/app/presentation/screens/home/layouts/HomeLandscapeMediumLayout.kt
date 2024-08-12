@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.home.HomeState
 import xapics.app.presentation.screens.home.components.RandomPic
 import xapics.app.presentation.screens.home.components.TagsCloud
 import xapics.app.presentation.screens.home.components.rollCardsGrid
@@ -28,7 +28,7 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomeLandscapeMediumLayout(
     getRandomPic: () -> Unit,
-    appState: AppState,
+    homeState: HomeState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
@@ -54,7 +54,7 @@ fun HomeLandscapeMediumLayout(
                     .width((maxHeight.value * 0.75).dp)
             ) {
                 Column {
-                    appState.randomPic?.let {
+                    homeState.randomPic?.let {
                         RandomPic(
                             pic = it,
                             getRandomPic = getRandomPic,
@@ -67,7 +67,7 @@ fun HomeLandscapeMediumLayout(
                     Box {
                         TagsCloud(
                             scrollState = tagsScrollState,
-                            tags = appState.tags,
+                            tags = homeState.tags,
                             goToPicsListScreen = goToPicsListScreen,
                             goToSearchScreen = goToSearchScreen,
                             padding = padding
@@ -75,7 +75,7 @@ fun HomeLandscapeMediumLayout(
                     }
                 }
 
-                if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+                if (homeState.tags.isNotEmpty() && !homeState.rollThumbnails.isNullOrEmpty()) {
                     Box(
                         modifier = Modifier
                             .width(1.dp)
@@ -88,7 +88,7 @@ fun HomeLandscapeMediumLayout(
         }
 
         rollCardsGrid(
-            rollThumbnails = appState.rollThumbnails,
+            rollThumbnails = homeState.rollThumbnails,
             goToPicsListScreen = goToPicsListScreen,
             isPortrait = false,
             modifier = Modifier.padding(bottom = padding)

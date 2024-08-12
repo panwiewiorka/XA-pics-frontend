@@ -1,16 +1,21 @@
 package xapics.app.presentation.screens
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
+import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,10 +24,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.Screen
 import xapics.app.TAG
-import xapics.app.presentation.MainViewModel
+import xapics.app.presentation.SharedViewModel
 import xapics.app.presentation.screens.auth.AuthScreen
 import xapics.app.presentation.screens.auth.AuthViewModel
 import xapics.app.presentation.screens.home.HomeScreen
+import xapics.app.presentation.screens.home.HomeViewModel
 import xapics.app.presentation.screens.pic.PicScreen
 import xapics.app.presentation.screens.pic.PicViewModel
 import xapics.app.presentation.screens.picsList.PicsListScreen
@@ -40,30 +46,48 @@ import xapics.app.presentation.topBar.TopBarViewModel
 fun NavScreen(
     navController: NavHostController = rememberNavController(),
 ) {
-    val viewModel: MainViewModel = hiltViewModel()
-    val appState by viewModel.appState.collectAsState()
-
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = backStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
     val prevScreen = navController.previousBackStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
 
+    val sharedViewModel: SharedViewModel = hiltViewModel()
+
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+        val controller = LocalView.current.windowInsetsController
+
+        LaunchedEffect(sharedViewModel.isFullscreen) {
+            if (sharedViewModel.isFullscreen) {
+                controller?.apply {
+                    hide(WindowInsetsCompat.Type.statusBars())
+                    hide(WindowInsetsCompat.Type.navigationBars())
+                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else {
+                controller?.apply {
+                    show(WindowInsetsCompat.Type.statusBars())
+                    show(WindowInsetsCompat.Type.navigationBars())
+                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                }
+            }
+        }
+    }
+
     Scaffold (
-        modifier = Modifier.pointerInput(appState.showSearch) {
+        modifier = Modifier.pointerInput(sharedViewModel.searchIsShown) {
             detectTapGestures(onTap = {
-                if (appState.showSearch) viewModel.showSearch(false)
+                if (sharedViewModel.searchIsShown) sharedViewModel.showSearch(false)
             })
         },
         topBar = {
             val topBarViewModel: TopBarViewModel = hiltViewModel()
             val captionState by topBarViewModel.captionState.collectAsState()
             val stateSnapshot by topBarViewModel.stateSnapshot.collectAsState()
-            if (!appState.isFullscreen) {
+            if (!sharedViewModel.isFullscreen) {
                 TopBar(
-                    searchIsShown = appState.showSearch,
-                    showSearch = viewModel::showSearch,
+                    searchIsShown = sharedViewModel.searchIsShown,
+                    showSearch = sharedViewModel::showSearch,
                     loadStateSnapshot = topBarViewModel::loadCaption,
                     logOut = topBarViewModel::logOut,
-//                    appState = appState, // todo
                     tags = stateSnapshot.tags,
                     caption = captionState,
                     goBack = { navController.navigateUp() },
@@ -88,11 +112,11 @@ fun NavScreen(
 //            enabled = currentScreen == Screen.PicsList.NAME
 //                    || currentScreen == Screen.Pic.NAME
         ) {
-            Log.d(TAG, "NavScreen: GGGGG")
-            viewModel.loadCaption()
+            Log.d(TAG, "NavScreen: BackHandler")
+            sharedViewModel.loadCaption()
 
             when (currentScreen) {
-                Screen.Pic.NAME -> viewModel.changeFullScreenMode(false)
+                Screen.Pic.NAME -> sharedViewModel.changeFullscreenMode(false)
             }
             navController.navigateUp()
         }
@@ -103,16 +127,18 @@ fun NavScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable<Screen.Home> {
+                val homeViewModel: HomeViewModel = hiltViewModel()
+                val homeState by homeViewModel.homeState.collectAsState()
                 HomeScreen(
-                    authenticate = viewModel::authenticate,
-                    getRollThumbs = viewModel::getRollThumbs,
-                    getAllTags = viewModel::getAllTags,
-                    showConnectionError = viewModel::showConnectionError,
-                    getRandomPic = viewModel::getRandomPic,
-                    appState = appState,
+                    authenticate = homeViewModel::authenticate,
+                    getRollThumbs = homeViewModel::getRollThumbs,
+                    getAllTags = homeViewModel::getAllTags,
+                    showConnectionError = homeViewModel::showConnectionError,
+                    getRandomPic = homeViewModel::getRandomPic,
+                    homeState = homeState,
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) },
                     updateAndGoToPicScreen = {
-                        viewModel.saveCaption(replaceExisting = false, topBarCaption = "Random pic")
+                        homeViewModel.saveCaption(replaceExisting = false, topBarCaption = "Random pic")
                         navController.navigate(Screen.Pic(0))
                                     },
                     goToSearchScreen = { navController.navigate(Screen.Search) }
@@ -124,7 +150,7 @@ fun NavScreen(
                     isLoading = picsListViewModel.isLoading,
                     search = picsListViewModel::search,
                     query = picsListViewModel.query,
-                    getCollection = viewModel::getCollection, // todo
+                    getCollection = picsListViewModel::getCollection, // todo
                     connectionErrorIsShown = picsListViewModel.connectionError,
                     showConnectionError = picsListViewModel::showConnectionError,
                     saveCaption = picsListViewModel::saveCaption,
@@ -143,7 +169,8 @@ fun NavScreen(
                     editCollection = picViewModel::editCollection,
                     updateCollectionToSaveTo = picViewModel::updateCollectionToSaveTo,
                     updatePicInfo = picViewModel::updatePicInfo,
-                    changeFullScreenMode = picViewModel::changeFullScreenMode,
+                    changeFullScreenMode = sharedViewModel::changeFullscreenMode,
+                    isFullscreen = sharedViewModel.isFullscreen,
                     showConnectionError = picViewModel::showConnectionError,
                     picScreenState = picScreenState,
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) }
@@ -161,8 +188,6 @@ fun NavScreen(
                 val authViewModel: AuthViewModel = hiltViewModel()
                 AuthScreen(
                     saveCaption = authViewModel::saveCaption,
-                    updateUserName = viewModel::updateUserName, // todo pass username to ProfileScreen or save in DB, + remove from HomeViewModel
-//                    rememberToGetBackAfterLoggingIn = authViewModel::rememberToGetBackAfterLoggingIn,
                     signUpOrIn = authViewModel::signUpOrIn,
                     authResults = authViewModel.authResults,
                     goBackAfterLogIn = authViewModel.goBackAfterLogIn,

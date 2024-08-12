@@ -30,6 +30,7 @@ fun PicLandscapeLayout(
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
+    isFullscreen: Boolean,
     picScreenState: PicScreenState,
     pagerState: PagerState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
@@ -53,7 +54,7 @@ fun PicLandscapeLayout(
         modifier = Modifier
             .fillMaxSize()
             .blur(blurAmount)
-            .background(if (picScreenState.isFullscreen) Color.Black else Color.Transparent)
+            .background(if (isFullscreen) Color.Black else Color.Transparent)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -79,7 +80,7 @@ fun PicLandscapeLayout(
             }
         }
 
-        if (!picScreenState.isFullscreen) {
+        if (!isFullscreen) {
             PicDetails(
                 getCollection = getCollection,
                 editCollection = editCollection,

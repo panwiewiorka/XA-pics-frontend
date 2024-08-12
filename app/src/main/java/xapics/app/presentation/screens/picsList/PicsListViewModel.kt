@@ -14,12 +14,15 @@ import kotlinx.coroutines.launch
 import xapics.app.Pic
 import xapics.app.Screen
 import xapics.app.TAG
+import xapics.app.data.auth.AuthResult
+import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
 
 
 @HiltViewModel
 class PicsListViewModel @Inject constructor (
+    private val authRepository: AuthRepository,
     private val useCases: UseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
@@ -52,6 +55,25 @@ class PicsListViewModel @Inject constructor (
                 connectionError = true
                 isLoading = false
                 Log.e(TAG, "search: ", e)
+            }
+        }
+    }
+
+    fun getCollection(collection: String, goToAuthScreen: (isAuthorized: Boolean) -> Unit) {
+        isLoading = true
+
+        viewModelScope.launch {
+            try {
+                val result = authRepository.getCollection(collection)
+                if (result is AuthResult.Unauthorized) {
+                    goToAuthScreen(false)
+//                    resultChannel.send(result)
+                }
+                isLoading = false
+            } catch (e: Exception) {
+                showConnectionError(true)
+                isLoading = false
+                Log.e(TAG, "getCollection: ", e)
             }
         }
     }

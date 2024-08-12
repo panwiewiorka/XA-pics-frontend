@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xapics.app.presentation.AppState
+import xapics.app.presentation.screens.home.HomeState
 import xapics.app.presentation.screens.home.components.RandomPic
 import xapics.app.presentation.screens.home.components.TagsCloud
 import xapics.app.presentation.screens.home.components.rollCardsGrid
@@ -25,7 +25,7 @@ import xapics.app.presentation.screens.home.components.rollCardsGrid
 @Composable
 fun HomePortraitMediumLayout(
     getRandomPic: () -> Unit,
-    appState: AppState,
+    homeState: HomeState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
     updateAndGoToPicScreen: () -> Unit,
     goToSearchScreen: () -> Unit,
@@ -49,7 +49,7 @@ fun HomePortraitMediumLayout(
                     .height(maxWidth / 3)
             ) {
                 Row {
-                    appState.randomPic?.let {
+                    homeState.randomPic?.let {
                         RandomPic(
                             pic = it,
                             getRandomPic = getRandomPic,
@@ -66,7 +66,7 @@ fun HomePortraitMediumLayout(
                     ) {
                         TagsCloud(
                             scrollState = tagsScrollState,
-                            tags = appState.tags,
+                            tags = homeState.tags,
                             goToPicsListScreen = goToPicsListScreen,
                             goToSearchScreen = goToSearchScreen,
                             padding = padding
@@ -74,13 +74,13 @@ fun HomePortraitMediumLayout(
                     }
                 }
 
-                if (appState.tags.isNotEmpty() && !appState.rollThumbnails.isNullOrEmpty()) {
+                if (homeState.tags.isNotEmpty() && !homeState.rollThumbnails.isNullOrEmpty()) {
                     HorizontalDivider(modifier = Modifier.align(Alignment.TopCenter))
                     HorizontalDivider(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
         }
 
-        rollCardsGrid(appState.rollThumbnails, goToPicsListScreen, true, Modifier.padding(padding))
+        rollCardsGrid(homeState.rollThumbnails, goToPicsListScreen, true, Modifier.padding(padding))
     }
 }

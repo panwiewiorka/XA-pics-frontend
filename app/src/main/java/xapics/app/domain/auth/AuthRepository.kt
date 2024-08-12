@@ -7,7 +7,7 @@ interface AuthRepository {
     suspend fun signUp(username: String, password: String): AuthResult<String?>
     suspend fun signIn(username: String, password: String): AuthResult<String?>
     suspend fun refreshTokens(): AuthResult<String?>
-    suspend fun authenticate(updateUserName: (String?) -> Unit): AuthResult<String?>
+    suspend fun authenticate(): AuthResult<String?>
     suspend fun getUserCollections(updateUserCollections: (List<Thumb>?) -> Unit): AuthResult<String?>
     suspend fun runOrRefreshTokensAndRun(func: suspend (String) -> AuthResult<String?>): AuthResult<String?>
     fun logOut(): AuthResult<Unit>

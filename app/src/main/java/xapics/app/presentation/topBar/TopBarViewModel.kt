@@ -58,7 +58,7 @@ class TopBarViewModel @Inject constructor (
     fun onProfileClick(goToAuthScreen: (isAuthorized: Boolean) -> Unit, goToProfileScreen: (userName: String) -> Unit) {
         viewModelScope.launch {
             try {
-                val result = authRepository.authenticate { }
+                val result = authRepository.authenticate()
                 if (result is AuthResult.Authorized) {
                     useCases.saveCaption(false, result.data!!)
                     goToProfileScreen(result.data)

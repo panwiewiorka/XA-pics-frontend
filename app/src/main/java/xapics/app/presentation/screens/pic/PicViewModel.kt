@@ -21,7 +21,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PicViewModel @Inject constructor (
-//    private val picsRepository: PicsRepository,
     private val authRepository: AuthRepository,
     private val useCases: UseCases,
     savedStateHandle: SavedStateHandle
@@ -46,13 +45,6 @@ class PicViewModel @Inject constructor (
         }
     }
 
-
-    fun saveCaption() { // todo remove?
-        viewModelScope.launch {
-//            useCases.saveCaption(true, null)
-//            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
-        }
-    }
 
     fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
         updateLoadingState(true)
@@ -133,12 +125,6 @@ class PicViewModel @Inject constructor (
     fun showConnectionError(show: Boolean){
         _picScreenState.update { it.copy(
             connectionError = show
-        )}
-    }
-
-    fun changeFullScreenMode(fullscreen: Boolean? = null) {
-        _picScreenState.update { it.copy(
-            isFullscreen = fullscreen ?: !picScreenState.value.isFullscreen
         )}
     }
 

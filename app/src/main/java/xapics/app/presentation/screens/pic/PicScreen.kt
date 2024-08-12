@@ -1,13 +1,9 @@
 package xapics.app.presentation.screens.pic
 
-import android.os.Build
-import android.view.WindowInsetsController
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowInsetsCompat
 import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.screens.pic.layouts.PicLandscapeLayout
 import xapics.app.presentation.screens.pic.layouts.PicPortraitLayout
@@ -20,32 +16,13 @@ fun PicScreen(
     updateCollectionToSaveTo: (String) -> Unit,
     updatePicInfo: (Int) -> Unit,
     changeFullScreenMode: () -> Unit,
+    isFullscreen: Boolean,
     showConnectionError: (Boolean) -> Unit,
     picScreenState: PicScreenState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
     goToAuthScreen: () -> Unit,
 ) {
     val context = LocalContext.current
-
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-        val controller = LocalView.current.windowInsetsController
-
-        LaunchedEffect(picScreenState.isFullscreen) {
-            if (picScreenState.isFullscreen) {
-                controller?.apply {
-                    hide(WindowInsetsCompat.Type.statusBars())
-                    hide(WindowInsetsCompat.Type.navigationBars())
-                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                }
-            } else {
-                controller?.apply {
-                    show(WindowInsetsCompat.Type.statusBars())
-                    show(WindowInsetsCompat.Type.navigationBars())
-                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
-                }
-            }
-        }
-    }
 
     if (picScreenState.picIndex != null && picScreenState.picsList.isNotEmpty()) {
         val pagerState = rememberPagerState(
@@ -82,6 +59,7 @@ fun PicScreen(
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     changeFullScreenMode = changeFullScreenMode,
+                    isFullscreen = isFullscreen,
                     picScreenState = picScreenState,
                     pagerState = pagerState,
                     goToPicsListScreen = goToPicsListScreen,
@@ -94,6 +72,7 @@ fun PicScreen(
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     changeFullScreenMode = changeFullScreenMode,
+                    isFullscreen = isFullscreen,
                     picScreenState = picScreenState,
                     pagerState = pagerState,
                     goToPicsListScreen = goToPicsListScreen,

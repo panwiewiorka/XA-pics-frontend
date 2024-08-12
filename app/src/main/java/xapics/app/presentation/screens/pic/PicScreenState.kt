@@ -5,7 +5,6 @@ import xapics.app.Thumb
 
 data class PicScreenState(
     val isLoading: Boolean = false,
-    val isFullscreen: Boolean = false,
     val connectionError: Boolean = false,
     val userCollections: List<Thumb>? = null,
     val picCollections: List<String> = emptyList(),
