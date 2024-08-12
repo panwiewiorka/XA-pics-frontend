@@ -11,7 +11,6 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicScreen(
-    getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     updatePicInfo: (Int) -> Unit,
@@ -55,7 +54,6 @@ fun PicScreen(
             }
             windowInfo().isPortraitOrientation -> {
                 PicPortraitLayout(
-                    getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     changeFullScreenMode = changeFullScreenMode,
@@ -68,7 +66,6 @@ fun PicScreen(
             }
             else -> {
                 PicLandscapeLayout(
-                    getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     changeFullScreenMode = changeFullScreenMode,

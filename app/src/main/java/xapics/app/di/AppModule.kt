@@ -22,6 +22,7 @@ import xapics.app.domain.auth.AuthRepositoryImpl
 import xapics.app.domain.useCases.SearchPicsUseCase
 import xapics.app.domain.useCases.UseCases
 import xapics.app.domain.useCases.stateHistory.GetCaptionFlowUseCase
+import xapics.app.domain.useCases.stateHistory.GetCaptionUseCase
 import xapics.app.domain.useCases.stateHistory.GetStateSnapshotFlowUseCase
 import xapics.app.domain.useCases.stateHistory.GetStateSnapshotUseCase
 import xapics.app.domain.useCases.stateHistory.LoadCaptionUseCase
@@ -81,6 +82,7 @@ object AppModule {
             populateStateSnapshot = PopulateStateSnapshotTableUseCase(dao),
             loadCaption = LoadCaptionUseCase(dao),
             getCaptionFlow = GetCaptionFlowUseCase(dao),
+            getCaption = GetCaptionUseCase(dao),
             saveCaption = SaveCaptionUseCase(dao),
             getStateSnapshot = GetStateSnapshotUseCase(dao),
             getStateSnapshotFlow = GetStateSnapshotFlowUseCase(dao),

@@ -36,7 +36,6 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
-    getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
     blurContent: (Boolean) -> Unit,
@@ -68,10 +67,8 @@ fun PicDetails(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             confirmButton = {
                 PicTags(
-                    getCollection = getCollection,
                     picScreenState = picScreenState,
-                    goToPicsListScreen = goToPicsListScreen,
-                    goToAuthScreen = goToAuthScreen
+                    goToPicsListScreen = goToPicsListScreen
                 )
             }
         )

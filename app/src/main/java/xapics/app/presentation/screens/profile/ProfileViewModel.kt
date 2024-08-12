@@ -14,17 +14,13 @@ import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
-import xapics.app.domain.PicsRepository
 import xapics.app.domain.auth.AuthRepository
-import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
 
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor (
     private val authRepository: AuthRepository,
-    private val picsRepository: PicsRepository,
-    private val useCases: UseCases,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
@@ -32,16 +28,6 @@ class ProfileViewModel @Inject constructor (
 
     private val _profileState = MutableStateFlow(ProfileState())
     val profileState: StateFlow<ProfileState> = _profileState.asStateFlow()
-
-//    init {
-//        viewModelScope.launch {
-//            try {
-//                useCases.saveCaption(false, userName)
-//            } catch (e: Exception) {
-//                Log.e(TAG, "profileScreen INIT (update userName in topBar): ", e)
-//            }
-//        }
-//    }
 
 
     fun getUserInfo(goToAuthScreen: () -> Unit) {
@@ -93,21 +79,6 @@ class ProfileViewModel @Inject constructor (
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "renameOrDeleteCollection: ", e)
-            }
-        }
-    }
-
-    fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
-        updateLoadingState(true)
-        viewModelScope.launch {
-            try {
-                val result = authRepository.getCollection(collection)
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                showConnectionError(true)
-                updateLoadingState(false)
-                Log.e(TAG, "getCollection: ", e)
             }
         }
     }

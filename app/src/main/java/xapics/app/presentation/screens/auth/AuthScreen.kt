@@ -67,9 +67,9 @@ fun AuthScreen(
         authResults.collect { result ->
             val response = result.data.toString()
             if (result is AuthResult.Authorized) {
-                saveCaption(false, response) // todo what if goBackAfterLogIn?
                 goBack()
                 if (! goBackAfterLogIn) goToProfileScreen(response)
+                saveCaption(true, response) // todo what if goBackAfterLogIn?
             } else {
                 val toastMessage = when (result) {
                     is AuthResult.Conflicted -> response

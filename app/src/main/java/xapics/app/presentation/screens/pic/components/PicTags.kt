@@ -19,10 +19,8 @@ import xapics.app.toTagsList
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PicTags(
-    getCollection: (collection: String, onClick: () -> Unit) -> Unit,
     picScreenState: PicScreenState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
-    goToAuthScreen: () -> Unit,
 ) {
 
     AnimatedContent(
@@ -45,8 +43,7 @@ fun PicTags(
 
             theState.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
-                    getCollection(it, goToAuthScreen)
-                    goToPicsListScreen(it) // todo change to "collection = it" ??
+                    goToPicsListScreen("collection = $it")
                 }
             }
         }

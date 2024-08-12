@@ -22,7 +22,6 @@ import xapics.app.presentation.screens.pic.components.PicTags
 
 @Composable
 fun PicPortraitLayout(
-    getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
@@ -71,7 +70,6 @@ fun PicPortraitLayout(
                 modifier = Modifier.fillMaxSize()
             ) {
                 PicDetails(
-                    getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
                     blurContent = {},
@@ -81,10 +79,8 @@ fun PicPortraitLayout(
                 ) {}
 
                 PicTags(
-                    getCollection = getCollection,
                     picScreenState = picScreenState,
-                    goToPicsListScreen = goToPicsListScreen,
-                    goToAuthScreen = goToAuthScreen
+                    goToPicsListScreen = goToPicsListScreen
                 )
             }
         }

@@ -26,7 +26,6 @@ import xapics.app.presentation.screens.pic.components.PicDetails
 
 @Composable
 fun PicLandscapeLayout(
-    getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     changeFullScreenMode: () -> Unit,
@@ -82,7 +81,6 @@ fun PicLandscapeLayout(
 
         if (!isFullscreen) {
             PicDetails(
-                getCollection = getCollection,
                 editCollection = editCollection,
                 updateCollectionToSaveTo = updateCollectionToSaveTo,
                 blurContent = ::blurContent,

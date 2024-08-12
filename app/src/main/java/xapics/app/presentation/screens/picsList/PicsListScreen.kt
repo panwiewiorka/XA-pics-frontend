@@ -24,8 +24,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.ImageRequest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import xapics.app.Pic
 import xapics.app.Screen
+import xapics.app.data.auth.AuthResult
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.components.AsyncPic
@@ -34,16 +37,17 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicsListScreen(
+    authResults: Flow<AuthResult<String?>>,
     isLoading: Boolean,
     search: () -> Unit,
     query: String,
-    getCollection: (collection: String, goToAuthScreen: (Boolean) -> Unit) -> Unit,
+    getCollection: (collection: String) -> Unit,
     connectionErrorIsShown: Boolean,
     showConnectionError: (Boolean) -> Unit,
     saveCaption: () -> Unit,
     picsList: List<Pic>,
     goToPicScreen: (picIndex: Int) -> Unit,
-    goToAuthScreen: (Boolean) -> Unit,
+    goToAuthScreen: () -> Unit,
     goBack: () -> Unit,
     previousPage: String?
 ) {
@@ -65,6 +69,12 @@ fun PicsListScreen(
         }
     }
 
+    LaunchedEffect(authResults) {
+        authResults.collectLatest { result ->
+            if (result is AuthResult.Unauthorized) goToAuthScreen()
+        }
+    }
+
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
@@ -72,11 +82,11 @@ fun PicsListScreen(
         when {
             connectionErrorIsShown -> {
                 ConnectionErrorButton {
-//                    if (query.contains(what? collection?)) {
-//                        getCollection(query, goToAuthScreen)
-//                    } else {
-                        search()  // todo merge with getCollection?
-//                    }
+                    if (query.contains("collection = ")) {
+                        getCollection(query)
+                    } else {
+                        search()
+                    }
                     showConnectionError(false)
                 }
             }

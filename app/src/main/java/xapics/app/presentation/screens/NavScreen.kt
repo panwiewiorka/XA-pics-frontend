@@ -2,7 +2,6 @@ package xapics.app.presentation.screens
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.util.Log
 import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -23,7 +22,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.Screen
-import xapics.app.TAG
 import xapics.app.presentation.SharedViewModel
 import xapics.app.presentation.screens.auth.AuthScreen
 import xapics.app.presentation.screens.auth.AuthViewModel
@@ -47,8 +45,8 @@ fun NavScreen(
     navController: NavHostController = rememberNavController(),
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = backStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
-    val prevScreen = navController.previousBackStackEntry?.destination?.route?.substringAfterLast('.')?.substringBeforeLast('/') ?: "XA pics"
+    val currentScreen = backStackEntry?.destination?.route?.substringAfterLast('.')?.substringBefore('/') ?: "XA pics"
+    val prevScreen = navController.previousBackStackEntry?.destination?.route?.substringAfterLast('.')?.substringBefore('/') ?: "XA pics"
 
     val sharedViewModel: SharedViewModel = hiltViewModel()
 
@@ -92,7 +90,7 @@ fun NavScreen(
                     caption = captionState,
                     goBack = { navController.navigateUp() },
                     onProfileClick = topBarViewModel::onProfileClick,
-                    goToAuthScreen = { isAuthorized -> navController.navigate(Screen.Auth(false, isAuthorized)) {
+                    goToAuthScreen = { navController.navigate(Screen.Auth(false, false)) {
                         popUpTo(Screen.Home)
                     } },
                     goToProfileScreen = { userName ->  navController.navigate(Screen.Profile(userName)) },
@@ -107,20 +105,6 @@ fun NavScreen(
             }
         },
     ) { innerPadding ->
-        BackHandler(
-            enabled = true
-//            enabled = currentScreen == Screen.PicsList.NAME
-//                    || currentScreen == Screen.Pic.NAME
-        ) {
-            Log.d(TAG, "NavScreen: BackHandler")
-            sharedViewModel.loadCaption()
-
-            when (currentScreen) {
-                Screen.Pic.NAME -> sharedViewModel.changeFullscreenMode(false)
-            }
-            navController.navigateUp()
-        }
-
         NavHost(
             navController = navController,
             startDestination = Screen.Home,
@@ -147,10 +131,11 @@ fun NavScreen(
             composable<Screen.PicsList> {
                 val picsListViewModel: PicsListViewModel = hiltViewModel()
                 PicsListScreen(
+                    authResults = picsListViewModel.authResults,
                     isLoading = picsListViewModel.isLoading,
                     search = picsListViewModel::search,
                     query = picsListViewModel.query,
-                    getCollection = picsListViewModel::getCollection, // todo
+                    getCollection = picsListViewModel::getCollection,
                     connectionErrorIsShown = picsListViewModel.connectionError,
                     showConnectionError = picsListViewModel::showConnectionError,
                     saveCaption = picsListViewModel::saveCaption,
@@ -165,7 +150,6 @@ fun NavScreen(
                 val picViewModel: PicViewModel = hiltViewModel()
                 val picScreenState by picViewModel.picScreenState.collectAsState()
                 PicScreen(
-                    getCollection = picViewModel::getCollection,
                     editCollection = picViewModel::editCollection,
                     updateCollectionToSaveTo = picViewModel::updateCollectionToSaveTo,
                     updatePicInfo = picViewModel::updatePicInfo,
@@ -203,13 +187,20 @@ fun NavScreen(
                     updateUserCollections = profileViewModel::updateUserCollections,
                     getUserInfo = profileViewModel::getUserInfo,
                     showConnectionError = profileViewModel::showConnectionError,
-                    getCollection = profileViewModel::getCollection,
                     renameOrDeleteCollection = profileViewModel::renameOrDeleteCollection,
                     profileState = profileState,
                     goToAuthScreen = { navController.navigate(Screen.Auth(true, false)) },
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) }
                 )
             }
+        }
+
+        BackHandler {
+            sharedViewModel.loadCaption()
+
+            if (currentScreen == Screen.Pic.NAME) sharedViewModel.changeFullscreenMode(false)
+
+            navController.navigateUp()
         }
     }
 }

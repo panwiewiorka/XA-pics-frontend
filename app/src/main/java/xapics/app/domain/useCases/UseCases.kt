@@ -1,6 +1,7 @@
 package xapics.app.domain.useCases
 
 import xapics.app.domain.useCases.stateHistory.GetCaptionFlowUseCase
+import xapics.app.domain.useCases.stateHistory.GetCaptionUseCase
 import xapics.app.domain.useCases.stateHistory.GetStateSnapshotFlowUseCase
 import xapics.app.domain.useCases.stateHistory.GetStateSnapshotUseCase
 import xapics.app.domain.useCases.stateHistory.LoadCaptionUseCase
@@ -14,6 +15,7 @@ data class UseCases(
     val populateStateSnapshot: PopulateStateSnapshotTableUseCase,
     val loadCaption: LoadCaptionUseCase,
     val getCaptionFlow: GetCaptionFlowUseCase,
+    val getCaption: GetCaptionUseCase,
     val saveCaption: SaveCaptionUseCase,
     val getStateSnapshot: GetStateSnapshotUseCase,
     val getStateSnapshotFlow: GetStateSnapshotFlowUseCase,

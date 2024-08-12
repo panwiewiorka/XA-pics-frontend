@@ -61,8 +61,11 @@ fun TopBar(
     tags: List<Tag>,
     caption: String,
     goBack: () -> Unit,
-    onProfileClick: (goToAuthScreen: (isAuthorized: Boolean) -> Unit, goToProfileScreen: (userName: String) -> Unit) -> Unit,
-    goToAuthScreen: (isAuthorized: Boolean) -> Unit,
+    onProfileClick: (
+        goToAuthScreen: () -> Unit,
+        goToProfileScreen: (userName: String) -> Unit
+            ) -> Unit,
+    goToAuthScreen: () -> Unit,
     goToProfileScreen: (userName: String) -> Unit,
     goToPicsListScreen: (query: String) -> Unit,
     goToSearchScreen: () -> Unit,
@@ -200,7 +203,7 @@ fun TopBar(
             if(page == Screen.Profile.NAME) {
                 IconButton(onClick = {
                     logOut()
-                    goToAuthScreen(false)
+                    goToAuthScreen()
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
                 }

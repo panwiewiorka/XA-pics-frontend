@@ -16,7 +16,6 @@ fun ProfileScreen(
     updateUserCollections: (userCollections: List<Thumb>?) -> Unit,
     getUserInfo: (onAuthError: () -> Unit) -> Unit,
     showConnectionError: (Boolean) -> Unit,
-    getCollection: (String, () -> Unit) -> Unit,
     renameOrDeleteCollection: (String, String?, () -> Unit) -> Unit,
     profileState: ProfileState,
     goToAuthScreen: () -> Unit,
@@ -46,7 +45,6 @@ fun ProfileScreen(
             profileState.userCollections != null -> {
                 UserView(
                     profileState.userCollections,
-                    getCollection,
                     goToPicsListScreen,
                     goToAuthScreen,
                     renameOrDeleteCollection,

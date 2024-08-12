@@ -32,11 +32,13 @@ class PicViewModel @Inject constructor (
 
     init {
         viewModelScope.launch {
+            updateLoadingState(true)
             try {
                 _picScreenState.update { it.copy(
                     picsList = useCases.getStateSnapshot().picsList,
                     picIndex = Screen.Pic.from(savedStateHandle).picIndex
                 ) }
+                updateLoadingState(false)
             } catch (e: Exception) {
                 showConnectionError(true)
                 updateLoadingState(false)
@@ -45,22 +47,6 @@ class PicViewModel @Inject constructor (
         }
     }
 
-
-    fun getCollection(collection: String, goToAuthScreen: () -> Unit) {
-        updateLoadingState(true)
-        viewModelScope.launch {
-            try {
-                val result = authRepository.getCollection(collection)
-                if (result is AuthResult.Unauthorized) goToAuthScreen()
-                updateLoadingState(false)
-
-            } catch (e: Exception) {
-//                showConnectionError(true)
-                updateLoadingState(false)
-                Log.e(TAG, "getCollection: ", e)
-            }
-        }
-    }
 
     fun editCollection(collection: String, picId: Int, goToAuthScreen: () -> Unit) {
         viewModelScope.launch {

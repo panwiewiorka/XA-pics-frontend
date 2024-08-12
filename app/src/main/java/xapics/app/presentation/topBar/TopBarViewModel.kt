@@ -50,19 +50,17 @@ class TopBarViewModel @Inject constructor (
 
     fun logOut() {
         authRepository.logOut()
-        viewModelScope.launch{
-            useCases.saveCaption(replaceExisting = true, topBarCaption = "Log in")
-        }
+        saveCaption(true, "Log in")
     }
 
-    fun onProfileClick(goToAuthScreen: (isAuthorized: Boolean) -> Unit, goToProfileScreen: (userName: String) -> Unit) {
+    fun onProfileClick(goToAuthScreen: () -> Unit, goToProfileScreen: (userName: String) -> Unit) {
         viewModelScope.launch {
             try {
                 val result = authRepository.authenticate()
                 if (result is AuthResult.Authorized) {
                     useCases.saveCaption(false, result.data!!)
                     goToProfileScreen(result.data)
-                } else goToAuthScreen(false)
+                } else goToAuthScreen()
             } catch (e: Exception) {
                 Log.e(TAG, "getUserName: ", e)
             }
@@ -71,13 +69,13 @@ class TopBarViewModel @Inject constructor (
 
     fun onGoToSearchScreen() {
         _captionState.update { "Search" } // fixing temporal visual glitch of switching to another caption
-        saveCaption("Search")
+        saveCaption(false, "Search")
     }
 
-    fun saveCaption(caption: String) {
+    fun saveCaption(replaceExisting: Boolean, caption: String) {
         viewModelScope.launch {
             try {
-                useCases.saveCaption(false, caption)
+                useCases.saveCaption(replaceExisting, caption)
             } catch (e: Exception) {
                 Log.e(TAG, "saveCaption: ", e)
             }

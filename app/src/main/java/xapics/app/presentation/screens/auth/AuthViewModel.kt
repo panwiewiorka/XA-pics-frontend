@@ -37,8 +37,10 @@ class AuthViewModel @Inject constructor (
 
 
     init {
-        saveCaption(false, "Log in")
         viewModelScope.launch {
+            val caption = useCases.getCaption().topBarCaption
+            if (caption != "Log in") saveCaption( false, "Log in")
+
             if (isAuthorized) resultChannel.send(AuthResult.Authorized()) else resultChannel.send(AuthResult.Unauthorized())
         }
     }

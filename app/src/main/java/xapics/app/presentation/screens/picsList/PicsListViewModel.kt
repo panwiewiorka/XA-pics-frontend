@@ -10,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import xapics.app.Pic
 import xapics.app.Screen
@@ -28,6 +30,7 @@ class PicsListViewModel @Inject constructor (
 ): ViewModel() {
 
     val query = Screen.PicsList.from(savedStateHandle).searchQuery
+    private val collectionPrefix = "collection = "
 
     var isLoading by mutableStateOf(false)
         private set
@@ -38,9 +41,14 @@ class PicsListViewModel @Inject constructor (
     var picsList = mutableStateListOf<Pic>()
         private set
 
+    private val resultChannel = Channel<AuthResult<String?>>()
+    val authResults = resultChannel.receiveAsFlow()
+
     init {
         viewModelScope.launch {
-            search()
+            if (query.contains(collectionPrefix)) {
+                getCollection(query.substringAfter(collectionPrefix))
+            } else search()
         }
     }
 
@@ -59,15 +67,16 @@ class PicsListViewModel @Inject constructor (
         }
     }
 
-    fun getCollection(collection: String, goToAuthScreen: (isAuthorized: Boolean) -> Unit) {
+    fun getCollection(collection: String) {
         isLoading = true
 
         viewModelScope.launch {
             try {
                 val result = authRepository.getCollection(collection)
-                if (result is AuthResult.Unauthorized) {
-                    goToAuthScreen(false)
-//                    resultChannel.send(result)
+                when(result) {
+                    is AuthResult.Authorized -> picsList = useCases.getStateSnapshot().picsList.toMutableStateList()
+                    is AuthResult.Unauthorized -> resultChannel.send(result)
+                    else -> { }
                 }
                 isLoading = false
             } catch (e: Exception) {
