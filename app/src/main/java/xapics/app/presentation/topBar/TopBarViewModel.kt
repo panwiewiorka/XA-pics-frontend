@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xapics.app.TAG
+import xapics.app.data.auth.AuthResult
+import xapics.app.data.db.StateSnapshot
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
@@ -23,9 +25,18 @@ class TopBarViewModel @Inject constructor (
     private val _captionState = MutableStateFlow("XA pics")
     val captionState = _captionState.asStateFlow()
 
+    private val _stateSnapshot = MutableStateFlow(StateSnapshot())
+    val stateSnapshot = _stateSnapshot.asStateFlow()
+
     init {
         viewModelScope.launch {
             try {
+                launch {// separate coroutine because collecting makes subsequent code unreachable
+                    useCases.populateStateSnapshot()
+                    useCases.getStateSnapshotFlow().collect { snapshot ->
+                        _stateSnapshot.update { it.copy(tags = snapshot.tags) }
+                    }
+                }
                 useCases.populateCaptionTable()
                 useCases.getCaptionFlow().collect { value ->
                     value?.let { _captionState.value = value.topBarCaption }
@@ -44,8 +55,22 @@ class TopBarViewModel @Inject constructor (
         }
     }
 
+    fun onProfileClick(goToAuthScreen: (isAuthorized: Boolean) -> Unit, goToProfileScreen: (userName: String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = authRepository.authenticate { }
+                if (result is AuthResult.Authorized) {
+                    useCases.saveCaption(false, result.data!!)
+                    goToProfileScreen(result.data)
+                } else goToAuthScreen(false)
+            } catch (e: Exception) {
+                Log.e(TAG, "getUserName: ", e)
+            }
+        }
+    }
+
     fun onGoToSearchScreen() {
-        _captionState.update { "Search" }
+        _captionState.update { "Search" } // fixing temporal visual glitch of switching to another caption
         saveCaption("Search")
     }
 
@@ -59,41 +84,14 @@ class TopBarViewModel @Inject constructor (
         }
     }
 
-//    private fun updateTopBarCaptionState(caption: String) {
-//        _state.update { it.copy(
-//            topBarCaption = updateTopBarCaption(caption)
-//        ) }
-//    }
-//
-//    fun loadStateSnapshot(): String {
-//        if (stateHistory.isNotEmpty()) Log.d(TAG, "loadStateSnapshot 111: ${stateHistory.last().topBarCaption}, ${state.value.topBarCaption}")
-//        stateHistory.removeLast()
-//        if (stateHistory.isNotEmpty()) {
-//            val last = stateHistory.last()
-//            _state.update { it.copy(
-//                picsList = last.picsList,
-//                pic = last.pic,
-//                picIndex = last.picIndex,
-//                topBarCaption = last.topBarCaption
-//            ) }
-//            Log.d(TAG, "loadStateSnapshot 222: ${stateHistory.last().topBarCaption}, ${state.value.topBarCaption}")
-//        }
-//        return state.value.topBarCaption
-//    }
-//
-//    fun updateStateSnapshot() {
-//        stateHistory.last().pic = state.value.pic
-//        stateHistory.last().picIndex = state.value.picIndex
-//    }
-//
-//
-//    fun showSearch(show: Boolean) {
-//        _state.update { it.copy(showSearch = show) }
-//    }
-//
-//    fun showPicsList(show: Boolean) {
-//        _state.update { it.copy(
-//            showPicsList = show
-//        ) }
-//    }
+    fun loadCaption() {
+        viewModelScope.launch {
+            try {
+                useCases.loadCaption()
+            } catch (e: Exception) {
+                Log.e(TAG, "loadCaption: ", e)
+            }
+        }
+    }
+
 }

@@ -22,7 +22,6 @@ import xapics.app.presentation.theme.myTextButtonColors
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
-    search: (String) -> Unit,
     getAllTags: () -> Unit,
     getFilteredTags: (Tag) -> Unit,
     tags: List<Tag>,

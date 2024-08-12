@@ -8,7 +8,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import xapics.app.Thumb
-import xapics.app.presentation.AppState
 import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.screens.profile.components.UserView
 
@@ -19,7 +18,7 @@ fun ProfileScreen(
     showConnectionError: (Boolean) -> Unit,
     getCollection: (String, () -> Unit) -> Unit,
     renameOrDeleteCollection: (String, String?, () -> Unit) -> Unit,
-    appState: AppState,
+    profileState: ProfileState,
     goToAuthScreen: () -> Unit,
     goToPicsListScreen: (searchQuery: String) -> Unit,
 ) {
@@ -27,7 +26,7 @@ fun ProfileScreen(
 
     LaunchedEffect(Unit) {
         updateUserCollections(null)
-        if (appState.userName != null) getUserInfo(goToAuthScreen)
+        getUserInfo(goToAuthScreen)
     }
 
     Box(
@@ -35,7 +34,7 @@ fun ProfileScreen(
         contentAlignment = Alignment.Center
     ) {
         when {
-            appState.connectionError -> {
+            profileState.connectionError -> {
                 ConnectionErrorButton {
                     showConnectionError(false)
                     getUserInfo(goToAuthScreen)
@@ -44,9 +43,9 @@ fun ProfileScreen(
 //            appState.isLoading -> {
 //                CircularProgressIndicator()
 //            }
-            appState.userCollections != null -> {
+            profileState.userCollections != null -> {
                 UserView(
-                    appState.userCollections,
+                    profileState.userCollections,
                     getCollection,
                     goToPicsListScreen,
                     goToAuthScreen,

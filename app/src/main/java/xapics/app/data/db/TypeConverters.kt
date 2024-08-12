@@ -4,19 +4,20 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import xapics.app.Pic
+import xapics.app.Tag
 
 class PicTypeConverter {
     val gson = Gson()
 
     @TypeConverter
-    fun picToString(pic: Pic?): String {
-        return gson.toJson(pic)
+    fun tagsListToString(tagsList: List<Tag>): String {
+        return gson.toJson(tagsList)
     }
 
     @TypeConverter
-    fun stringToPic(picString: String): Pic? {
-        val objectType = object : TypeToken<Pic?>() {}.type
-        return gson.fromJson(picString, objectType)
+    fun stringToTagsList(tagsListString: String): List<Tag> {
+        val objectType = object : TypeToken<List<Tag>>() {}.type
+        return gson.fromJson(tagsListString, objectType)
     }
 
     @TypeConverter

@@ -15,10 +15,10 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicScreen(
-    saveCaption: () -> Unit,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
+    updatePicInfo: (Int) -> Unit,
     changeFullScreenMode: () -> Unit,
     showConnectionError: (Boolean) -> Unit,
     picScreenState: PicScreenState,
@@ -65,9 +65,9 @@ fun PicScreen(
 //            }
         }
 
-//        LaunchedEffect(pagerState.currentPage) {
-//            saveCaption(picScreenState.picsList[pagerState.currentPage], pagerState.currentPage)
-//        }
+        LaunchedEffect(pagerState.currentPage) {
+            updatePicInfo(pagerState.currentPage)
+        }
 
         when {
             picScreenState.connectionError -> {

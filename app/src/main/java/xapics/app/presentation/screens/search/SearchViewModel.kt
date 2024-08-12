@@ -29,13 +29,6 @@ class SearchViewModel @Inject constructor (
 
 
     init {
-        viewModelScope.launch {
-            try {
-                useCases.saveCaption(false, "Search")
-            } catch (e: Exception) {
-                Log.e(TAG, "saveCaption (SearchScreen): ", e)
-            }
-        }
         getAllTags()
     }
 

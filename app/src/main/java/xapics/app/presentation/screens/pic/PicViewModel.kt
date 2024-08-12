@@ -5,15 +5,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xapics.app.Screen
 import xapics.app.TAG
+import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
@@ -31,17 +30,12 @@ class PicViewModel @Inject constructor (
     private val _picScreenState = MutableStateFlow(PicScreenState())
     val picScreenState: StateFlow<PicScreenState> = _picScreenState.asStateFlow()
 
-    private val resultChannel = Channel<AuthResult<String?>>()
-    val authResults = resultChannel.receiveAsFlow()
-
-//    private val _state = MutableStateFlow(StateSnapshot())
-//    val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
             try {
                 _picScreenState.update { it.copy(
-                    picsList = useCases.getSnapshot().picsList,
+                    picsList = useCases.getStateSnapshot().picsList,
                     picIndex = Screen.Pic.from(savedStateHandle).picIndex
                 ) }
             } catch (e: Exception) {
@@ -49,10 +43,6 @@ class PicViewModel @Inject constructor (
                 updateLoadingState(false)
                 Log.e(TAG, "getSnapshot (get picsList): ", e)
             }
-
-//            useCases.getSnapshotFlow().collectLatest { value ->
-//                value?.let { _state.value = value }
-//            }
         }
     }
 
@@ -69,10 +59,7 @@ class PicViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 val result = authRepository.getCollection(collection)
-                if (result is AuthResult.Unauthorized) {
-                    goToAuthScreen()
-                    resultChannel.send(result)
-                }
+                if (result is AuthResult.Unauthorized) goToAuthScreen()
                 updateLoadingState(false)
 
             } catch (e: Exception) {
@@ -92,17 +79,9 @@ class PicViewModel @Inject constructor (
                     picId = picId
                 )
                 when (result) {
-                    is AuthResult.Authorized -> {
-                        getPicCollections(picId)
-                    }
-                    is AuthResult.Unauthorized -> {
-//                        rememberToGetBackAfterLoggingIn(true) // todo
-                        goToAuthScreen()
-                        resultChannel.send(result)
-                    }
-                    else -> {
-                        Log.d(TAG, "Unknown error") // TODO send message to channel to Toast
-                    }
+                    is AuthResult.Authorized -> getPicCollections(picId)
+                    is AuthResult.Unauthorized -> goToAuthScreen()
+                    else -> Log.d(TAG, "Unknown error") // TODO send message to channel to Toast
                 }
 //                updateLoadingState(false)
             } catch (e: Exception) {
@@ -133,15 +112,22 @@ class PicViewModel @Inject constructor (
     }
 
     fun updateCollectionToSaveTo(collection: String) {
-//        val isNewCollection = picScreenState.value.userCollections?.firstOrNull { it.title == collection } == null
-//        _picScreenState.update { it.copy(
-//            collectionToSaveTo = collection,
-//        ) }
-//        if(isNewCollection) {
-//            _picScreenState.update { it.copy(
-//                userCollections = picScreenState.value.userCollections?.plus(Thumb(collection, state.value.pic!!.imageUrl)),
-//            )}
-//        }
+        val isNewCollection = picScreenState.value.userCollections?.firstOrNull { it.title == collection } == null
+        _picScreenState.update { it.copy(
+            collectionToSaveTo = collection,
+        ) }
+        if(isNewCollection) {
+            _picScreenState.update { it.copy(
+                userCollections = picScreenState.value.userCollections?.plus(Thumb(collection, picScreenState.value.picsList[picScreenState.value.picIndex!!].imageUrl)),
+            )}
+        }
+    }
+
+    fun updatePicInfo(index: Int) {
+        getPicCollections(picScreenState.value.picsList[index].id)
+        _picScreenState.update { it.copy(
+            picIndex = index,
+        ) }
     }
 
     fun showConnectionError(show: Boolean){

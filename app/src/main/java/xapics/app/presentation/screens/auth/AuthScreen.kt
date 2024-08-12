@@ -53,12 +53,12 @@ fun AuthScreen(
         topBarCaption: String?
     ) -> Unit,
     updateUserName: (String) -> Unit,
-    rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
+//    rememberToGetBackAfterLoggingIn: (Boolean) -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
     authResults: Flow<AuthResult<String?>>,
-    getBackAfterLoggingIn: Boolean,
+    goBackAfterLogIn: Boolean,
     goBack: () -> Unit,
-    goToProfileScreen: () -> Unit,
+    goToProfileScreen: (userName: String) -> Unit,
     isLoading: Boolean,
 ) {
     val context = LocalContext.current
@@ -74,13 +74,9 @@ fun AuthScreen(
             val response = result.data.toString()
             if (result is AuthResult.Authorized) {
                 updateUserName(response)
-                if (getBackAfterLoggingIn) {
-                    rememberToGetBackAfterLoggingIn(false)
-                    goBack()
-                } else {
-                    goBack()
-                    goToProfileScreen()
-                }
+                saveCaption(false, response) // todo what if goBackAfterLogIn?
+                goBack()
+                if (! goBackAfterLogIn) goToProfileScreen(response)
             } else {
                 val toastMessage = when (result) {
                     is AuthResult.Conflicted -> response

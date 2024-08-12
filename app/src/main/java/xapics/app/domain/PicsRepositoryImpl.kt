@@ -5,10 +5,13 @@ import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.Thumb
 import xapics.app.data.PicsApi
+import xapics.app.data.db.StateSnapshot
+import xapics.app.data.db.XaDao
 import xapics.app.toTagsList
 
 class PicsRepositoryImpl(
-    private val api: PicsApi
+    private val api: PicsApi,
+    private val dao: XaDao,
 ) : PicsRepository {
     override suspend fun getRollThumbs(): List<Thumb> {
 //        return try {
@@ -20,7 +23,16 @@ class PicsRepositoryImpl(
     }
 
     override suspend fun getAllTags(): List<Tag> {
-        return api.getAllTags().string.toTagsList()
+        val tags = api.getAllTags().string.toTagsList()
+        val picsList = dao.getStateSnapshot().picsList
+        dao.updateStateSnapshot(
+            StateSnapshot(
+                id = 1,
+                picsList = picsList,
+                tags = tags
+            )
+        )
+        return tags
     }
 
     override suspend fun getRandomPic(): Pic {
@@ -62,6 +74,15 @@ class PicsRepositoryImpl(
                     TagState.DISABLED
             }
         }
+
+        val picsList = dao.getStateSnapshot().picsList
+        dao.updateStateSnapshot(
+            StateSnapshot(
+                id = 1,
+                picsList = picsList,
+                tags = refreshedTags
+            )
+        )
 
         return refreshedTags
     }

@@ -37,13 +37,13 @@ fun PicsListScreen(
     isLoading: Boolean,
     search: () -> Unit,
     query: String,
-    getCollection: (collection: String, () -> Unit) -> Unit,
+    getCollection: (collection: String, goToAuthScreen: (Boolean) -> Unit) -> Unit,
     connectionErrorIsShown: Boolean,
     showConnectionError: (Boolean) -> Unit,
     saveCaption: () -> Unit,
     picsList: List<Pic>,
     goToPicScreen: (picIndex: Int) -> Unit,
-    goToAuthScreen: () -> Unit,
+    goToAuthScreen: (Boolean) -> Unit,
     goBack: () -> Unit,
     previousPage: String?
 ) {

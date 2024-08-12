@@ -19,7 +19,6 @@ import xapics.app.toTagsList
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PicTags(
-    picIndex: Int,
     getCollection: (collection: String, onClick: () -> Unit) -> Unit,
     picScreenState: PicScreenState,
     goToPicsListScreen: (searchQuery: String) -> Unit,
@@ -36,7 +35,7 @@ fun PicTags(
         FlowRow(
             modifier = Modifier.padding(horizontal = 28.dp)
         ) {
-            val tags = theState.picsList[picIndex].tags.toTagsList()
+            val tags = theState.picsList[theState.picIndex!!].tags.toTagsList()
 
             tags.forEach {
                 PicTag(it) {
@@ -46,7 +45,6 @@ fun PicTags(
 
             theState.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
-//                    saveStateSnapshot("TAGGAGAG") // TODO needed? vv getCollection() saves snapshot
                     getCollection(it, goToAuthScreen)
                     goToPicsListScreen(it) // todo change to "collection = it" ??
                 }

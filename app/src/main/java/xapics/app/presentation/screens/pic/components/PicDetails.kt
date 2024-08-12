@@ -36,7 +36,6 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicDetails(
-    picIndex: Int,
     getCollection: (collection: String, () -> Unit) -> Unit,
     editCollection: (collection: String, picId: Int, onAuthError: () -> Unit) -> Unit,
     updateCollectionToSaveTo:(String) -> Unit,
@@ -47,7 +46,7 @@ fun PicDetails(
     goToPicsListScreen: (searchQuery: String) -> Unit,
 ) {
     var showTags by remember { mutableStateOf(false) }
-    val pic = picScreenState.picsList[picIndex]
+    val pic = picScreenState.picsList[picScreenState.picIndex!!]
     
     if (showTags) {
         AlertDialog(
@@ -69,7 +68,6 @@ fun PicDetails(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             confirmButton = {
                 PicTags(
-                    picIndex = picIndex,
                     getCollection = getCollection,
                     picScreenState = picScreenState,
                     goToPicsListScreen = goToPicsListScreen,
@@ -91,7 +89,7 @@ fun PicDetails(
                 )
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "${picIndex + 1} / ${picScreenState.picsList.size}")
+                Text(text = "${picScreenState.picIndex + 1} / ${picScreenState.picsList.size}")
                 Text(
                     text = pic.description,
                     maxLines = 1,

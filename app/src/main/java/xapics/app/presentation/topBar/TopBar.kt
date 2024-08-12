@@ -1,5 +1,6 @@
 package xapics.app.presentation.topBar
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -46,21 +47,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xapics.app.R
 import xapics.app.Screen
+import xapics.app.TAG
+import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.nonScaledSp
-import xapics.app.presentation.AppState
 
 @Composable
 fun TopBar(
+    searchIsShown: Boolean,
     showSearch: (Boolean) -> Unit,
     loadStateSnapshot: () -> Unit,
     logOut: () -> Unit,
-    appState: AppState,
+    tags: List<Tag>,
     caption: String,
-    saveCaption: (String) -> Unit,
     goBack: () -> Unit,
-    goToAuthScreen: () -> Unit,
-    goToProfileScreen: () -> Unit,
+    onProfileClick: (goToAuthScreen: (isAuthorized: Boolean) -> Unit, goToProfileScreen: (userName: String) -> Unit) -> Unit,
+    goToAuthScreen: (isAuthorized: Boolean) -> Unit,
+    goToProfileScreen: (userName: String) -> Unit,
     goToPicsListScreen: (query: String) -> Unit,
     goToSearchScreen: () -> Unit,
     page: String,
@@ -72,7 +75,6 @@ fun TopBar(
     ) {
         val focusRequester = remember { FocusRequester() }
 
-        val text =  caption
         val searchText = ""
         var query by remember { mutableStateOf (
             TextFieldValue (
@@ -86,9 +88,13 @@ fun TopBar(
                 .replace(',', ' ')
                 .replace('=', ' ')
 
-            val filters = appState.tags.filter { it.state == TagState.SELECTED }
+            Log.d(TAG, "formattedSearch TAGS: $tags")
+
+            val filters = tags.filter { it.state == TagState.SELECTED }
                 .map { "${it.type} = ${it.value}" }
                 .toString().drop(1).dropLast(1)
+
+            Log.d(TAG, "formattedSearch FILTERED: $filters")
 
             when {
                 page == Screen.Search.toString() && filters.isNotBlank() -> {
@@ -109,7 +115,8 @@ fun TopBar(
                 }
             } else {
                 IconButton(enabled = true, onClick = {
-                    if (page == Screen.PicsList.NAME || page == Screen.Pic.NAME) loadStateSnapshot()
+//                    if (page == Screen.PicsList.NAME || page == Screen.Pic.NAME)
+                    loadStateSnapshot()
                     goBack()
                 }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
@@ -146,11 +153,11 @@ fun TopBar(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (appState.showSearch) {
+                    if (searchIsShown) {
                         SearchField()
                     } else {
                         Text(
-                            text = text,
+                            text = caption,
                             fontSize = 18.nonScaledSp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -160,7 +167,7 @@ fun TopBar(
                         )
                     }
 
-                    if (page != Screen.Search.toString() && appState.showSearch) {
+                    if (page != Screen.Search.toString() && searchIsShown) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
@@ -169,7 +176,7 @@ fun TopBar(
                     }
 
                     IconButton(onClick = {
-                        if (appState.showSearch) formattedSearch() else showSearch(true)
+                        if (searchIsShown) formattedSearch() else showSearch(true)
                     }) {
                         Icon(Icons.Default.Search, "Search photos", modifier = Modifier.offset(0.dp, 1.dp))
                     }
@@ -181,7 +188,7 @@ fun TopBar(
                         .height(28.dp)
                         .border(
                             1.dp,
-                            if (appState.showSearch) MaterialTheme.colorScheme.outline else Color.Transparent,
+                            if (searchIsShown) MaterialTheme.colorScheme.outline else Color.Transparent,
                             CircleShape
                         )
                 ) {}
@@ -190,28 +197,18 @@ fun TopBar(
 
         @Composable
         fun ProfileOrLogOutButton() {
-            if(page == Screen.Profile.toString()) {
+            if(page == Screen.Profile.NAME) {
                 IconButton(onClick = {
                     logOut()
-//                    saveCaption("Log in")
-                    goToAuthScreen()
+                    goToAuthScreen(false)
                 }) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
                 }
             } else {
                 IconButton(
-                    enabled = page != Screen.Auth.toString(),
+                    enabled = page != Screen.Auth.NAME,
                     onClick = {
-                        when (appState.userName) {
-                            null -> {
-//                                saveCaption("Log in")
-                                goToAuthScreen()
-                            }
-                            else -> {
-//                                saveCaption(appState.userName)
-                                goToProfileScreen()
-                            }
-                        }
+                        onProfileClick(goToAuthScreen, goToProfileScreen)
                     }
                 ) {
                     Icon(Icons.Outlined.AccountCircle, "Go to Profile screen")
@@ -221,7 +218,7 @@ fun TopBar(
 
 
 
-        if (page == Screen.Profile.toString() && page == previousPage) goBack() // todo check double caption record in DB
+        if (page == Screen.Profile.NAME && page == previousPage) goBack() // todo check double caption record in DB
 
         HomeOrBackButton()
 
@@ -232,6 +229,6 @@ fun TopBar(
         ProfileOrLogOutButton()
     }
     LaunchedEffect(page) {
-        if (appState.showSearch) showSearch(false)
+        if (searchIsShown) showSearch(false)
     }
 }

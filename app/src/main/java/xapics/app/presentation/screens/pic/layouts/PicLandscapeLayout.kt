@@ -81,7 +81,6 @@ fun PicLandscapeLayout(
 
         if (!picScreenState.isFullscreen) {
             PicDetails(
-                picIndex = pagerState.currentPage,
                 getCollection = getCollection,
                 editCollection = editCollection,
                 updateCollectionToSaveTo = updateCollectionToSaveTo,

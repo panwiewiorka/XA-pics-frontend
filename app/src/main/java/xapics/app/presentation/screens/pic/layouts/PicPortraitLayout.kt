@@ -70,7 +70,6 @@ fun PicPortraitLayout(
                 modifier = Modifier.fillMaxSize()
             ) {
                 PicDetails(
-                    picIndex = pagerState.currentPage, // todo pagerState.settledPage ?
                     getCollection = getCollection,
                     editCollection = editCollection,
                     updateCollectionToSaveTo = updateCollectionToSaveTo,
@@ -81,7 +80,6 @@ fun PicPortraitLayout(
                 ) {}
 
                 PicTags(
-                    picIndex = pagerState.currentPage,  // todo pagerState.settledPage ?  (also in landscape mode)
                     getCollection = getCollection,
                     picScreenState = picScreenState,
                     goToPicsListScreen = goToPicsListScreen,

@@ -12,14 +12,15 @@ class SearchPicsUseCase(
     private val api: PicsApi
 ) {
     suspend operator fun invoke(query: String): List<Pic> {
-        val state = dao.getCaption()
+        val caption = dao.getCaption()
+        val state = dao.getStateSnapshot()
         val searchQuery = query.transformTopBarCaption()
 
         val picsList = api.search(query)
 
         dao.saveCaption(
             Caption(
-                id = state.id + 1,
+                id = caption.id + 1,
                 topBarCaption = searchQuery
             )
         )
@@ -28,6 +29,7 @@ class SearchPicsUseCase(
             StateSnapshot(
                 id = 1,
                 picsList = picsList,
+                tags = state.tags,
             )
         )
 

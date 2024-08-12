@@ -169,6 +169,7 @@ class AuthRepositoryImpl(
             try {
                 val picsList = api.getCollection("Bearer $token", collection).reversed()
                 val caption = dao.getCaption()
+                val state = dao.getStateSnapshot()
 
                 dao.saveCaption(
                     Caption(
@@ -180,7 +181,8 @@ class AuthRepositoryImpl(
                 dao.updateStateSnapshot(
                     StateSnapshot(
                         id = 1,
-                        picsList = picsList
+                        picsList = picsList,
+                        tags = state.tags,
                     )
                 )
 

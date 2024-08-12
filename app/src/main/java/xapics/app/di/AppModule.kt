@@ -22,9 +22,11 @@ import xapics.app.domain.auth.AuthRepositoryImpl
 import xapics.app.domain.useCases.SearchPicsUseCase
 import xapics.app.domain.useCases.UseCases
 import xapics.app.domain.useCases.stateHistory.GetCaptionFlowUseCase
-import xapics.app.domain.useCases.stateHistory.GetSnapshotUseCase
+import xapics.app.domain.useCases.stateHistory.GetStateSnapshotFlowUseCase
+import xapics.app.domain.useCases.stateHistory.GetStateSnapshotUseCase
 import xapics.app.domain.useCases.stateHistory.LoadCaptionUseCase
 import xapics.app.domain.useCases.stateHistory.PopulateCaptionTableUseCase
+import xapics.app.domain.useCases.stateHistory.PopulateStateSnapshotTableUseCase
 import xapics.app.domain.useCases.stateHistory.SaveCaptionUseCase
 import xapics.app.domain.useCases.stateHistory.UpdateStateSnapshotUseCase
 import javax.inject.Singleton
@@ -57,8 +59,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePicsRepository(api: PicsApi): PicsRepository {
-        return PicsRepositoryImpl(api)
+    fun providePicsRepository(api: PicsApi, dao: XaDao): PicsRepository {
+        return PicsRepositoryImpl(api, dao)
     }
 
     @Provides
@@ -76,12 +78,14 @@ object AppModule {
     fun provideUseCases(dao: XaDao, api: PicsApi): UseCases {
         return UseCases(
             populateCaptionTable = PopulateCaptionTableUseCase(dao),
+            populateStateSnapshot = PopulateStateSnapshotTableUseCase(dao),
             loadCaption = LoadCaptionUseCase(dao),
             getCaptionFlow = GetCaptionFlowUseCase(dao),
             saveCaption = SaveCaptionUseCase(dao),
-            getSnapshot = GetSnapshotUseCase(dao),
-            searchPics = SearchPicsUseCase(dao, api),
+            getStateSnapshot = GetStateSnapshotUseCase(dao),
+            getStateSnapshotFlow = GetStateSnapshotFlowUseCase(dao),
             updateStateSnapshot = UpdateStateSnapshotUseCase(dao),
+            searchPics = SearchPicsUseCase(dao, api),
         )
     }
 }
