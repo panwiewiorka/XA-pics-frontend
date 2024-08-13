@@ -5,9 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xapics.app.Screen
@@ -29,15 +31,26 @@ class PicViewModel @Inject constructor (
     private val _picScreenState = MutableStateFlow(PicScreenState())
     val picScreenState: StateFlow<PicScreenState> = _picScreenState.asStateFlow()
 
+    private var picIndex = Screen.Pic.from(savedStateHandle).picIndex
+
+    private val messagesChannel = Channel<String>()
+    val messages = messagesChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
             updateLoadingState(true)
             try {
+                val picsList = useCases.getStateSnapshot().picsList
+
+                if (picIndex == 0 && picsList.size == 1) {
+                    launch { messagesChannel.send("Showing the only pic found") }
+                } else if (picIndex == -1) picIndex = 0
+
                 _picScreenState.update { it.copy(
-                    picsList = useCases.getStateSnapshot().picsList,
-                    picIndex = Screen.Pic.from(savedStateHandle).picIndex
+                    picsList = picsList,
+                    picIndex = picIndex
                 ) }
+
                 updateLoadingState(false)
             } catch (e: Exception) {
                 showConnectionError(true)

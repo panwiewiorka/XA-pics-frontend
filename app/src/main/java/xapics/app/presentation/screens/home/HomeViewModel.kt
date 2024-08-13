@@ -9,17 +9,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import xapics.app.Pic
 import xapics.app.TAG
-import xapics.app.data.auth.AuthResult
 import xapics.app.domain.PicsRepository
-import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
 import javax.inject.Inject
 
 
 @HiltViewModel
 class HomeViewModel @Inject constructor (
-    private val authRepository: AuthRepository,
     private val picsRepository: PicsRepository,
     private val useCases: UseCases,
 ): ViewModel() {
@@ -28,45 +26,11 @@ class HomeViewModel @Inject constructor (
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
     init {
-        authenticate()
         getRandomPic()
         getRollThumbs()
         getAllTags()
     }
 
-
-    fun authenticate() {
-        viewModelScope.launch {
-            try {
-                updateLoadingState(true)
-                authRepository.authenticate()
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                Log.e(TAG, "viewModel authenticate(): ", e)
-                updateLoadingState(false)
-            }
-        }
-    }
-
-    fun getCollection(collection: String, goToAuthScreen: (isAuthorized: Boolean) -> Unit) {
-        updateLoadingState(true)
-        viewModelScope.launch {
-            try {
-                val result = authRepository.getCollection(collection)
-                if (result is AuthResult.Unauthorized) {
-                    goToAuthScreen(false)
-//                    resultChannel.send(result)
-                }
-                updateLoadingState(false)
-            } catch (e: Exception) {
-                showConnectionError(true)
-                updateLoadingState(false)
-                Log.e(TAG, "getCollection: ", e)
-            }
-        }
-    }
-
-    /*** MAIN WORKFLOW */
 
     fun getRollThumbs() {
         viewModelScope.launch {
@@ -119,7 +83,6 @@ class HomeViewModel @Inject constructor (
         }
     }
 
-
     fun saveCaption(
         replaceExisting: Boolean,
         topBarCaption: String? = null
@@ -133,8 +96,18 @@ class HomeViewModel @Inject constructor (
         }
     }
 
-
-    /*** VISUALS (state update) */
+    fun updatePicsListToRandomPic(pic: Pic, goToPicScreen: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                useCases.updateStateSnapshot(
+                    picsList = listOf(pic),
+                )
+                goToPicScreen()
+            } catch (e: Exception) {
+                Log.e(TAG, "updatePicsListToRandomPic: ", e)
+            }
+        }
+    }
 
     private fun updateLoadingState(loading: Boolean) {
         _homeState.update { it.copy(isLoading = loading) }
@@ -143,16 +116,6 @@ class HomeViewModel @Inject constructor (
     fun showConnectionError(show: Boolean){
         _homeState.update { it.copy(
             connectionError = show
-        )}
-    }
-
-    fun showSearch(show: Boolean) {
-        _homeState.update { it.copy(showSearch = show) }
-    }
-
-    fun changeFullScreenMode(fullscreen: Boolean? = null) {
-        _homeState.update { it.copy(
-            isFullscreen = fullscreen ?: !homeState.value.isFullscreen
         )}
     }
 }

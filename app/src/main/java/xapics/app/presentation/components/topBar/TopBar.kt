@@ -1,4 +1,4 @@
-package xapics.app.presentation.topBar
+package xapics.app.presentation.components.topBar
 
 import android.util.Log
 import androidx.compose.foundation.Image

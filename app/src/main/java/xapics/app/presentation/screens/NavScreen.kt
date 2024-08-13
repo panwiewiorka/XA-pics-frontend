@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -23,6 +24,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import xapics.app.Screen
 import xapics.app.presentation.SharedViewModel
+import xapics.app.presentation.components.topBar.TopBar
+import xapics.app.presentation.components.topBar.TopBarViewModel
 import xapics.app.presentation.screens.auth.AuthScreen
 import xapics.app.presentation.screens.auth.AuthViewModel
 import xapics.app.presentation.screens.home.HomeScreen
@@ -35,10 +38,9 @@ import xapics.app.presentation.screens.profile.ProfileScreen
 import xapics.app.presentation.screens.profile.ProfileViewModel
 import xapics.app.presentation.screens.search.SearchScreen
 import xapics.app.presentation.screens.search.SearchViewModel
-import xapics.app.presentation.topBar.TopBar
-import xapics.app.presentation.topBar.TopBarViewModel
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @SuppressLint("RestrictedApi")
 @Composable
 fun NavScreen(
@@ -99,7 +101,7 @@ fun NavScreen(
                     goToSearchScreen = {
                         topBarViewModel.onGoToSearchScreen()
                         navController.navigate(Screen.Search)
-                                       },
+                    },
                     page = currentScreen,
                     previousPage = prevScreen,
                 )
@@ -115,7 +117,6 @@ fun NavScreen(
                 val homeViewModel: HomeViewModel = hiltViewModel()
                 val homeState by homeViewModel.homeState.collectAsState()
                 HomeScreen(
-                    authenticate = homeViewModel::authenticate,
                     getRollThumbs = homeViewModel::getRollThumbs,
                     getAllTags = homeViewModel::getAllTags,
                     showConnectionError = homeViewModel::showConnectionError,
@@ -123,11 +124,13 @@ fun NavScreen(
                     homeState = homeState,
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) },
                     updateAndGoToPicScreen = {
+                        homeViewModel.updatePicsListToRandomPic(
+                            pic = homeState.randomPic!!,
+                            goToPicScreen = { navController.navigate(Screen.Pic(-1)) }
+                        )
                         homeViewModel.saveCaption(replaceExisting = false, topBarCaption = "Random pic")
-                        navController.navigate(Screen.Pic(0))
-                                    },
-                    goToSearchScreen = { navController.navigate(Screen.Search) }
-                )
+                    }
+                ) { navController.navigate(Screen.Search) }
             }
             composable<Screen.PicsList> {
                 val picsListViewModel: PicsListViewModel = hiltViewModel()
@@ -151,6 +154,7 @@ fun NavScreen(
                 val picViewModel: PicViewModel = hiltViewModel()
                 val picScreenState by picViewModel.picScreenState.collectAsState()
                 PicScreen(
+                    messages = picViewModel.messages,
                     editCollection = picViewModel::editCollection,
                     updateCollectionToSaveTo = picViewModel::updateCollectionToSaveTo,
                     updatePicInfo = picViewModel::updatePicInfo,

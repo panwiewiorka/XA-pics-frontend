@@ -1,9 +1,13 @@
 package xapics.app.presentation.screens.pic
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.Flow
+import xapics.app.TAG
 import xapics.app.presentation.components.ConnectionErrorButton
 import xapics.app.presentation.screens.pic.layouts.PicLandscapeLayout
 import xapics.app.presentation.screens.pic.layouts.PicPortraitLayout
@@ -11,6 +15,7 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicScreen(
+    messages: Flow<String>,
     editCollection: (collection: String, picId: Int, () -> Unit) -> Unit,
     updateCollectionToSaveTo: (String) -> Unit,
     updatePicInfo: (Int) -> Unit,
@@ -23,6 +28,8 @@ fun PicScreen(
 ) {
     val context = LocalContext.current
 
+    Log.d(TAG, "PicScreen: ${picScreenState.picIndex}, ${picScreenState.picsList.size}")
+
     if (picScreenState.picIndex != null && picScreenState.picsList.isNotEmpty()) {
         val pagerState = rememberPagerState(
             initialPage = picScreenState.picIndex,
@@ -31,14 +38,14 @@ fun PicScreen(
             picScreenState.picsList.size
         }
 
-        LaunchedEffect(Unit) {
-//            if (picScreenState.picsList.size == 1 && state.topBarCaption != "Random pic") { // todo how to know it's a random pic without topBarCaption? index = -1 ?
-//                Toast.makeText(
-//                    context,
-//                    "Showing the only pic found",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
+        LaunchedEffect(messages) {
+            messages.collect { message ->
+                Toast.makeText(
+                    context,
+                    message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
 
         LaunchedEffect(pagerState.currentPage) {

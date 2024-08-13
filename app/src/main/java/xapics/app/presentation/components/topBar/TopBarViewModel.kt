@@ -1,4 +1,4 @@
-package xapics.app.presentation.topBar
+package xapics.app.presentation.components.topBar
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -47,7 +47,6 @@ class TopBarViewModel @Inject constructor (
         }
     }
 
-
     fun logOut() {
         authRepository.logOut()
         saveCaption(true, "Log in")
@@ -56,7 +55,7 @@ class TopBarViewModel @Inject constructor (
     fun populateCaptionTable() {
         viewModelScope.launch {
             try {
-//                _captionState.update { "XA pics" } // fixing temporal visual glitch of switching to another caption
+                _captionState.update { "XA pics" } // fixing temporal visual glitch of switching to another caption
                 useCases.populateCaptionTable()
             } catch (e: Exception) {
                 Log.e(TAG, "populateCaptionTable: ", e)
@@ -72,6 +71,9 @@ class TopBarViewModel @Inject constructor (
                     useCases.saveCaption(false, result.data!!)
                     goToProfileScreen(result.data)
                 } else goToAuthScreen()
+//                var token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
+//                useCases.saveCaption(false, result.data!!)
+//                goToProfileScreen("Log in")
             } catch (e: Exception) {
                 Log.e(TAG, "getUserName: ", e)
             }

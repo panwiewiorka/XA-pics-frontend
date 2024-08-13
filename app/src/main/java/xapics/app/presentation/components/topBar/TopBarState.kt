@@ -1,4 +1,4 @@
-package xapics.app.presentation.topBar
+package xapics.app.presentation.components.topBar
 
 import xapics.app.Pic
 import xapics.app.Tag

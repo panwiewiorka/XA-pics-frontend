@@ -24,7 +24,7 @@ fun PicTags(
 ) {
 
     AnimatedContent(
-        targetState = picScreenState, // todo update state.picIndex onSwipe and use here instead of currentPage
+        targetState = picScreenState,
         transitionSpec = {
             fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200, 50))
         },

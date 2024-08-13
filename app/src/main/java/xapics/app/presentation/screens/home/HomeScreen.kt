@@ -20,7 +20,6 @@ import xapics.app.presentation.windowInfo
 
 @Composable
 fun HomeScreen(
-    authenticate: () -> Unit,
     getRollThumbs: () -> Unit,
     getAllTags: () -> Unit,
     showConnectionError: (Boolean) -> Unit,
@@ -39,7 +38,6 @@ fun HomeScreen(
         when {
             homeState.connectionError -> {
                 ConnectionErrorButton {
-                    authenticate()
                     getRandomPic()
                     getRollThumbs()
                     getAllTags()

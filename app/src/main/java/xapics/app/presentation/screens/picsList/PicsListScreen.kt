@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -124,10 +125,12 @@ fun PicsListScreen(
                     Medium -> lowestDimension / 2
                     else -> lowestDimension / 3
                 }
+                val gridState = rememberLazyGridState()
 
                 if (isPortrait) {
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(gridCellSize),
+                        state = gridState,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(
@@ -154,6 +157,7 @@ fun PicsListScreen(
                 } else {
                     LazyHorizontalGrid(
                         rows = GridCells.Adaptive(gridCellSize),
+                        state = gridState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(bottom = if (isCompact) 32.dp else 0.dp)
