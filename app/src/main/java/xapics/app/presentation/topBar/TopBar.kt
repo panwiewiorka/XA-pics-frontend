@@ -57,6 +57,7 @@ fun TopBar(
     searchIsShown: Boolean,
     showSearch: (Boolean) -> Unit,
     loadStateSnapshot: () -> Unit,
+    populateCaptionTable: () -> Unit,
     logOut: () -> Unit,
     tags: List<Tag>,
     caption: String,
@@ -72,6 +73,10 @@ fun TopBar(
     page: String,
     previousPage: String,
 ) {
+    LaunchedEffect(page) {
+        if(page == Screen.Home.toString()) populateCaptionTable()
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically

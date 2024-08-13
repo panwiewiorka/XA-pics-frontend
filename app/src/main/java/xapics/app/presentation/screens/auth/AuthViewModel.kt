@@ -27,7 +27,6 @@ class AuthViewModel @Inject constructor (
 ): ViewModel() {
 
     val goBackAfterLogIn = Screen.Auth.from(savedStateHandle).goBackAfterLogIn
-    private val isAuthorized = Screen.Auth.from(savedStateHandle).isAuthorized
 
     private val resultChannel = Channel<AuthResult<String?>>()
     val authResults = resultChannel.receiveAsFlow()
@@ -40,8 +39,6 @@ class AuthViewModel @Inject constructor (
         viewModelScope.launch {
             val caption = useCases.getCaption().topBarCaption
             if (caption != "Log in") saveCaption( false, "Log in")
-
-            if (isAuthorized) resultChannel.send(AuthResult.Authorized()) else resultChannel.send(AuthResult.Unauthorized())
         }
     }
 

@@ -88,9 +88,10 @@ fun NavScreen(
                     logOut = topBarViewModel::logOut,
                     tags = stateSnapshot.tags,
                     caption = captionState,
+                    populateCaptionTable = topBarViewModel::populateCaptionTable,
                     goBack = { navController.navigateUp() },
                     onProfileClick = topBarViewModel::onProfileClick,
-                    goToAuthScreen = { navController.navigate(Screen.Auth(false, false)) {
+                    goToAuthScreen = { navController.navigate(Screen.Auth(false)) {
                         popUpTo(Screen.Home)
                     } },
                     goToProfileScreen = { userName ->  navController.navigate(Screen.Profile(userName)) },
@@ -141,7 +142,7 @@ fun NavScreen(
                     saveCaption = picsListViewModel::saveCaption,
                     picsList = picsListViewModel.picsList,
                     goToPicScreen = { picIndex -> navController.navigate(Screen.Pic(picIndex)) },
-                    goToAuthScreen = { navController.navigate(Screen.Auth(true, false)) },
+                    goToAuthScreen = { navController.navigate(Screen.Auth(true)) },
                     goBack = { navController.navigateUp() },
                     previousPage = prevScreen,
                 )
@@ -158,7 +159,7 @@ fun NavScreen(
                     showConnectionError = picViewModel::showConnectionError,
                     picScreenState = picScreenState,
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) }
-                ) { navController.navigate(Screen.Auth(true, false)) }
+                ) { navController.navigate(Screen.Auth(true)) }
             }
             composable<Screen.Search> {
                 val searchViewModel: SearchViewModel = hiltViewModel()
@@ -189,13 +190,15 @@ fun NavScreen(
                     showConnectionError = profileViewModel::showConnectionError,
                     renameOrDeleteCollection = profileViewModel::renameOrDeleteCollection,
                     profileState = profileState,
-                    goToAuthScreen = { navController.navigate(Screen.Auth(true, false)) },
+                    goToAuthScreen = { navController.navigate(Screen.Auth(true)) },
                     goToPicsListScreen = { searchQuery -> navController.navigate(Screen.PicsList(searchQuery)) }
                 )
             }
         }
 
-        BackHandler {
+        BackHandler(
+            enabled = currentScreen != Screen.Home.toString()
+        ) {
             sharedViewModel.loadCaption()
 
             if (currentScreen == Screen.Pic.NAME) sharedViewModel.changeFullscreenMode(false)

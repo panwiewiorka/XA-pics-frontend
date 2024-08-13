@@ -53,6 +53,17 @@ class TopBarViewModel @Inject constructor (
         saveCaption(true, "Log in")
     }
 
+    fun populateCaptionTable() {
+        viewModelScope.launch {
+            try {
+//                _captionState.update { "XA pics" } // fixing temporal visual glitch of switching to another caption
+                useCases.populateCaptionTable()
+            } catch (e: Exception) {
+                Log.e(TAG, "populateCaptionTable: ", e)
+            }
+        }
+    }
+
     fun onProfileClick(goToAuthScreen: () -> Unit, goToProfileScreen: (userName: String) -> Unit) {
         viewModelScope.launch {
             try {

@@ -30,7 +30,7 @@ sealed class Screen {
     data object Search: Screen()
 
     @Serializable
-    data class Auth(val goBackAfterLogIn: Boolean, val isAuthorized: Boolean): Screen() {
+    data class Auth(val goBackAfterLogIn: Boolean): Screen() {
         companion object {
             const val NAME = "Auth"
             fun from(savedStateHandle: SavedStateHandle) = savedStateHandle.toRoute<Auth>()
