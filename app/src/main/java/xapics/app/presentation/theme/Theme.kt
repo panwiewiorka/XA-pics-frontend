@@ -30,13 +30,13 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = GrayDark,
 
     primaryContainer = Color.Black.copy(alpha = 0.4f),
-    onPrimaryContainer = Color.Green,
-    onSecondary = Color.Magenta,
-    secondaryContainer = Color.Yellow,
-    onSecondaryContainer = Color.Blue,
-    onTertiary = Color.Green,
-    tertiaryContainer = Color.Blue,
-    onTertiaryContainer = Color.White, // TODO remove all unnecessary
+//    onPrimaryContainer = Color.Green,
+//    onSecondary = Color.Magenta,
+//    secondaryContainer = Color.Yellow,
+//    onSecondaryContainer = Color.Blue,
+//    onTertiary = Color.Green,
+//    tertiaryContainer = Color.Blue,
+//    onTertiaryContainer = Color.White, // TODO remove all unnecessary
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -53,13 +53,13 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = GrayLighter,
 
     primaryContainer = Color.White.copy(alpha = 0.4f),
-    onPrimaryContainer = Color.Cyan,
-    onSecondary = Color.Magenta,
-    secondaryContainer = Color.Yellow,
-    onSecondaryContainer = Color.Blue,
-    onTertiary = Color.Green,
-    tertiaryContainer = Color.Cyan,
-    onTertiaryContainer = Color.Cyan, // TODO remove all unnecessary
+//    onPrimaryContainer = Color.Cyan,
+//    onSecondary = Color.Magenta,
+//    secondaryContainer = Color.Yellow,
+//    onSecondaryContainer = Color.Blue,
+//    onTertiary = Color.Green,
+//    tertiaryContainer = Color.Cyan,
+//    onTertiaryContainer = Color.Cyan, // TODO remove all unnecessary
 )
 
 @Composable

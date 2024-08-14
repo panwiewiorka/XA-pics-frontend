@@ -1,4 +1,4 @@
-package xapics.app
+package xapics.app.presentation.screens
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
@@ -8,7 +8,9 @@ import kotlinx.serialization.Serializable
 sealed class Screen {
 
     @Serializable
-    data object Home: Screen()
+    data object Home: Screen() {
+        const val NAME = "Home"
+    }
 
     @Serializable
     data class PicsList(val searchQuery: String): Screen() {
@@ -27,7 +29,9 @@ sealed class Screen {
     }
 
     @Serializable
-    data object Search: Screen()
+    data object Search: Screen() {
+        const val NAME = "Search"
+    }
 
     @Serializable
     data class Auth(val goBackAfterLogIn: Boolean): Screen() {
@@ -38,11 +42,8 @@ sealed class Screen {
     }
 
     @Serializable
-    data class Profile(val userName: String): Screen() {
-        companion object {
-            const val NAME = "Profile"
-            fun from(savedStateHandle: SavedStateHandle) = savedStateHandle.toRoute<Profile>()
-        }
+    data object Profile: Screen() {
+        const val NAME = "Profile"
     }
 
 }

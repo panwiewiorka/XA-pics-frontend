@@ -47,9 +47,16 @@ class TopBarViewModel @Inject constructor (
         }
     }
 
-    fun logOut() {
+    fun logOut(goToAuthScreen: () -> Unit) {
         authRepository.logOut()
-        saveCaption(true, "Log in")
+        viewModelScope.launch {
+            try {
+                useCases.saveCaption(true, "Log in")
+                goToAuthScreen()
+            } catch (e: Exception) {
+                Log.e(TAG, "loadCaption: ", e)
+            }
+        }
     }
 
     fun populateCaptionTable() {
@@ -71,9 +78,6 @@ class TopBarViewModel @Inject constructor (
                     useCases.saveCaption(false, result.data!!)
                     goToProfileScreen(result.data)
                 } else goToAuthScreen()
-//                var token = cryptoPrefs.getString("accessToken", null) ?: return AuthResult.Unauthorized()
-//                useCases.saveCaption(false, result.data!!)
-//                goToProfileScreen("Log in")
             } catch (e: Exception) {
                 Log.e(TAG, "getUserName: ", e)
             }

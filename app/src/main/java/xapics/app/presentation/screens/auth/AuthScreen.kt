@@ -52,6 +52,7 @@ fun AuthScreen(
         replaceExisting: Boolean,
         topBarCaption: String?
     ) -> Unit,
+    loadCaption: () -> Unit,
     signUpOrIn: (username: String, password: String, signUpOrIn: Boolean) -> Unit,
     authResults: Flow<AuthResult<String?>>,
     goBackAfterLogIn: Boolean,
@@ -68,8 +69,12 @@ fun AuthScreen(
             val response = result.data.toString()
             if (result is AuthResult.Authorized) {
                 goBack()
-                if (! goBackAfterLogIn) goToProfileScreen(response)
-                saveCaption(true, response) // todo what if goBackAfterLogIn?
+                if (goBackAfterLogIn) {
+                    loadCaption()
+                } else {
+                    goToProfileScreen(response)
+                    saveCaption(true, response)
+                }
             } else {
                 val toastMessage = when (result) {
                     is AuthResult.Conflicted -> response

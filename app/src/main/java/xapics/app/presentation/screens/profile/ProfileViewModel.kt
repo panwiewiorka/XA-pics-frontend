@@ -1,7 +1,6 @@
 package xapics.app.presentation.screens.profile
 
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
@@ -21,10 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor (
     private val authRepository: AuthRepository,
-    savedStateHandle: SavedStateHandle,
 ): ViewModel() {
-
-    val userName = Screen.Profile.from(savedStateHandle).userName
 
     private val _profileState = MutableStateFlow(ProfileState())
     val profileState: StateFlow<ProfileState> = _profileState.asStateFlow()
@@ -72,7 +67,7 @@ class ProfileViewModel @Inject constructor (
                             userCollections = userCollections
                         ) }
                     }
-                    is AuthResult.Conflicted -> TODO()
+                    is AuthResult.Conflicted -> Log.d(TAG, "Conflicted")
                     is AuthResult.Unauthorized -> goToAuthScreen()
                     is AuthResult.UnknownError -> Log.d(TAG, "Unknown error")
                     is AuthResult.ConnectionError -> Log.d(TAG, "Connection error")

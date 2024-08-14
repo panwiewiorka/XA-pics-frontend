@@ -59,10 +59,10 @@ fun PicLandscapeLayout(
             state = pagerState,
             pageSize = PageSize.Fill,
             beyondViewportPageCount = 1,
+            key = { picScreenState.picsList[it].id },
             modifier = Modifier
                 .weight(1f)
                 .aspectRatio(3 / 2f)
-//                        key = { appState.picsList[it].id } // FIXME crashes when clicking TAGS. Fix by assigning key=1 onTagsClick?
         ) {index ->
             val pic = picScreenState.picsList[index]
             BoxWithConstraints {

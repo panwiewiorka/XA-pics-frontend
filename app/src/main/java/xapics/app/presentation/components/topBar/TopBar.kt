@@ -46,21 +46,21 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xapics.app.R
-import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.Tag
 import xapics.app.TagState
 import xapics.app.nonScaledSp
+import xapics.app.presentation.screens.Screen
 
 @Composable
 fun TopBar(
     searchIsShown: Boolean,
     showSearch: (Boolean) -> Unit,
-    loadStateSnapshot: () -> Unit,
+    loadCaption: () -> Unit,
     populateCaptionTable: () -> Unit,
-    logOut: () -> Unit,
-    tags: List<Tag>,
     caption: String,
+    logOut: (goToAuthScreen: () -> Unit) -> Unit,
+    tags: List<Tag>,
     goBack: () -> Unit,
     onProfileClick: (
         goToAuthScreen: () -> Unit,
@@ -74,7 +74,7 @@ fun TopBar(
     previousPage: String,
 ) {
     LaunchedEffect(page) {
-        if(page == Screen.Home.toString()) populateCaptionTable()
+        if(page == Screen.Home.NAME) populateCaptionTable()
     }
 
     Row(
@@ -96,16 +96,12 @@ fun TopBar(
                 .replace(',', ' ')
                 .replace('=', ' ')
 
-            Log.d(TAG, "formattedSearch TAGS: $tags")
-
             val filters = tags.filter { it.state == TagState.SELECTED }
                 .map { "${it.type} = ${it.value}" }
                 .toString().drop(1).dropLast(1)
 
-            Log.d(TAG, "formattedSearch FILTERED: $filters")
-
             when {
-                page == Screen.Search.toString() && filters.isNotBlank() -> {
+                page == Screen.Search.NAME && filters.isNotBlank() -> {
                     val prefix = if (formattedQuery.isBlank()) "" else "search = $formattedQuery, "
                     goToPicsListScreen(prefix + filters)
                 }
@@ -117,16 +113,15 @@ fun TopBar(
 
         @Composable
         fun HomeOrBackButton() {
-            if (page == Screen.Home.toString()) {
+            if (page == Screen.Home.NAME) {
                 IconButton(enabled = false, onClick = {  }) {
                     Image(painterResource(R.drawable.xa_pics_closed), contentDescription = null, modifier = Modifier.padding(6.dp))
                 }
             } else {
-                IconButton(enabled = true, onClick = {
-//                    if (page == Screen.PicsList.NAME || page == Screen.Pic.NAME)
-                    loadStateSnapshot()
-                    goBack()
-                }) {
+                IconButton(
+                    enabled = true,
+                    onClick = { loadCaption(); goBack() }
+                ) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, "go Back")
                 }
             }
@@ -175,11 +170,11 @@ fun TopBar(
                         )
                     }
 
-                    if (page != Screen.Search.toString() && searchIsShown) {
+                    if (page != Screen.Search.NAME && searchIsShown) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Go to advanced search page",
-                            modifier = Modifier.clickable { goToSearchScreen() } // << caption also updates inside of here
+                            modifier = Modifier.clickable { goToSearchScreen() } // caption also updates inside of here
                         )
                     }
 
@@ -195,9 +190,9 @@ fun TopBar(
                         .fillMaxWidth()
                         .height(28.dp)
                         .border(
-                            1.dp,
-                            if (searchIsShown) MaterialTheme.colorScheme.outline else Color.Transparent,
-                            CircleShape
+                            width = 1.dp,
+                            color = if (searchIsShown) MaterialTheme.colorScheme.outline else Color.Transparent,
+                            shape = CircleShape
                         )
                 ) {}
             }
@@ -206,10 +201,9 @@ fun TopBar(
         @Composable
         fun ProfileOrLogOutButton() {
             if(page == Screen.Profile.NAME) {
-                IconButton(onClick = {
-                    logOut()
-                    goToAuthScreen()
-                }) {
+                IconButton(
+                    onClick = { logOut(goToAuthScreen) }
+                ) {
                     Icon(painterResource(id = R.drawable.baseline_logout_24), "Log out")
                 }
             } else {
@@ -226,7 +220,7 @@ fun TopBar(
 
 
 
-        if (page == Screen.Profile.NAME && page == previousPage) goBack() // todo check double caption record in DB
+        if (page == Screen.Profile.NAME && page == previousPage) goBack()
 
         HomeOrBackButton()
 

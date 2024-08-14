@@ -11,11 +11,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
+import xapics.app.presentation.screens.Screen
 import javax.inject.Inject
 
 
@@ -38,7 +38,7 @@ class AuthViewModel @Inject constructor (
     init {
         viewModelScope.launch {
             val caption = useCases.getCaption().topBarCaption
-            if (caption != "Log in") saveCaption( false, "Log in")
+            if (caption != "Log in") saveCaption( false, "Log in") // condition is true when logging out
         }
     }
 
@@ -52,6 +52,16 @@ class AuthViewModel @Inject constructor (
                 useCases.saveCaption(replaceExisting, topBarCaption)
             } catch (e: Exception) {
                 Log.e(TAG, "saveCaption (authScreen / Log in): ", e)
+            }
+        }
+    }
+
+    fun loadCaption() {
+        viewModelScope.launch {
+            try {
+                useCases.loadCaption()
+            } catch (e: Exception) {
+                Log.e(TAG, "loadCaption (authScreen / Log in): ", e)
             }
         }
     }

@@ -1,5 +1,6 @@
 package xapics.app.presentation.screens.picsList
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
@@ -28,17 +29,18 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import xapics.app.Pic
-import xapics.app.Screen
 import xapics.app.data.auth.AuthResult
 import xapics.app.presentation.WindowInfo.WindowType.Compact
 import xapics.app.presentation.WindowInfo.WindowType.Medium
 import xapics.app.presentation.components.AsyncPic
 import xapics.app.presentation.components.ConnectionErrorButton
+import xapics.app.presentation.screens.Screen
 import xapics.app.presentation.windowInfo
 
 @Composable
 fun PicsListScreen(
     authResults: Flow<AuthResult<String?>>,
+    messages: Flow<String>,
     isLoading: Boolean,
     search: () -> Unit,
     query: String,
@@ -57,7 +59,7 @@ fun PicsListScreen(
     LaunchedEffect(picsList) {
         if (picsList.size == 1) {
             goBack()
-            if (previousPage != Screen.Pic.toString()) goToPicScreen(0)
+            if (previousPage != Screen.Pic.NAME) goToPicScreen(0)
         } else {
             picsList.forEach {// preloading images
                 val request = ImageRequest.Builder(context)
@@ -73,6 +75,12 @@ fun PicsListScreen(
     LaunchedEffect(authResults) {
         authResults.collectLatest { result ->
             if (result is AuthResult.Unauthorized) goToAuthScreen()
+        }
+    }
+
+    LaunchedEffect(messages) {
+        messages.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 

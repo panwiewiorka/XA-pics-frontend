@@ -13,12 +13,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import xapics.app.Pic
-import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.data.auth.AuthResult
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
+import xapics.app.presentation.screens.Screen
 import javax.inject.Inject
 
 
@@ -44,6 +45,10 @@ class PicsListViewModel @Inject constructor (
     private val resultChannel = Channel<AuthResult<String?>>()
     val authResults = resultChannel.receiveAsFlow()
 
+    private val messagesChannel = Channel<String>()
+    val messages = messagesChannel.receiveAsFlow()
+
+
     init {
         viewModelScope.launch {
             if (query.contains(collectionPrefix)) {
@@ -53,16 +58,19 @@ class PicsListViewModel @Inject constructor (
     }
 
 
-    fun search() { // todo merge with getCollection?
+    fun search() {
         isLoading = true
         viewModelScope.launch {
             try {
                 picsList = useCases.searchPics(query).toMutableStateList()
-                isLoading = false
-            } catch (e: Exception) { // TODO if error 500 -> custom error message
-                connectionError = true
-                isLoading = false
+            } catch (e: HttpException) {
+                if (e.code() == 500) messagesChannel.send(e.message()) else showConnectionError(true)
                 Log.e(TAG, "search: ", e)
+            } catch (e: Exception) {
+                showConnectionError(true)
+                Log.e(TAG, "search: ", e)
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -79,6 +87,9 @@ class PicsListViewModel @Inject constructor (
                     else -> { }
                 }
                 isLoading = false
+            } catch (e: HttpException) {
+                if (e.code() == 500) messagesChannel.send(e.message()) else showConnectionError(true)
+                Log.e(TAG, "search: ", e)
             } catch (e: Exception) {
                 showConnectionError(true)
                 isLoading = false
@@ -89,8 +100,11 @@ class PicsListViewModel @Inject constructor (
 
     fun saveCaption() {
         viewModelScope.launch {
-            useCases.saveCaption(false, null)
-//            authRepository.getPicCollections(pic.id, ::updatePicCollections) // todo in PicScreen via LaunchedEffect?
+            try {
+                useCases.saveCaption(false, null)
+            } catch (e: Exception) {
+                Log.e(TAG, "saveCaption (PicsListVM): ", e)
+            }
         }
     }
 

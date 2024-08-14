@@ -1,10 +1,5 @@
 package xapics.app.presentation.screens.pic.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -23,17 +18,18 @@ fun PicTags(
     goToPicsListScreen: (searchQuery: String) -> Unit,
 ) {
 
-    AnimatedContent(
-        targetState = picScreenState,
-        transitionSpec = {
-            fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200, 50))
-        },
-        label = "tags"
-    ) { theState ->
+    // todo on PicsListScreen init: fetch all pics collections and add them to respectable pics tags, then uncomment.
+//    AnimatedContent(
+//        targetState = picScreenState,
+//        transitionSpec = {
+//            fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200, 50))
+//        },
+//        label = "tags"
+//    ) { theState ->
         FlowRow(
             modifier = Modifier.padding(horizontal = 28.dp)
         ) {
-            val tags = theState.picsList[theState.picIndex!!].tags.toTagsList()
+            val tags = picScreenState.picsList[picScreenState.picIndex!!].tags.toTagsList()
 
             tags.forEach {
                 PicTag(it) {
@@ -41,11 +37,11 @@ fun PicTags(
                 }
             }
 
-            theState.picCollections.forEach {
+            picScreenState.picCollections.forEach {
                 PicTag(Tag("collection", it)) {
                     goToPicsListScreen("collection = $it")
                 }
             }
         }
-    }
+//    }
 }

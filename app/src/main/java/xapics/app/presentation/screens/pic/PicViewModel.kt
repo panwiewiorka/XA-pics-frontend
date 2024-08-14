@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xapics.app.Screen
 import xapics.app.TAG
 import xapics.app.Thumb
 import xapics.app.data.auth.AuthResult
 import xapics.app.domain.auth.AuthRepository
 import xapics.app.domain.useCases.UseCases
+import xapics.app.presentation.screens.Screen
 import javax.inject.Inject
 
 
@@ -53,7 +53,7 @@ class PicViewModel @Inject constructor (
 
                 updateLoadingState(false)
             } catch (e: Exception) {
-                showConnectionError(true)
+//                showConnectionError(true)
                 updateLoadingState(false)
                 Log.e(TAG, "getSnapshot (get picsList): ", e)
             }
@@ -72,10 +72,14 @@ class PicViewModel @Inject constructor (
                 when (result) {
                     is AuthResult.Authorized -> getPicCollections(picId)
                     is AuthResult.Unauthorized -> goToAuthScreen()
-                    else -> Log.d(TAG, "Unknown error") // TODO send message to channel to Toast
+                    else -> {
+                        Log.d(TAG, "Unknown error")
+                        messagesChannel.send(result.data.toString())
+                    }
                 }
 //                updateLoadingState(false)
             } catch (e: Exception) {
+                messagesChannel.send("No connection to server")
                 Log.e(TAG, "editCollection(): ", e)
 //                updateLoadingState(false)
             }
@@ -90,7 +94,7 @@ class PicViewModel @Inject constructor (
 //                updateLoadingState(false)
             } catch (e: Exception) {
                 Log.d(TAG, "getPicCollections: ", e)
-//                showConnectionError(true)
+                messagesChannel.send("No connection to server")
 //                updateLoadingState(false)
             }
         }
@@ -119,12 +123,6 @@ class PicViewModel @Inject constructor (
         _picScreenState.update { it.copy(
             picIndex = index,
         ) }
-    }
-
-    fun showConnectionError(show: Boolean){
-        _picScreenState.update { it.copy(
-            connectionError = show
-        )}
     }
 
     private fun updateLoadingState(loading: Boolean) {

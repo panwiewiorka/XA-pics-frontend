@@ -152,9 +152,7 @@ fun UserView(
                 fun onRename() = when {
                     renamedTitle == collectionTitle -> { showRenameDialog = false }
 
-                    renamedTitle == "" -> { Toast.makeText(context, "Empty name is not available", Toast.LENGTH_SHORT).show() }
-
-                    renamedTitle == " " -> { Toast.makeText(context, "Empty name is not available", Toast.LENGTH_SHORT).show() }
+                    renamedTitle.isBlank() -> { Toast.makeText(context, "Empty name is not available", Toast.LENGTH_SHORT).show() }
 
                     userCollections?.firstOrNull { it.title == renamedTitle } != null -> { Toast.makeText(context, "Name is taken by another collection", Toast.LENGTH_SHORT).show() }
 
