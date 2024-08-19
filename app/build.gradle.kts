@@ -86,7 +86,7 @@ dependencies {
     implementation (libs.kotlinx.coroutines.android)
 
     // Lifecycle
-    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+//    implementation (libs.androidx.lifecycle.viewmodel.ktx)
 
     //Dagger - Hilt
     implementation (libs.hilt.android)

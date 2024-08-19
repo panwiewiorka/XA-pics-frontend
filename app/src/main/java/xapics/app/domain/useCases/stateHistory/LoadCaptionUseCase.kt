@@ -7,7 +7,11 @@ class LoadCaptionUseCase(
     private val dao: XaDao,
 ) {
     suspend operator fun invoke(): Caption {
-        dao.deleteCaption()
-        return dao.getCaption()
+        try {
+            dao.deleteCaption()
+            return dao.getCaption()
+        } catch (e: Exception) {
+            return Caption(1, "XA pics")
+        }
     }
 }

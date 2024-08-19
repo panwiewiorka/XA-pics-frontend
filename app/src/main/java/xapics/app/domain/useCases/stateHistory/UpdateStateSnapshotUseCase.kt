@@ -2,7 +2,6 @@ package xapics.app.domain.useCases.stateHistory
 
 import xapics.app.Pic
 import xapics.app.Tag
-import xapics.app.data.db.StateSnapshot
 import xapics.app.data.db.XaDao
 
 class UpdateStateSnapshotUseCase(
@@ -15,11 +14,15 @@ class UpdateStateSnapshotUseCase(
         val state = dao.getStateSnapshot()
 
         dao.updateStateSnapshot(
-            StateSnapshot(
-                id = 1,
+            state.copy(
                 picsList = picsList ?: state.picsList,
                 tags = tags ?: state.tags,
             )
+//            StateSnapshot(
+//                id = 1,
+//                picsList = picsList ?: state.picsList,
+//                tags = tags ?: state.tags,
+//            )
         )
     }
 }
