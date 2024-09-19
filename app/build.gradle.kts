@@ -42,6 +42,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.0"
@@ -114,4 +115,10 @@ dependencies {
 //    kapt (libs.androidx.lifecycle)
     kapt (libs.androidx.room.compiler)
 //    ksp (libs.androidx.room.compiler)
+
+    // Views
+    implementation(libs.androidx.constraintlayout)
+    implementation (libs.androidx.recyclerview)
+    implementation (libs.androidx.viewbinding)
+
 }

@@ -1,6 +1,5 @@
 package xapics.app.presentation.screens
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.view.WindowInsetsController
 import androidx.activity.compose.BackHandler
@@ -13,7 +12,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -21,6 +22,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import xapics.app.databinding.PicsListBinding
 import xapics.app.presentation.SharedViewModel
 import xapics.app.presentation.components.topBar.TopBar
 import xapics.app.presentation.components.topBar.TopBarViewModel
@@ -30,7 +33,7 @@ import xapics.app.presentation.screens.home.HomeScreen
 import xapics.app.presentation.screens.home.HomeViewModel
 import xapics.app.presentation.screens.pic.PicScreen
 import xapics.app.presentation.screens.pic.PicViewModel
-import xapics.app.presentation.screens.picsList.PicsListScreen
+import xapics.app.presentation.screens.picsList.PicsListAdapter
 import xapics.app.presentation.screens.picsList.PicsListViewModel
 import xapics.app.presentation.screens.profile.ProfileScreen
 import xapics.app.presentation.screens.profile.ProfileViewModel
@@ -38,7 +41,7 @@ import xapics.app.presentation.screens.search.SearchScreen
 import xapics.app.presentation.screens.search.SearchViewModel
 
 
-@SuppressLint("RestrictedApi")
+//@SuppressLint("RestrictedApi")
 @Composable
 fun NavScreen(
     navController: NavHostController = rememberNavController(),
@@ -131,22 +134,36 @@ fun NavScreen(
             }
             composable<Screen.PicsList> {
                 val picsListViewModel: PicsListViewModel = hiltViewModel()
-                PicsListScreen(
-                    authResults = picsListViewModel.authResults,
-                    messages = picsListViewModel.messages,
-                    isLoading = picsListViewModel.isLoading,
-                    search = picsListViewModel::search,
-                    query = picsListViewModel.query,
-                    getCollection = picsListViewModel::getCollection,
-                    connectionErrorIsShown = picsListViewModel.connectionError,
-                    showConnectionError = picsListViewModel::showConnectionError,
-                    saveCaption = picsListViewModel::saveCaption,
-                    picsList = picsListViewModel.picsList,
-                    goToPicScreen = { picIndex -> navController.navigate(Screen.Pic(picIndex)) },
-                    goToAuthScreen = { navController.navigate(Screen.Auth(true)) },
-                    goBack = { navController.navigateUp() },
-                    previousPage = prevScreen,
-                )
+
+                val context = LocalContext.current
+                AndroidViewBinding(PicsListBinding::inflate) {
+                    val adapter = PicsListAdapter(
+                        picsListViewModel.picsList,
+                        picsListViewModel::saveCaption,
+                        { picIndex -> navController.navigate(Screen.Pic(picIndex)) }
+                    )
+                    rvPicsList.adapter = adapter
+                    rvPicsList.layoutManager = LinearLayoutManager(context)
+                }
+//                lateinit var binding: PicsListBinding
+//                binding = PicsListBinding.inflate(layoutInflater)
+
+//                PicsListScreen(
+//                    authResults = picsListViewModel.authResults,
+//                    messages = picsListViewModel.messages,
+//                    isLoading = picsListViewModel.isLoading,
+//                    search = picsListViewModel::search,
+//                    query = picsListViewModel.query,
+//                    getCollection = picsListViewModel::getCollection,
+//                    connectionErrorIsShown = picsListViewModel.connectionError,
+//                    showConnectionError = picsListViewModel::showConnectionError,
+//                    saveCaption = picsListViewModel::saveCaption,
+//                    picsList = picsListViewModel.picsList,
+//                    goToPicScreen = { picIndex -> navController.navigate(Screen.Pic(picIndex)) },
+//                    goToAuthScreen = { navController.navigate(Screen.Auth(true)) },
+//                    goBack = { navController.navigateUp() },
+//                    previousPage = prevScreen,
+//                )
             }
             composable<Screen.Pic> {
                 val picViewModel: PicViewModel = hiltViewModel()
